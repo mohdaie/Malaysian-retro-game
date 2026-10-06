@@ -1,10 +1,10 @@
 import * as T from 'three';
-import { makeWorld, places } from './world.js?v=0.4.0';
+import { makeWorld, places } from './world.js?v=0.5.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.4.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.4.0';
-import { createSoundscape } from './soundscape.js?v=0.4.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.5.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.5.0';
+import { createSoundscape } from './soundscape.js?v=0.5.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -63,7 +63,7 @@ function begin(value = null) {
   else Object.assign(state, { name: $('player-name').value.trim().slice(0,20) || 'Amir', friend: $('friend-name').value.trim().slice(0,20) || 'Nur', quest: 0, completed: false });
   let x = value?.x ?? -43, z = value?.z ?? 38;
   if(!world.canWalk(x,z)) { x=-43; z=38; }
-  player.group.position.set(x,0,z);
+  player.group.position.set(x,world.groundHeight(x,z)-.065,z);
   world.renameHomes(state.name, state.friend);
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); persist();
@@ -210,7 +210,7 @@ async function runMove(index){
     if(state.quest===2){state.quest=3;state.completed=true;refreshQuest();persist();toast('Chapter complete · Your first kampung memory collected.');}
   }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
-function zoneAt(x,z){if(x<-30)return 'Kampung Melati';if(z<-28&&x<15)return 'SK Seri Kenangan';if(z<-24&&x>30)return 'Masjid Seri Kenangan';if(x>40&&z<15)return 'Stesen bas';if(x>20&&z>15)return 'Tapak pasar malam';if(z>36)return 'Taman Kenangan';return 'Pekan lama';}
+function zoneAt(x,z){if(x<-30)return 'Kampung Melati';if(z<-28&&x<30)return 'SK Seri Kenangan';if(z<-24&&x>30)return 'Masjid Seri Kenangan';if(x>40&&z<15)return 'Stesen bas';if(x>20&&z>15)return 'Tapak pasar malam';if(z>36)return 'Taman Kenangan';return 'Pekan lama';}
 function drawMap(canvas,full=false){
   const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   const px=x=>(x+82)/164*w,pz=z=>(z+70)/140*h;
@@ -238,9 +238,11 @@ function tick(){
     const p=player.group.position;
     const previousX=p.x,previousZ=p.z;
     moveWithCollision(p,dx,dz,isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
+    p.y=world.groundHeight(p.x,p.z)-.065;
     audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
     if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
-    player.animate(dt,length>.08?Math.min(length,1):0,isRunning);
+    const travel=Math.hypot(p.x-previousX,p.z-previousZ);
+    player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel);
     nearby=world.npcs.find(n=>Math.hypot(p.x-n.x,p.z-n.z)<3.6)||null;
     $('interaction').hidden=!nearby;
     if(nearby)$('interact-label').textContent=`Talk to ${nearby.id==='nur'?state.friend:'Pak Mat'}`;
@@ -249,10 +251,10 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
   } else player.animate(dt,0);
   for(const character of world.characters)if(character!==player){character.group.visible=mode==='title'||character.group.position.distanceTo(player.group.position)<55;if(character.group.visible)character.animate(dt,0);}
-  for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=3.7+Math.sin(elapsed*2)*.12;}
+  for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
-  else{look.set(p.x,1,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*cameraTilt,p.z+Math.cos(yaw)*distance);}
+  else{look.set(p.x,p.y+.72,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*cameraTilt,p.z+Math.cos(yaw)*distance);}
   world.updateSun(look.x,look.z);
   camera.position.lerp(cameraTarget,1-Math.exp(-dt*4));camera.lookAt(look);
   world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
@@ -264,4 +266,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'illustrated-low-poly',occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'illustrated-low-poly',avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
