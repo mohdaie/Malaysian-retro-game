@@ -12,30 +12,50 @@ export const places = [
 ];
 export function makeWorld(canvas) {
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, matchMedia('(pointer: coarse)').matches ? 1.25 : 1.6));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.setClearColor(0xc4d8c2);
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
+  renderer.toneMappingExposure = 1.0;
   const scene = new T.Scene();
   scene.background = new T.Color(0xc4d8c2);
   scene.fog = new T.Fog(0xc4d8c2, 60, 200);
   const camera = new T.PerspectiveCamera(43, 1, .1, 350);
-  scene.add(new T.HemisphereLight(0xfff4cd, 0x507753, 2.4));
-  const sun = new T.DirectionalLight(0xffdf9e, 3.2);
+  scene.add(new T.HemisphereLight(0xfff4df, 0x526747, 1.5));
+  const sun = new T.DirectionalLight(0xffe3b5, 2.4);
   sun.position.set(-35, 70, 30);
   sun.castShadow = true;
-  const shadowSize = matchMedia('(pointer: coarse)').matches ? 512 : 1024;
+  const shadowSize = 1024;
   sun.shadow.mapSize.set(shadowSize, shadowSize);
-  Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 1, far: 200 });
+  Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 200 });
   sun.shadow.bias = -.0006;
   sun.shadow.normalBias = .03;
   scene.add(sun);
+  scene.add(sun.target);
+  // Original procedural textures add surface variation without external assets.
+  let seed = 2001;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  function surface(kind) {
+    const c = document.createElement('canvas'); c.width = c.height = 256;
+    const ctx = c.getContext('2d'); ctx.fillStyle = kind === 'grass' ? '#afbd88' : kind === 'dirt' ? '#d9cbb0' : '#e4cfad'; ctx.fillRect(0,0,256,256);
+    for(let i=0;i<9000;i++) { const a=rand()*.12; ctx.fillStyle=rand()>.5?`rgba(55,67,38,${a})`:`rgba(255,252,222,${a})`; ctx.fillRect(rand()*256,rand()*256,kind==='wood'?rand()*30+4:rand()*5+1,kind==='wood'?.7:rand()*3+1); }
+    if(kind==='wood') for(let y=0;y<256;y+=32){ctx.fillStyle='#67533935';ctx.fillRect(0,y,256,1);ctx.fillStyle='#ffffff35';ctx.fillRect(0,y+2,256,1);}
+    if(kind==='grass') for(let i=0;i<320;i++){ctx.strokeStyle=rand()>.5?'#9bac7270':'#c7ce9870';const x=rand()*256,y=rand()*256;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand()*5-2,y-3-rand()*3);ctx.stroke();}
+    const texture = new T.CanvasTexture(c); texture.colorSpace = T.SRGBColorSpace; texture.wrapS = texture.wrapT = T.RepeatWrapping; texture.anisotropy = Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    texture.repeat.set(kind==='wood'?1:24,kind==='wood'?1:24); return texture;
+  }
+  const textures = {grass:surface('grass'), dirt:surface('dirt'), wood:surface('wood')};
   const mats = new Map();
+  function textured(color,kind) {
+    const key=kind+color;
+    if(!mats.has(key))mats.set(key,new T.MeshStandardMaterial({color,map:textures[kind],roughness:1}));
+    return mats.get(key);
+  }
   const mat = color => {
-    if (!mats.has(color)) mats.set(color, new T.MeshStandardMaterial({ color, roughness: .95, flatShading: true }));
+    if (color?.isMaterial) return color;
+    if (!mats.has(color)) mats.set(color, new T.MeshStandardMaterial({ color, roughness: .95, flatShading: false }));
     return mats.get(color);
   };
   const colliders = [];
@@ -63,33 +83,53 @@ export function makeWorld(canvas) {
     // Long pitched roof with a horizontal ridge along X.
     const vertices = new Float32Array([-w/2,0,-d/2,w/2,0,-d/2,-w/2,2,0,w/2,2,0,-w/2,0,d/2,w/2,0,d/2]);
     const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(vertices, 3));
-    g.setIndex([0,2,1,1,2,3,2,4,3,3,4,5,0,4,2,1,3,5,0,1,4,1,5,4]); g.computeVertexNormals();
-    return mesh(g, color, x, y, z, parent);
+    g.setIndex([0,2,1,1,2,3,2,4,3,3,4,5,0,4,2,1,3,5,0,1,4,1,5,4]);
+    const flat = g.toNonIndexed(); flat.computeVertexNormals(); g.dispose();
+    return mesh(flat, color, x, y, z, parent);
   }
   function house(x, z, color = 0xc8aa75, w = 9, d = 7, label = '', stilt = true) {
     const floor = stilt ? 1.4 : .3;
     box(w, .35, d, 0x816145, x, floor, z);
-    box(w, 3.6, d, color, x, floor + 1.9, z);
+    box(w, 3.6, d, textured(color,'wood'), x, floor + 1.9, z);
     roof(w + 1.4, d + 1.5, x, floor + 3.7, z, 0x8b5442);
     for (const a of [-1, 1]) for (const b of [-1, 1]) cylinder(.18,.18,floor,0x66513c,x+a*(w/2-.4),floor/2,z+b*(d/2-.4));
     for (const a of [-1, 1]) { box(1.6, 1.5, .15, 0x455f5d, x+a*w*.29, floor+2, z+d/2+.06); box(1.75,.15,.24,0xf1d9a7,x+a*w*.29,floor+2.85,z+d/2+.15); }
     box(1.5,2.7,.12,0x674c37,x,floor+1.5,z+d/2+.08);
-    box(w+1, .25, 2.3, 0xbaa078,x,floor,z+d/2+1.1);
+    box(w+1, .25, 2.3, textured(0xbaa078,'wood'),x,floor,z+d/2+1.1);
     for(let i=0;i<4;i++) box(2,.25+(i*.28),.65,0xbcad8a,x,.125+i*.14,z+d/2+3.1-i*.6);
     box(w+1,.2,2.5,0x915541,x,floor+3,z+d/2+1.2).rotation.x=.14;
     for(const a of [-1,1]) cylinder(.09,.09,3,0x705c42,x+a*(w/2),floor+1.5,z+d/2+2.1);
     for(let i=0;i<6;i++) box(w,.055,.05,0x9e8359,x,floor+.55+i*.48,z+d/2+.09);
+    // Timber shutters, window frames and verandah railings give the houses scale.
+    for(const a of [-1,1]) {
+      const wx=x+a*w*.29;
+      for(const edge of [-1,1])box(.13,1.7,.19,0xe3c994,wx+edge*.85,floor+2,z+d/2+.15);
+      box(1.8,.13,.2,0xe3c994,wx,floor+1.18,z+d/2+.15);
+      for(const edge of [-1,1]) {
+        const shutter=box(.48,1.6,.16,textured(0x7f936f,'wood'),wx+edge*1.05,floor+2,z+d/2+.24); shutter.rotation.y=edge*.22;
+        for(let line=0;line<7;line++)box(.46,.045,.09,0x485e44,wx+edge*1.05,floor+1.37+line*.19,z+d/2+.35);
+      }
+    }
+    for(const a of [-1,1]) {
+      box(w*.31,.12,.11,0xbda375,x+a*w*.345,floor+1,z+d/2+2.16);
+      for(let i=0;i<5;i++)box(.075,.83,.09,0xa48d62,x+a*(1.9+i*.54),floor+.55,z+d/2+2.16);
+    }
+    box(.14,.12,.16,0xd5b65f,x+.53,floor+1.4,z+d/2+.2);
     if(label) sign(label,x,floor+3.3,z+d/2+2.2,4);
     collider(x,z,w+1,d+1);
   }
   function palm(x,z,size=1) {
-    cylinder(.2*size,.36*size,7*size,0x92734c,x,3.5*size,z);
-    for(let a=0;a<6;a++) {
-      const angle=a*Math.PI/3;
-      const leaf=mesh(new T.ConeGeometry(.8*size,4.8*size,4),a%2?0x4b7546:0x648c4b,x+Math.sin(angle)*1.8*size,7*size,z+Math.cos(angle)*1.8*size);
-      leaf.rotation.z=Math.PI*.42;leaf.rotation.y=angle;
+    cylinder(.18*size,.34*size,7*size,0x88734f,x,3.5*size,z);
+    for(let i=1;i<7;i++)cylinder(.22*size,.22*size,.06,0x6d6044,x,i*size,z);
+    const leafMaterialKey='palm-leaf';
+    if(!mats.has(leafMaterialKey))mats.set(leafMaterialKey,new T.MeshStandardMaterial({color:0x4e7946,roughness:1,side:T.DoubleSide}));
+    for(let a=0;a<8;a++) {
+      const vertices=[],indices=[];
+      for(let i=0;i<=8;i++){const t=i/8,width=Math.sin(t*Math.PI)*.45*size;const height=(Math.sin(t*Math.PI)*.8-t*t*1.5)*size;vertices.push(t*4.7*size,height,-width,t*4.7*size,height,width);if(i<8){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}}
+      const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();
+      const leaf=mesh(g,mats.get(leafMaterialKey),x,7*size,z);leaf.rotation.y=a*Math.PI/4;
     }
-    for(let a=0;a<3;a++) mesh(new T.IcosahedronGeometry(.26*size,0),0x7d633c,x+.3*Math.sin(a*2),6.7*size,z+.3*Math.cos(a*2));
+    for(let a=0;a<3;a++)mesh(new T.SphereGeometry(.25*size,8,6),0x726044,x+.35*Math.sin(a*2),6.75*size,z+.35*Math.cos(a*2));
   }
   function tree(x,z,size=1) {
     cylinder(.2,.3,2.8*size,0x7c6345,x,1.4*size,z);
@@ -101,11 +141,11 @@ export function makeWorld(canvas) {
     for(const y of [.35,.95]) box(axis==='x'?length:.1,.12,axis==='z'?length:.1,0xd4c6a0,x+(axis==='x'?length/2:0),y,z+(axis==='z'?length/2:0));
   }
   // Ground, roads and a narrow river divide the older kampung from the pekan.
-  box(180,.6,160,0x95ab73,0,-.35,0);
+  box(180,.6,160,textured(0x91a76b,'grass'),0,-.35,0);
   box(150,.08,8,0x777d73,0,.015,4);
   box(7,.08,132,0x7c8073,-25,.02,0);
-  box(5,.06,62,0xc4b387,-42,.04,24);
-  box(90,.06,4,0xc7b78e,4,.035,37);
+  box(5,.06,62,textured(0xc8b994,'dirt'),-42,.04,24);
+  box(90,.06,4,textured(0xcbbd99,'dirt'),4,.035,37);
   box(7,.08,100,0x7b8176,62,.02,0);
   for(let x=-72;x<74;x+=8)box(3,.02,.16,0xd6d1a9,x,.07,4);
   for(let z=-62;z<68;z+=8)box(.16,.02,3,0xd6d1a9,-25,.075,z);
@@ -186,6 +226,21 @@ export function makeWorld(canvas) {
     if(i%3===0)palm(x,z,.75+(i%4)*.15);else tree(x,z,.65+(i%3)*.2);
   }
   for(let i=0;i<13;i++){const hill=mesh(new T.IcosahedronGeometry(20+(i%3)*8,1),i%2?0x839d75:0x9bb087,-110+i*18,-3,-92-Math.sin(i)*12);hill.scale.y=.7;}
+  // Verges, potted plants, laundry and roadside details soften the greybox layout.
+  function pot(x,z,y=0) {
+    cylinder(.28,.2,.48,0xa57454,x,y+.24,z,undefined,10);cylinder(.31,.31,.07,0xbc9068,x,y+.48,z,undefined,10);
+    for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
+  }
+  pot(-47,32.7,1.55);pot(-39,32.7,1.55);pot(6,-3);pot(18,-3);pot(-12,-16);pot(5,-16);
+  for(let i=0;i<450;i++) {
+    const x=-78+rand()*155,z=-65+rand()*130;
+    if(Math.abs(z-4)<6||Math.abs(x+25)<5||Math.abs(x-62)<5||Math.abs(x+42)<3&&z>-9||Math.abs(z-37)<3||Math.abs(x+65)<7||colliders.some(c=>Math.abs(x-c.x)<c.w/2+2&&Math.abs(z-c.z)<c.d/2+2))continue;
+    for(let a=0;a<3;a++){const blade=mesh(new T.ConeGeometry(.09,.35+rand()*.25,3),i%2?0x7f9959:0xa8ae67,x+a*.12,.25,z);blade.rotation.z=(a-1)*.25;}
+  }
+  // Hanging laundry beside Amir's home, a familiar kampung afternoon detail.
+  for(const x of [-54,-47])cylinder(.05,.05,2.5,0x8b7958,x,1.25,18);
+  box(7,.025,.025,0xc3bd9d,-50.5,2.4,18);
+  for(let i=0;i<4;i++)box(.85,1.0,.025,[0xd1c2a7,0x809eb0,0xb88461,0xbabf94][i],-53+i*1.6,1.8,18);
   // Batch static geometry by material: the town should cost tens of draw calls,
   // rather than one draw call for every wall, window, fence post and roof.
   scene.updateMatrixWorld(true);
@@ -204,17 +259,19 @@ export function makeWorld(canvas) {
   for (const object of staticMeshes) { object.removeFromParent(); object.geometry.dispose(); }
   for (const [material, geometries] of buckets) {
     const count = geometries.reduce((sum, geometry) => sum + geometry.attributes.position.count, 0);
-    const positions = new Float32Array(count * 3), normals = new Float32Array(count * 3);
+    const positions = new Float32Array(count * 3), normals = new Float32Array(count * 3), uvs = new Float32Array(count * 2);
     let offset = 0;
     for (const geometry of geometries) {
       positions.set(geometry.attributes.position.array, offset);
       normals.set(geometry.attributes.normal.array, offset);
+      if (geometry.attributes.uv) uvs.set(geometry.attributes.uv.array, offset / 3 * 2);
       offset += geometry.attributes.position.array.length;
       geometry.dispose();
     }
     const merged = new T.BufferGeometry();
     merged.setAttribute('position', new T.BufferAttribute(positions, 3));
     merged.setAttribute('normal', new T.BufferAttribute(normals, 3));
+    merged.setAttribute('uv', new T.BufferAttribute(uvs, 2));
     merged.computeBoundingSphere();
     const object = new T.Mesh(merged, material);
     object.castShadow = true; object.receiveShadow = true; scene.add(object);
@@ -222,11 +279,12 @@ export function makeWorld(canvas) {
   function character(x,z,kind='amir') {
     const group = new T.Group();group.position.set(x,0,z);scene.add(group);
     const skin=0xbe8e64, shirt=kind==='nur'?0xb3a895:kind==='pak'?0xe5d6b1:0xc68053;
-    const torso=box(.72,.95,.42,shirt,0,1.18,0,group);torso.rotation.z=.01;
-    const head=mesh(new T.SphereGeometry(.36,10,8),skin,0,1.98,0,group);
+    const torso=mesh(new T.CapsuleGeometry(.31,.38,4,10),shirt,0,1.25,0,group);torso.scale.z=.8;torso.rotation.z=.01;
+    const head=mesh(new T.SphereGeometry(.4,16,12),skin,0,1.98,0,group);
     if(kind==='nur'){const hijab=mesh(new T.SphereGeometry(.4,10,8),0xe1c997,0,2.05,-.04,group);box(.77,.55,.45,0xe1c997,0,1.72,-.08,group);mesh(new T.SphereGeometry(.29,10,8),skin,0,2.02,.23,group);}
-    else {const hair=mesh(new T.SphereGeometry(.37,10,8,0,Math.PI*2,0,Math.PI/2),kind==='pak'?0xe7e3c8:0x3c392e,0,2.08,-.02,group);if(kind==='pak')cylinder(.35,.36,.2,0xe9e4ca,0,2.28,0,group,12);}
-    for(const a of [-1,1]){mesh(new T.SphereGeometry(.028,5,4),0x353c30,a*.12,2.04,.335,group);}
+    else {const hair=mesh(new T.SphereGeometry(.41,16,10,0,Math.PI*2,0,Math.PI/2),kind==='pak'?0xe7e3c8:0x3c392e,0,2.08,-.02,group);if(kind==='pak')cylinder(.35,.36,.2,0xe9e4ca,0,2.28,0,group,12);}
+    for(const a of [-1,1]){mesh(new T.SphereGeometry(.055,8,6),0xf6edda,a*.14,2.04,.36,group);mesh(new T.SphereGeometry(.028,8,6),0x363a32,a*.14,2.04,.406,group);box(.09,.025,.035,0x504332,a*.14,2.15,.36,group);}
+    const smile=mesh(new T.TorusGeometry(.085,.013,4,12,Math.PI),0x755341,0,1.89,.375,group);smile.rotation.z=Math.PI;
     const legs=[],arms=[];
     for(const a of [-1,1]){const leg=new T.Group();leg.position.set(a*.2,.8,0);group.add(leg);box(.25,.67,.28,kind==='nur'?0x6a7667:0x556b67,0,-.33,0,leg);box(.29,.15,.43,0x595d4c,0,-.65,.08,leg);legs.push(leg);const arm=new T.Group();arm.position.set(a*.46,1.58,0);group.add(arm);box(.2,.55,.23,shirt,0,-.22,0,arm);mesh(new T.SphereGeometry(.13,6,5),skin,0,-.55,0,arm);arms.push(arm);}
     const shadow=new T.Mesh(new T.CircleGeometry(.55,16),new T.MeshBasicMaterial({color:0x345432,transparent:true,opacity:.14,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.07;group.add(shadow);
@@ -246,5 +304,5 @@ export function makeWorld(canvas) {
   }
   function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {renderer,scene,camera,player,npcs,colliders,canWalk,resize,animated,sun,sign,renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {renderer,scene,camera,player,npcs,colliders,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
