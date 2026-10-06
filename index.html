@@ -15,7 +15,7 @@
     <div id="loading"><span class="loading-dot"></span>Finding our way home…</div>
     <div id="hud" hidden>
       <header class="topbar">
-        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v0.1.0</small></div></div>
+        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v0.1.1</small></div></div>
         <div class="top-actions"><span class="day-chip">☀ <span id="day-label">Sabtu · 2001</span></span><button id="map-button" class="icon-button" aria-label="Open town map">Map <kbd>M</kbd></button><button id="pause-button" class="icon-button" aria-label="Pause and settings">Ⅱ</button></div>
       </header>
       <aside class="quest-card"><span class="eyebrow">CHAPTER 01 · BALIK KAMPUNG</span><h2 id="quest-title">A familiar face</h2><p id="quest-description">Find Nur outside your house.</p><div class="quest-footer"><span id="quest-step">01 / 03</span><span id="quest-distance"></span></div><div class="quest-track"><i id="quest-progress"></i></div></aside>
@@ -38,6 +38,6 @@
     <section id="board-panel" class="modal-backdrop" hidden><div class="modal board-modal"><div class="modal-heading"><div><span class="eyebrow">WARUNG PAK MAT · FIRST CHALLENGE</span><h2>Jom main congkak.</h2></div><button id="board-close" class="close" aria-label="Leave congkak">×</button></div><p id="board-status" role="status"></p><div class="players"><span id="opponent-name">Pak Mat</span><span id="board-player-name">Amir</span></div><div id="congkak-board" class="congkak-board" aria-label="Congkak board"></div><div id="sowing-status" class="sowing-status" aria-live="polite"></div><details><summary>How to play this practice round</summary><p>Choose one of your seven houses on the bottom row. Sow shells counterclockwise, one per house, including your own store and skipping Pak Mat's store. If the last shell lands in a house with shells, pick them all up and keep sowing. Finish in your store for another turn. Finish in an empty house on your side to capture the opposite shells, if any. When one row is empty, the remaining shells go to their owner's store.</p><p>This is a turn-based introductory variant with seven shells per house. Regional and simultaneous-start rules vary.</p></details><button id="board-return" class="primary" hidden>Back to the kampung →</button></div></section>
     <section id="error-panel" class="modal-backdrop" hidden><div class="modal"><h2>The town couldn't load.</h2><p id="error-text"></p><button onclick="location.reload()" class="primary">Try again</button></div></section>
   </main>
-  <script type="module" src="./src/main.js"></script>
+  <script src="./src/boot.js?v=0.1.1"></script>
 </body>
 </html>
