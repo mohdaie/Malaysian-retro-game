@@ -1,8 +1,8 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.6.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=0.6.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES } from './town-layout.js?v=0.6.0';
-import { createWalkability } from './collision.js?v=0.6.0';
+import { createCharacter } from './characters.js?v=0.7.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=0.7.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES } from './town-layout.js?v=0.7.0';
+import { createWalkability } from './collision.js?v=0.7.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -473,7 +473,7 @@ export async function makeWorld(canvas) {
   // can be culled without submitting the entire town on every frame.
   scene.updateMatrixWorld(true);
   const buckets = new Map();
-  const cameraOccluders=[];
+  const cameraOccluders=[],distantDetails=[];
   const staticMaterials = new Set(mats.values());
   const staticMeshes = [];
   const inkCells=new Map();
@@ -506,6 +506,7 @@ export async function makeWorld(canvas) {
     merged.computeBoundingSphere();
     const object = new T.Mesh(merged, occluder?material.clone():material);if(occluder){object.material.onBeforeCompile=material.onBeforeCompile;object.material.customProgramCacheKey=material.customProgramCacheKey;}if(occluder){object.material.transparent=true;cameraOccluders.push(object);}
     object.castShadow = true; object.receiveShadow = true; scene.add(object);
+    if(!occluder&&![textures.grass,textures.dirt,textures.asphalt].includes(material.map))distantDetails.push(object);
     if(![textures.grass,textures.dirt,textures.asphalt].includes(material.map)){
       const edges=new T.EdgesGeometry(merged,38);
       if(occluder){const lines=comicEdges(edges);scene.add(lines);object.userData.ink=lines;}
@@ -515,7 +516,7 @@ export async function makeWorld(canvas) {
   for(const geometries of inkCells.values()){
     const size=geometries.reduce((n,g)=>n+g.attributes.position.array.length,0),positions=new Float32Array(size);let offset=0;
     for(const g of geometries){positions.set(g.attributes.position.array,offset);offset+=g.attributes.position.array.length;g.dispose();}
-    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.computeBoundingSphere();scene.add(comicEdges(g,1.8));
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.computeBoundingSphere();const lines=comicEdges(g,1.8);scene.add(lines);distantDetails.push(lines);
   }
   function groundHeight(x,z){
     if(x>-71.5&&x<-58.5&&(Math.abs(z-4)<4||Math.abs(z-37)<4))return .24;
@@ -553,11 +554,23 @@ export async function makeWorld(canvas) {
       if(active){scene.updateMatrixWorld();const direction=camera.position.clone().sub(look);ray.set(look,direction.clone().normalize());ray.near=.2;ray.far=Math.max(.2,direction.length()-.5);for(const hit of ray.intersectObjects(cameraOccluders,false))blocked.add(hit.object);}
     }
     for(const object of cameraOccluders){object.material.opacity=T.MathUtils.lerp(object.material.opacity,blocked.has(object)?.17:1,1-Math.exp(-dt*9));object.material.depthWrite=object.material.opacity>.98;if(object.userData.ink){object.userData.ink.material.uniforms.inkOpacity.value=object.material.opacity;object.userData.ink.visible=object.material.opacity>.3;}}
+    // The low chase view can see across the whole town. Small props and fine
+    // ink beyond ~65 m are a few pixels wide, so skip their draw calls there.
+    for(const object of distantDetails){const sphere=object.geometry.boundingSphere;object.visible=!active||camera.position.distanceTo(sphere.center)-sphere.radius<65;}
+    for(const object of cameraOccluders)if(object.userData.ink&&active&&camera.position.distanceTo(object.geometry.boundingSphere.center)-object.geometry.boundingSphere.radius>100)object.userData.ink.visible=false;
+  }
+  // Distance from the player to the first solid between them and the lens,
+  // so the chase camera can pull in front of walls instead of entering them.
+  const lensRay=new T.Raycaster(),lensDirection=new T.Vector3();
+  function cameraClearance(look,target){
+    lensDirection.subVectors(target,look);const length=lensDirection.length();if(length<.01)return Infinity;
+    lensRay.set(look,lensDirection.divideScalar(length));lensRay.near=.1;lensRay.far=length+.4;
+    const hit=lensRay.intersectObjects(cameraOccluders,false)[0];return hit?hit.distance:Infinity;
   }
   // Physical NPC bodies, including passers-by, occupy the same space as their meshes.
   for(const model of characters)if(model!==player)roundCollider(model.group.position.x,model.group.position.z,.27,'npc');
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {buildings:BUILDINGS,districts:DISTRICTS,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {buildings:BUILDINGS,districts:DISTRICTS,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

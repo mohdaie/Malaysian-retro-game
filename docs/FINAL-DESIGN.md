@@ -1,16 +1,22 @@
-# Illustrated prototype design — v0.5.0
+# Illustrated prototype design — v0.7.0
 
-Amir and Nur now follow the supplied Jaguh Kampung character sheet through simplified low-poly models with illustrated faces and clothes. The world keeps 3D movement, collision, animation and a freely orbiting camera, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
+Amir and Nur follow the supplied Jaguh Kampung character sheet, and the camera follows the third-person reference recording: low behind the shoulder, a wide lens, the street and horizon ahead. The world keeps 3D movement, collision and animation, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
 
 ## Characters
 
 | Character | Implemented reference details |
 |---|---|
-| Amir | Large expressive drawn eyes, angular black hair, cream/white navy-trimmed T-shirt with a pixel alien, full blue cargo trousers with side pockets, cream striped shell-toe sneakers, red/black backpack with badge and green charm, wristwatch. |
-| Nur | Drawn eyes and lashes, pink hijab with an open face and scarf folds, pink hoodie with hibiscus and drawstrings, light blue cargo trousers, cream/pink striped shoes, black backpack with pink flower and dangling flower charm. |
-| Pak Mat | Matching low-poly/toon treatment, kopiah and moustache so the NPC fits the same visual world. |
+| Amir | 1.50 m, head about a quarter of his height. Tall dark-brown anime eyes with two highlights, bold brows, small smile. Messy black hair: a cap with crown spikes, swept-back locks and a two-layer fringe curving over the forehead. White ringer T-shirt with navy collar and cuffs and the pixel alien, navy baggy cargo trousers with buttoned side pockets and a stacked hem, white shell-toe sneakers with black stripes and heel tab, red backpack with badge and green charm, wristwatch. |
+| Nur | 1.48 m. Lashed anime eyes and softer brows. Pink hijab framing the face and covering the neck, with the pink hoodie's hood worn up around it. Hoodie with ribbed hem, kangaroo pocket, drawstrings and bunga raya emblem; light blue cargo trousers; shell-toes with pink stripes; black backpack with flower patch and charm. |
+| Pak Mat | 1.75 m with adult proportions (smaller head, longer torso). Kopiah over greying hair, moustache, cream baju with buttoned placket and long sleeves, kain pelikat in green and blue checks, selipar. |
 
-Faces are transparent original canvas drawings projected onto a curved head surface. Clothes, hair, shoes and bags remain lightweight code-authored geometry; no flat character cutout replaces the articulated models. Hips, knees, ankles, shoulders and elbows animate independently. A separate chest pivot counter-rotates against the hips, and the backpacks sway. Opaque surfaces merge by joint and material; all ink hulls on a joint share one draw pass. The static six-view turnaround is rendered from the same models used in gameplay.
+Every character is authored in metres at standing pose. Hips, knees, ankles, chest, head, shoulders, elbows and backpack are bones. All opaque parts merge into **one skinned mesh** with rigid weights and vertex colours, plus **one skinned ink hull** whose line weight is constant in screen pixels. Face drawings, chest motifs, flowers and the sarong pattern stay as small textured meshes on their bones. Characters use a lighter cel ramp than the town, so faces and clothes read as clean sunlit colour blocks.
+
+The gait is measured in leg lengths and blends with actual travel speed. A walk keeps one foot on the ground. A run adds a flight phase, longer strides, high knees, 90° elbow pumping and a forward lean. Arms swing against the same-side leg. Standing keeps the legs nearly straight.
+
+## Camera
+
+The chase camera sits 4.4 m behind the player, about 2 m above the ground (0.2 rad pitch over a 1.15 m look point), with a 58° vertical lens. The player stands just below the centre with the horizon in the upper third. While moving, the camera swings in behind the direction of travel. It swings gently when turning and not at all when the player runs back toward the lens, and a recent swipe pauses the follow. A ray to the lens pulls the camera in front of walls and roofs instead of passing through them. Sun shadows are centred on the street ahead. In conversations the NPC turns to face the player and the camera moves to an over-the-shoulder two-shot above the dialogue panel. The title screen keeps its overhead view.
 
 ## Environment
 
@@ -20,13 +26,13 @@ Three-step cel lighting replaces smooth plastic shading. Batched ink lines descr
 
 ## Controls and scope
 
-Landscape-only gameplay, the 144 px joystick (128 px on short screens), walking at 7.2 units/second, running at 11, default camera distance 8 (6–20 zoom range), swipe orbit/tilt, pinch zoom and camera occlusion remain. Ink fades along with blocking buildings to keep the player visible. Optional original sound and existing local save data remain supported.
+Landscape-only gameplay, the 144 px joystick (128 px on short screens), walking at 7.2 m/s, running at 11 m/s, swipe look/tilt, pinch zoom (3–12 m) and camera occlusion fading remain. Ink fades along with blocking buildings to keep the player visible. Optional original sound and existing local save data remain supported.
 
 The chapter remains Amir's home → Nur → Warung Pak Mat → congkak → free exploration. This visual update does not add interiors or new chapters. Drawings represent the reference's main features; expression changes, talking-face animation and film-quality effects are outside this implementation.
 
 See [VALIDATION.md](VALIDATION.md) and the actual model/gameplay screenshots. Browser emulation cannot establish physical-phone frame rate or native orientation-lock behavior.
 
-## Proportion and walking update
+## Proportion and walking update (v0.5.0, superseded by the v0.7.0 characters above)
 
 World coordinates represent metres. Amir is normalized to 1.50 m, Nur to 1.48 m and Pak Mat to 1.75 m; the earlier children were over 3 m tall. Existing shop floors are roughly 3.65 m each, with 2.4 m shop openings and normal-sized street furniture. The camera is closer to preserve readable avatar framing after this correction.
 

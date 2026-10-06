@@ -21,25 +21,46 @@ export function toon(color, options = {}) {
   material.customProgramCacheKey=()=> 'illustrated-halftone-v1';
   return material;
 }
+export const inkViewport = new T.Vector2(1,1);
+// Character hulls keep a steady on-screen weight: the push along the view
+// normal is measured in CSS pixels, so the close chase camera and distant
+// NPCs both read with the same ink line. Capped in metres for extreme zooms.
 const ink = new T.ShaderMaterial({
-  uniforms: { color: { value: new T.Color(0x242332) }, width: { value: .035 } },
-  vertexShader: `uniform float width; void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*width,1.0);}`,
+  uniforms: { color: { value: new T.Color(0x242332) }, width: { value: 1.6 }, viewport: { value: inkViewport } },
+  vertexShader: `#include <common>
+    #include <skinning_pars_vertex>
+    uniform float width; uniform vec2 viewport;
+    void main(){
+      #include <beginnormal_vertex>
+      #include <skinbase_vertex>
+      #include <skinnormal_vertex>
+      #include <begin_vertex>
+      #include <skinning_vertex>
+      vec4 view=modelViewMatrix*vec4(transformed,1.0);
+      float depth=mix(max(-view.z,.1),1.0,projectionMatrix[3][3]);
+      float perPixel=2.0*depth/(projectionMatrix[1][1]*max(viewport.y,1.0));
+      view.xyz+=normalize(normalMatrix*objectNormal)*min(width*perPixel,.03);
+      gl_Position=projectionMatrix*view;
+    }`,
   fragmentShader: `uniform vec3 color; void main(){gl_FragColor=vec4(color,1.0);
 #include <colorspace_fragment>
 }`,
   side: T.BackSide
 });
+const inks = new Map();
 // Use a hull only for characters. Town ink uses batched crease lines, avoiding
-// a second opaque pass over the entire scene.
-export function outline(mesh) {
-  const hull = new T.Mesh(mesh.geometry, ink);
+// a second opaque pass over the entire scene. Width is in CSS pixels.
+export function outline(mesh, width = 1.6) {
+  if (!inks.has(width)) { const material = ink.clone(); material.uniforms.width.value = width; material.uniforms.viewport.value = inkViewport; inks.set(width, material); }
+  // Skinned characters share their skeleton, so the hull follows every joint.
+  const hull = mesh.isSkinnedMesh ? new T.SkinnedMesh(mesh.geometry, inks.get(width)) : new T.Mesh(mesh.geometry, inks.get(width));
+  if (mesh.isSkinnedMesh) hull.bind(mesh.skeleton, mesh.bindMatrix);
   hull.position.copy(mesh.position); hull.quaternion.copy(mesh.quaternion); hull.scale.copy(mesh.scale);
   hull.userData.ink = true; mesh.parent.add(hull);
 }
 
 // Triangle ribbons give real CSS-pixel thickness on WebGL, where ordinary
 // line widths are usually fixed at one pixel. One draw call per spatial batch.
-export const inkViewport = new T.Vector2(1,1);
 export const inkFog = new T.Vector2(95,230);
 export function comicEdges(edges, width=2.5) {
   const source=edges.attributes.position.array, positions=[], other=[], sides=[];
