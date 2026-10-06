@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-First playable browser prototype, **v0.1.1**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+First playable browser prototype, **v0.2.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -8,7 +8,9 @@ Leave Amir's timber house → meet Nur → walk through the pekan → talk to Pa
 
 The compact town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original, simplified geometry inspired by the agreed references, not exact recreations.
 
-- Elevated, following 3D camera with rotation and zoom.
+- Landscape-only gameplay, with fullscreen/orientation locking where the browser supports it and a portrait gate otherwise.
+- Closer following 3D camera with drag/swipe orbit, vertical tilt, pinch and wheel zoom.
+- Textured ground and timber, verandah details, curved palm fronds, foliage, improved lighting and focused shadows.
 - Walking, running, obstacle collision and river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.
 - Phone joystick and action buttons; desktop keyboard support.
@@ -24,8 +26,8 @@ The compact town includes Melaka-inspired timber homes, Ipoh-inspired shophouses
 | Move | WASD / arrows | Drag joystick |
 | Run | Hold Shift | Hold Run while moving |
 | Talk | E | Talk button when close |
-| Rotate camera | Q / R | Curved arrow buttons |
-| Zoom | Mouse wheel / pause settings | Pause settings |
+| Rotate / tilt camera | Drag on the world (Q / R also rotate) | Swipe on the world |
+| Zoom | Mouse wheel / pause settings | Pinch / pause settings |
 | Map | M / Map button | Map button |
 | Pause / close menu | Escape / pause button | Pause / close buttons |
 
@@ -48,6 +50,8 @@ npm run build
 `dist/` contains the complete static game with local Three.js modules. Serve it using `node scripts/dev.mjs --dist`, or deploy that folder to a static host. Opening `index.html` directly through `file://` does not support the module imports.
 
 GitHub Actions runs tests and builds a downloadable `retro-malaysia-playable` artifact. The repository also contains the pinned browser runtime in `vendor/` and `.nojekyll`, so GitHub Pages can serve `main` directly without an npm build. The manual Pages workflow can alternatively publish `dist/` when Pages is configured to use GitHub Actions.
+
+Playing in portrait pauses movement and congkak animation behind a rotate prompt. The initial camera distance is 14 world units, adjustable from 12 to 28; the previous initial distance was 27.
 
 ## Congkak practice rules
 

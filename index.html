@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#204d45">
   <meta name="description" content="Explore a nostalgic Malaysian town in 2001. Meet Amir and Nur, visit the warung, and learn congkak.">
   <title>Retro Malaysia · A kampung story</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=0.2.0">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
 <body>
@@ -15,15 +15,16 @@
     <div id="loading"><span class="loading-dot"></span>Finding our way home…</div>
     <div id="hud" hidden>
       <header class="topbar">
-        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v0.1.1</small></div></div>
+        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v0.2.0</small></div></div>
         <div class="top-actions"><span class="day-chip">☀ <span id="day-label">Sabtu · 2001</span></span><button id="map-button" class="icon-button" aria-label="Open town map">Map <kbd>M</kbd></button><button id="pause-button" class="icon-button" aria-label="Pause and settings">Ⅱ</button></div>
       </header>
       <aside class="quest-card"><span class="eyebrow">CHAPTER 01 · BALIK KAMPUNG</span><h2 id="quest-title">A familiar face</h2><p id="quest-description">Find Nur outside your house.</p><div class="quest-footer"><span id="quest-step">01 / 03</span><span id="quest-distance"></span></div><div class="quest-track"><i id="quest-progress"></i></div></aside>
       <div class="location"><span class="eyebrow">YOU ARE IN</span><strong id="location-name">Kampung Seri Kenangan</strong></div>
       <div class="minimap-wrap"><canvas id="minimap" width="180" height="180" aria-label="Town minimap"></canvas><span>PEKAN SERI KENANGAN</span></div>
       <div id="interaction" hidden><button id="interact-button"><kbd>E</kbd> <span id="interact-label">Talk</span></button></div>
-      <div id="desktop-hint">W A S D <span>walk</span> · Shift <span>run</span> · E <span>talk</span> · Q / R <span>camera</span></div>
-      <div id="touch-controls"><div id="joystick" aria-label="Movement joystick"><div id="joystick-knob"></div></div><div class="touch-actions"><button id="camera-left" aria-label="Rotate camera left">↶</button><button id="camera-right" aria-label="Rotate camera right">↷</button><button id="run-button" aria-label="Hold to run">Run</button></div></div>
+      <div id="desktop-hint">W A S D <span>walk</span> · Shift <span>run</span> · E <span>talk</span> · drag <span>camera</span></div>
+      <div id="touch-controls"><div id="joystick" aria-label="Movement joystick"><div id="joystick-knob"></div></div><div class="touch-actions"><button id="run-button" aria-label="Hold to run">Run</button></div></div>
+      <div id="touch-hint">Swipe to look · pinch to zoom</div>
       <div id="toast" role="status" hidden></div>
     </div>
     <section id="start-screen" class="screen-overlay">
@@ -34,8 +35,9 @@
     </section>
     <section id="dialogue-panel" class="dialogue-panel" aria-label="Conversation" hidden><span id="speaker" class="eyebrow"></span><p id="dialogue-text"></p><button id="dialogue-next" class="primary">Continue →</button></section>
     <section id="map-panel" class="modal-backdrop" hidden><div class="modal map-modal"><div class="modal-heading"><div><span class="eyebrow">A PLACE TO CALL HOME</span><h2>Pekan Seri Kenangan</h2></div><button class="close" id="map-close" aria-label="Close map">×</button></div><canvas id="town-map" width="680" height="550" aria-label="Zoned map of the town"></canvas><p class="map-legend"><span>● You</span><span>◆ Current destination</span><span>● Familiar faces</span></p><p class="muted">Walk between the kampung, terrace neighbourhood and old town. The first story takes you to Warung Pak Mat.</p></div></section>
-    <section id="pause-panel" class="modal-backdrop" hidden><div class="modal pause-modal"><span class="eyebrow">TAKE YOUR TIME</span><h2>The kampung can wait.</h2><p>Your journey saves on this device as you play.</p><label class="setting">Camera distance<input id="zoom" type="range" min="19" max="38" value="27"></label><label class="setting">Town ambience<input id="sound" type="checkbox"></label><div id="save-status" class="muted"></div><button id="resume-button" class="primary">Back to the afternoon →</button><button id="home-button" class="secondary">Title screen</button></div></section>
+    <section id="pause-panel" class="modal-backdrop" hidden><div class="modal pause-modal"><span class="eyebrow">TAKE YOUR TIME</span><h2>The kampung can wait.</h2><p>Your journey saves on this device as you play.</p><label class="setting">Camera distance<input id="zoom" type="range" min="12" max="28" value="14"></label><label class="setting">Town ambience<input id="sound" type="checkbox"></label><div id="save-status" class="muted"></div><button id="resume-button" class="primary">Back to the afternoon →</button><button id="home-button" class="secondary">Title screen</button></div></section>
     <section id="board-panel" class="modal-backdrop" hidden><div class="modal board-modal"><div class="modal-heading"><div><span class="eyebrow">WARUNG PAK MAT · FIRST CHALLENGE</span><h2>Jom main congkak.</h2></div><button id="board-close" class="close" aria-label="Leave congkak">×</button></div><p id="board-status" role="status"></p><div class="players"><span id="opponent-name">Pak Mat</span><span id="board-player-name">Amir</span></div><div id="congkak-board" class="congkak-board" aria-label="Congkak board"></div><div id="sowing-status" class="sowing-status" aria-live="polite"></div><details><summary>How to play this practice round</summary><p>Choose one of your seven houses on the bottom row. Sow shells counterclockwise, one per house, including your own store and skipping Pak Mat's store. If the last shell lands in a house with shells, pick them all up and keep sowing. Finish in your store for another turn. Finish in an empty house on your side to capture the opposite shells, if any. When one row is empty, the remaining shells go to their owner's store.</p><p>This is a turn-based introductory variant with seven shells per house. Regional and simultaneous-start rules vary.</p></details><button id="board-return" class="primary" hidden>Back to the kampung →</button></div></section>
+    <section id="orientation-panel" class="orientation-panel" hidden aria-label="Rotate your device to play"><div><div class="rotate-symbol" aria-hidden="true">↻</div><span class="eyebrow">BEST PLAYED SIDEWAYS</span><h2>Turn your phone.<br>The kampung is waiting.</h2><p>Gameplay stays in landscape. Your progress is kept while you rotate.</p><button id="landscape-button" class="primary">Enter landscape fullscreen →</button></div></section>
     <section id="error-panel" class="modal-backdrop" hidden><div class="modal"><h2>The town couldn't load.</h2><p id="error-text"></p><button onclick="location.reload()" class="primary">Try again</button></div></section>
   </main>
   <script src="./src/boot.js?v=0.1.1"></script>

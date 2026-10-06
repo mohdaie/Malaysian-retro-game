@@ -1,7 +1,8 @@
 import * as T from 'three';
-import { makeWorld, places } from './world.js';
+import { makeWorld, places } from './world.js?v=0.2.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.2.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = makeWorld($('world')); } catch (error) {
@@ -11,8 +12,12 @@ try { world = makeWorld($('world')); } catch (error) {
 }
 const { player, camera, renderer, scene } = world;
 const state = { name: 'Amir', friend: 'Nur', quest: 0, completed: false };
-let mode = 'title', yaw = .55, distance = 27, elapsed = 0, lastSave = 0, nearby = null;
+let mode = 'title', yaw = .55, distance = CAMERA_DEFAULT, elapsed = 0, lastSave = 0, nearby = null;
 let dialogue = [], dialogueDone = null, joystick = { x: 0, y: 0 }, running = false, board = null, boardBusy = false, boardToken = 0;
+let cameraTilt = .64;
+const viewPointers = new Map();
+let pinchDistance = null;
+let orientationBlocked = needsLandscape(innerWidth, innerHeight);
 const keys = new Set();
 let storage;
 try { storage = localStorage; } catch { storage = null; }
@@ -33,7 +38,14 @@ function refreshQuest() {
   world.npcs[0].marker.visible = state.quest === 0;
   world.npcs[1].marker.visible = state.quest > 0;
 }
-function clearControls() { keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
+function clearControls() { viewPointers.clear(); pinchDistance = null; keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
+function syncOrientation() {
+  orientationBlocked = needsLandscape(innerWidth, innerHeight);
+  $('orientation-panel').hidden = !orientationBlocked;
+  if (orientationBlocked) clearControls();
+  world.resize();
+}
+$('landscape-button').onclick = () => enterLandscape($('game'));
 function setMode(next) {
   mode = next; clearControls(); $('interaction').hidden = true;
   $('touch-controls').style.visibility = next === 'explore' ? '' : 'hidden';
@@ -55,13 +67,13 @@ function begin(value = null) {
   setMode('explore'); refreshQuest(); persist();
   toast(value ? `Selamat kembali, ${state.name}.` : `Welcome home, ${state.name}. Find ${state.friend} by the lane.`);
 }
-$('start-form').addEventListener('submit', event => { event.preventDefault(); if(saved) {
+$('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
   showDialogue('A new afternoon', ['Starting a new story replaces the saved journey on this device.'], () => begin());
   $('dialogue-next').textContent = 'Start new story →';
   const cancel=document.createElement('button');cancel.textContent='Keep my saved journey';cancel.className='secondary';cancel.id='cancel-new';
   cancel.onclick=()=>{cancel.remove();$('dialogue-panel').hidden=true;setMode('title');};$('dialogue-panel').append(cancel);
 } else begin(); });
-$('continue-button').onclick = () => begin(saved);
+$('continue-button').onclick = () => { if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); begin(saved); };
 function toast(text) { $('toast').textContent=text; $('toast').hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4200); }
 function showDialogue(speaker, lines, done) {
   setMode('dialogue');dialogue=[...lines];dialogueDone=done;$('speaker').textContent=speaker;$('dialogue-panel').hidden=false;advanceDialogue();
@@ -72,6 +84,7 @@ function advanceDialogue() {
 }
 $('dialogue-next').onclick=advanceDialogue;
 function interact() {
+  if(orientationBlocked)return;
   if(mode==='dialogue'){advanceDialogue();return;}
   if(mode!=='explore'||!nearby)return;
   const p=player.group.position;
@@ -95,6 +108,7 @@ $('resume-button').onclick=()=>{$('pause-panel').hidden=true;setMode('explore');
 $('home-button').onclick=()=>{persist();$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
+  if(orientationBlocked)return;
   if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape'].includes(event.key))return;
   const key=event.key.toLowerCase();
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(key))event.preventDefault();
@@ -107,16 +121,42 @@ window.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur',clearControls);
 document.addEventListener('visibilitychange',()=>{clearControls();if(document.hidden&&mode!=='title')persist();});
 window.addEventListener('pagehide',()=>{if(mode!=='title')persist();});
-window.addEventListener('resize',world.resize);
-$('world').addEventListener('wheel',event=>{if(mode==='explore'){distance=T.MathUtils.clamp(distance+event.deltaY*.02,19,38);$('zoom').value=distance;}},{passive:true});
+window.addEventListener('resize',syncOrientation);
+window.addEventListener('orientationchange',syncOrientation);
+document.addEventListener('fullscreenchange',syncOrientation);
+$('world').addEventListener('wheel',event=>{if(mode==='explore'&&!orientationBlocked){distance=T.MathUtils.clamp(distance+event.deltaY*.02,CAMERA_NEAR,CAMERA_FAR);$('zoom').value=distance;}},{passive:true});
 let stickPointer=null;
-$('joystick').addEventListener('pointerdown',event=>{if(mode!=='explore'||stickPointer!==null)return;stickPointer=event.pointerId;event.currentTarget.setPointerCapture(event.pointerId);moveStick(event);});
+$('joystick').addEventListener('pointerdown',event=>{if(mode!=='explore'||orientationBlocked||stickPointer!==null)return;stickPointer=event.pointerId;event.currentTarget.setPointerCapture(event.pointerId);moveStick(event);});
 function moveStick(event){if(event.pointerId!==stickPointer)return;const r=$('joystick').getBoundingClientRect();let x=event.clientX-r.left-r.width/2,y=event.clientY-r.top-r.height/2;const l=Math.hypot(x,y);if(l>34){x=x/l*34;y=y/l*34;}joystick={x:x/34,y:y/34};$('joystick-knob').style.transform=`translate(${x}px,${y}px)`;}
 $('joystick').addEventListener('pointermove',moveStick);
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('joystick').addEventListener(type,event=>{if(event.pointerId===stickPointer){stickPointer=null;joystick={x:0,y:0};$('joystick-knob').style.transform='';}});
 $('run-button').onpointerdown=event=>{running=true;event.currentTarget.setPointerCapture(event.pointerId);};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('run-button').addEventListener(type,()=>running=false);
-$('camera-left').onclick=()=>yaw-=Math.PI/4;$('camera-right').onclick=()=>yaw+=Math.PI/4;
+// Orbit with a drag/swipe on the world, independent of the left joystick.
+$('world').addEventListener('pointerdown', event => {
+  if (mode !== 'explore' || orientationBlocked) return;
+  viewPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  event.currentTarget.setPointerCapture(event.pointerId);
+  if (viewPointers.size === 2) {
+    const [a,b] = [...viewPointers.values()]; pinchDistance = Math.hypot(a.x-b.x,a.y-b.y);
+  }
+});
+$('world').addEventListener('pointermove', event => {
+  const previous = viewPointers.get(event.pointerId);
+  if (!previous || mode !== 'explore' || orientationBlocked) return;
+  viewPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (viewPointers.size === 2) {
+    const [a,b] = [...viewPointers.values()]; const current = Math.hypot(a.x-b.x,a.y-b.y);
+    if (pinchDistance) distance = T.MathUtils.clamp(distance * pinchDistance / Math.max(1,current), CAMERA_NEAR, CAMERA_FAR);
+    pinchDistance = current; $('zoom').value = distance;
+  } else if (viewPointers.size === 1) {
+    yaw -= (event.clientX-previous.x) * .007;
+    cameraTilt = T.MathUtils.clamp(cameraTilt + (event.clientY-previous.y)*.003, .4, 1.05);
+  }
+});
+for (const type of ['pointerup','pointercancel','lostpointercapture']) $('world').addEventListener(type, event => {
+  viewPointers.delete(event.pointerId); pinchDistance = null;
+});
 // Optional, user-enabled ambience is synthesized locally with Web Audio.
 let audioCtx=null, ambienceGain=null;
 $('sound').onchange=async()=>{
@@ -154,14 +194,14 @@ async function runMove(index){
   boardBusy=true;const result=playMove(board,index);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stride=Math.max(1,Math.ceil(result.frames.length/45));
-  for(let i=0;i<result.frames.length;i+=stride){if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);$('sowing-status').textContent=f.hand?`${mover===0?state.name:'Pak Mat'} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
+  for(let i=0;i<result.frames.length;i+=stride){while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);$('sowing-status').textContent=f.hand?`${mover===0?state.name:'Pak Mat'} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
   if(token!==boardToken)return;
   board=result.state;boardBusy=false;renderBoard();
   $('sowing-status').textContent=result.capture?`Captured ${result.capture} shells!`:result.extraTurn?'Last shell in the store — another turn.':'Turn complete.';
   if(board.over){
     $('board-return').hidden=false;
     if(state.quest===2){state.quest=3;state.completed=true;refreshQuest();persist();toast('Chapter complete · Your first kampung memory collected.');}
-  }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
+  }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
 function zoneAt(x,z){if(x<-30)return 'Kampung Melati';if(z<-28&&x<15)return 'SK Seri Kenangan';if(z<-24&&x>30)return 'Masjid Seri Kenangan';if(x>40&&z<15)return 'Stesen bas';if(x>20&&z>15)return 'Tapak pasar malam';if(z>36)return 'Taman Kenangan';return 'Pekan lama';}
 function drawMap(canvas,full=false){
@@ -181,7 +221,7 @@ const clock=new T.Clock();
 const cameraTarget=new T.Vector3(),look=new T.Vector3();
 function tick(){
   const dt=Math.min(clock.getDelta(),.04);elapsed+=dt;
-  if(mode==='explore'){
+  if(mode==='explore'&&!orientationBlocked){
     if(keys.has('q'))yaw-=dt*1.3;if(keys.has('r'))yaw+=dt*1.3;
     let sx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+joystick.x;
     let sy=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)-joystick.y;
@@ -204,14 +244,15 @@ function tick(){
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=3.2+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
-  else{look.set(p.x,1,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*.86,p.z+Math.cos(yaw)*distance);}
+  else{look.set(p.x,1,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*cameraTilt,p.z+Math.cos(yaw)*distance);}
+  world.updateSun(look.x,look.z);
   camera.position.lerp(cameraTarget,1-Math.exp(-dt*4));camera.lookAt(look);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
-  if (!['board','map','pause'].includes(mode)) renderer.render(scene,camera);
+  if (!orientationBlocked && !['board','map','pause'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }
-camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();$('loading').hidden=true;tick();
+camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={snapshot:()=>({mode,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null})};
+window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null})};
