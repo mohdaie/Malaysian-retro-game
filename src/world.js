@@ -1,9 +1,11 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.9.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=0.9.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=0.9.0';
-import { createWalkability } from './collision.js?v=0.9.0';
-import { createLandmarks } from './landmarks.js?v=0.9.0';
+import { createCharacter } from './characters.js?v=0.10.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=0.10.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=0.10.0';
+import { createWalkability } from './collision.js?v=0.10.0';
+import { createLandmarks } from './landmarks.js?v=0.10.0';
+import { createTrees } from './trees.js?v=0.10.0';
+import { plantTown, TRUNK } from './planting.js?v=0.10.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -211,34 +213,6 @@ export async function makeWorld(canvas) {
     collider(x+w*.345,z+d/2+2.16,w*.31,.11,'rail');
     for(const side of [-1,1])roundCollider(x+side*w/2,z+d/2+2.1,.09,'post');
   }
-  function palm(x,z,size=1) {
-    roundCollider(x,z,.34*size);
-    cylinder(.18*size,.34*size,7*size,0x88734f,x,3.5*size,z);
-    for(let i=1;i<7;i++)cylinder(.22*size,.22*size,.06,0x6d6044,x,i*size,z);
-    const leafMaterialKey='palm-leaf';
-    if(!mats.has(leafMaterialKey))mats.set(leafMaterialKey,toon(0x4e7946,{side:T.DoubleSide}));
-    for(let a=0;a<8;a++) {
-      const vertices=[],indices=[];
-      function point(t){return [t*4.7*size,(Math.sin(t*Math.PI)*.8-t*t*1.5)*size,0];}
-      for(let i=0;i<13;i++)for(const side of [-1,1]){
-        const t=.08+i*.068,[px,py]=point(t),reach=Math.sin(t*Math.PI)*.95*size,idx=vertices.length/3;
-        vertices.push(px,py,0,px+.6*size,py-.15*size,side*reach,px+.16*size,py+.025*size,side*.025*size);indices.push(idx,idx+1,idx+2);
-      }
-      const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();
-      const leaf=mesh(g,mats.get(leafMaterialKey),x,7*size,z);leaf.rotation.y=a*Math.PI/4;
-      const curve=new T.CatmullRomCurve3([0,.25,.5,.75,1].map(t=>new T.Vector3(...point(t))));const spine=mesh(new T.TubeGeometry(curve,8,.025*size,3,false),0x6d8b4e,x,7*size,z);spine.rotation.y=leaf.rotation.y;
-    }
-    for(let a=0;a<3;a++)mesh(new T.SphereGeometry(.25*size,8,6),0x726044,x+.35*Math.sin(a*2),6.75*size,z+.35*Math.cos(a*2));
-  }
-  function tree(x,z,size=1,detail=2) {
-    roundCollider(x,z,.32*size);
-    cylinder(.16*size,.32*size,3.6*size,0x755d42,x,1.8*size,z,undefined,9);
-    for(let i=0;i<9;i++){
-      const angle=i*2.399,spread=i<3?.7:1.65,px=x+Math.sin(angle)*spread*size,pz=z+Math.cos(angle)*spread*size,py=(3.7+Math.sin(i*1.8)*.55)*size;
-      if(i<4)beam([x,2.5*size,z],[px,py,pz],.095*size,0x755d42);
-      const crown=mesh(new T.IcosahedronGeometry((i<3?1.45:1.17)*size,detail),[0x588352,0x6a9257,0x749b5c][i%3],px,py,pz);crown.scale.y=.83;crown.userData.cameraOccluder=true;
-    }
-  }
   function fence(x,z,length,axis='x') {
     collider(x+(axis==='x'?length/2:0),z+(axis==='z'?length/2:0),axis==='x'?length:.12,axis==='z'?length:.12,'fence');
     for(let i=0;i<=length;i+=1.6){const px=x+(axis==='x'?i:0),pz=z+(axis==='z'?i:0);box(.12,1.3,.12,0xd4c6a0,px,.65,pz);}
@@ -247,6 +221,12 @@ export async function makeWorld(canvas) {
   // Ground and the fixed river with its two bridges. Roads come from the plan.
   box(180,.6,160,textured(0xffffff,'grass'),0,-.35,0);
   for(const road of ROADS)box(road.w,.08,road.d,textured(0xffffff,road.kind),road.x,.015,road.z);
+  // Asphalt roads that reach the town edge carry on out of town, through a
+  // gap in the trees, to where the lawn meets the painted horizon.
+  for(const r of ROADS)if(r.kind==='asphalt'){
+    const alongX=r.w>=r.d,lo=alongX?r.x-r.w/2:r.z-r.d/2,hi=alongX?r.x+r.w/2:r.z+r.d/2,[min,max,edge]=alongX?[TOWN_BOUNDS.minX,TOWN_BOUNDS.maxX,90]:[TOWN_BOUNDS.minZ,TOWN_BOUNDS.maxZ,80];
+    for(const [from,to] of [lo<=min+1?[-edge,lo]:null,hi>=max-1?[hi,edge]:null].filter(Boolean)){const mid=(from+to)/2,len=to-from;box(alongX?len:r.w,.08,alongX?r.d:len,textured(0xffffff,'asphalt'),alongX?mid:r.x,.015,alongX?r.z:mid);}
+  }
   box(8,.1,155,0x71958a,RIVER.x,-.02,0);
   box(1,.1,155,0x799365,RIVER.x-5,.015,0);box(1,.1,155,0x799365,RIVER.x+5,.015,0);
   for(const {x,z,d} of BRIDGES) {box(13,.2,d,0xbcac8b,x,.13,z);for(const s of [-1,1]){collider(x,z+s*(d/2-.3),13,.15,'bridge-rail');box(13,.13,.15,0xe4d0a6,x,1.1,z+s*(d/2-.3));for(let px=x-6;px<=x+6;px+=2)box(.15,1.15,.15,0xe4d0a6,px,.6,z+s*(d/2-.3));}}
@@ -440,24 +420,23 @@ export async function makeWorld(canvas) {
       for(const side of [-1,1]){
         const clockFace=sign('12 : 00',0,4.35,side*.72,1.25);if(side<0)clockFace.rotation.y=Math.PI;
         for(const zz of [-6,6]){const xx=side*8;box(3,.18,.75,0xb5986a,xx,.62,zz);box(3,.5,.14,0x755d42,xx,.95,zz+.4);collider(xx,zz,3,.9,'bench');}
-        tree(side*12,-6,.8,1);tree(side*12,7,.85,1);
         box(5,.24,3.5,0x71967a,side*6,.17,10);collider(side*6,10,5,3.5,'planter');
       }
     },
     sedan(u){landmarks.sedan(0,0,0,new T.Color(u.color||'#d4322c').getHex());collider(0,0,1.9,4.5,'vehicle');},
     passerby(){}
   };
-  // A decor tree is planted only where it fits after the plan is edited.
-  function fits(unit,x,z,r){
-    if(!inside(x,z,-r)||inRiver(x,r+1)||inRoad(x,z,r+.5))return false;
-    return !UNITS.some(other=>other!==unit&&other.solids.some(([sx,sz,sw,sd])=>Math.abs(x-sx)<sw/2+r+.5&&Math.abs(z-sz)<sd/2+r+.5));
-  }
   const patchPositions=[];
   for(const unit of UNITS)place(unit,u=>{
     builders[u.kind](u);
-    for(const [type,lx,lz,size] of u.def.decor||[]){const [x,z]=toWorld(u,lx,lz);if(fits(u,x,z,.4*size))(type==='palm'?palm:tree)(lx,lz,size);}
     for(const [lx,lz,size] of u.def.patches||[])patchPositions.push([...toWorld(u,lx,lz),size]);
   });
+  // Trees: planting.js works out the yards, lawns, river banks and the dense
+  // orchard and rubber rows past the town edge; trees.js models each species.
+  const trees=createTrees({parent:()=>root,toon,register:(key,material)=>{mats.set(key,material);return material;}});
+  for(const p of plantTown({units:UNITS,roads:ROADS,bridges:BRIDGES,buildings:BUILDINGS,spots:SPOTS,passersby:PASSERSBY})){
+    trees.plant(p);if(p.ring==='in')roundCollider(p.x,p.z,TRUNK[p.kind]*p.size,'trunk');
+  }
   // Open ground: away from roads, the river, every unit and every obstacle.
   const solidNear=(x,z,pad)=>colliders.some(c=>c.r!==undefined?Math.hypot(x-c.x,z-c.z)<c.r+pad:Math.abs(x-c.x)<c.w/2+pad&&Math.abs(z-c.z)<c.d/2+pad);
   const unitNear=(x,z,pad)=>UNITS.some(u=>{const [ax,az,aw,ad]=u.area;return Math.abs(x-ax)<aw/2+pad&&Math.abs(z-az)<ad/2+pad;});
@@ -470,11 +449,6 @@ export async function makeWorld(canvas) {
       if(!inside(x,z,-1)||inRiver(x,2)||onBridge(x,z,3)||inRoad(x,z,1.5)||unitNear(x,z,1)||solidNear(x,z,1))continue;
       roundCollider(x,z,.13,'lamp');cylinder(.09,.13,5.2,0x7b8270,x,2.6,z);box(alongX?.4:.9,.18,alongX?.9:.4,0xd9c596,alongX?x:x-.4,5.1,alongX?z-.4:z);
     }
-  }
-  for(let i=0;i<42;i++){
-    const x=-76+((i*37)%152),z=-66+((i*29)%130);
-    if(inRiver(x,2)||roadNear(x,z,6,2)||unitNear(x,z,3)||solidNear(x,z,4))continue;
-    if(i%3===0)palm(x,z,.75+(i%4)*.15);else tree(x,z,.65+(i%3)*.2,1);
   }
   for(let i=0;i<9;i++){const hill=mesh(new T.IcosahedronGeometry(15+(i%3)*4,1),i%2?0x839d75:0x9bb087,-120+i*30,-3,-135-Math.sin(i)*8);hill.scale.y=.7;}
   // Verges, grass tufts and painted ground cover soften the open lawn.
@@ -506,8 +480,9 @@ export async function makeWorld(canvas) {
   const inkCells=new Map();
   scene.traverse(object => {
     if (object.isMesh && staticMaterials.has(object.material)) {
-      const pos=new T.Vector3().setFromMatrixPosition(object.matrixWorld),key=object.material.uuid+':'+Math.floor(pos.x/24)+':'+Math.floor(pos.z/24)+':'+(object.userData.cameraOccluder?'solid':'detail');
-      if (!buckets.has(key)) buckets.set(key,{material:object.material,geometries:[],occluder:object.userData.cameraOccluder===true});
+      // Trees are 'land': never culled with distance, unlike small props.
+      const pos=new T.Vector3().setFromMatrixPosition(object.matrixWorld),kind=object.userData.cameraOccluder?'solid':object.userData.landscape?'land':'detail',key=object.material.uuid+':'+Math.floor(pos.x/24)+':'+Math.floor(pos.z/24)+':'+kind;
+      if (!buckets.has(key)) buckets.set(key,{material:object.material,geometries:[],occluder:kind==='solid',landscape:kind==='land'});
       const geometry = object.geometry.index ? object.geometry.toNonIndexed() : object.geometry.clone();
       geometry.applyMatrix4(object.matrixWorld);
       buckets.get(key).geometries.push(geometry);
@@ -515,7 +490,7 @@ export async function makeWorld(canvas) {
     }
   });
   for (const object of staticMeshes) { object.removeFromParent(); object.geometry.dispose(); }
-  for (const {material,geometries,occluder} of buckets.values()) {
+  for (const {material,geometries,occluder,landscape} of buckets.values()) {
     const count = geometries.reduce((sum, geometry) => sum + geometry.attributes.position.count, 0);
     const positions = new Float32Array(count * 3), normals = new Float32Array(count * 3), uvs = new Float32Array(count * 2), colors = material.vertexColors ? new Float32Array(count * 3).fill(1) : null;
     let offset = 0;
@@ -535,8 +510,8 @@ export async function makeWorld(canvas) {
     merged.computeBoundingSphere();
     const object = new T.Mesh(merged, occluder?material.clone():material);if(occluder){object.material.onBeforeCompile=material.onBeforeCompile;object.material.customProgramCacheKey=material.customProgramCacheKey;}if(occluder){object.material.transparent=true;cameraOccluders.push(object);}
     object.castShadow = true; object.receiveShadow = true; scene.add(object);
-    if(!occluder&&![textures.grass,textures.dirt,textures.asphalt].includes(material.map))distantDetails.push(object);
-    if(![textures.grass,textures.dirt,textures.asphalt].includes(material.map)){
+    if(!occluder&&!landscape&&![textures.grass,textures.dirt,textures.asphalt].includes(material.map))distantDetails.push(object);
+    if(![textures.grass,textures.dirt,textures.asphalt].includes(material.map)&&!material.userData.noInk){
       const edges=new T.EdgesGeometry(merged,38);
       if(occluder){const lines=comicEdges(edges);scene.add(lines);object.userData.ink=lines;}
       else{const center=merged.boundingSphere.center,key=Math.floor(center.x/24)+':'+Math.floor(center.z/24);if(!inkCells.has(key))inkCells.set(key,[]);inkCells.get(key).push(edges);}
@@ -589,5 +564,5 @@ export async function makeWorld(canvas) {
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,wind:trees.wind,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

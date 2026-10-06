@@ -1,11 +1,11 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=0.9.0';
+import { makeWorld } from './world.js?v=0.10.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.9.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.9.0';
-import { createSoundscape } from './soundscape.js?v=0.9.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=0.9.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.10.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.10.0';
+import { createSoundscape } from './soundscape.js?v=0.10.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=0.10.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -311,6 +311,7 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
   } else player.animate(dt,0);
   for(const character of world.characters)if(character!==player){character.group.visible=mode==='title'||character.group.position.distanceTo(player.group.position)<55;if(character.group.visible)character.animate(dt,0);}
+  world.wind.value=elapsed;
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
