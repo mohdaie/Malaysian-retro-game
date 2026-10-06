@@ -1,10 +1,11 @@
 import * as T from 'three';
-import { makeWorld, places } from './world.js?v=0.5.0';
+import { makeWorld } from './world.js?v=0.6.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.5.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.5.0';
-import { createSoundscape } from './soundscape.js?v=0.5.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.6.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.6.0';
+import { createSoundscape } from './soundscape.js?v=0.6.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, districtAt } from './town-layout.js?v=0.6.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -39,6 +40,9 @@ function refreshQuest() {
   $('quest-progress').style.width = `${(state.quest+1)/4*100}%`;
   world.npcs[0].marker.visible = state.quest === 0;
   world.npcs[1].marker.visible = state.quest > 0;
+  const home=document.querySelector('[data-building="1"]'),friendHome=document.querySelector('[data-building="11"]');
+  if(home)home.textContent=`Rumah ${state.name}`;
+  if(friendHome)friendHome.textContent=`Rumah ${state.friend}`;
 }
 function clearControls() { if(stickPointer!==null){const stick=$('joystick');if(stick.hasPointerCapture(stickPointer))stick.releasePointerCapture(stickPointer);stickPointer=null;} viewPointers.clear(); pinchDistance = null; keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
 function syncOrientation() {
@@ -210,19 +214,43 @@ async function runMove(index){
     if(state.quest===2){state.quest=3;state.completed=true;refreshQuest();persist();toast('Chapter complete · Your first kampung memory collected.');}
   }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
-function zoneAt(x,z){if(x<-30)return 'Kampung Melati';if(z<-28&&x<30)return 'SK Seri Kenangan';if(z<-24&&x>30)return 'Masjid Seri Kenangan';if(x>40&&z<15)return 'Stesen bas';if(x>20&&z>15)return 'Tapak pasar malam';if(z>36)return 'Taman Kenangan';return 'Pekan lama';}
+function zoneAt(x,z){return districtAt(x,z).name;}
+const directory=document.getElementById('town-directory');
+for(const zone of DISTRICTS){
+  const details=document.createElement('details'), summary=document.createElement('summary'), list=document.createElement('ol');
+  summary.textContent=`${zone.name} · ${BUILDINGS.filter(b=>b.zone===zone.id).length}`;
+  summary.style.color=zone.color;details.append(summary);
+  for(const b of BUILDINGS.filter(b=>b.zone===zone.id)){const item=document.createElement('li');item.value=b.id;item.dataset.building=b.id;item.textContent=b.name;list.append(item);}
+  details.append(list);directory.append(details);
+}
 function drawMap(canvas,full=false){
   const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   const px=x=>(x+82)/164*w,pz=z=>(z+70)/140*h;
   ctx.fillStyle='#dce3c2';ctx.fillRect(0,0,w,h);
   const rect=(x,z,rw,rh,color)=>{ctx.fillStyle=color;ctx.fillRect(px(x-rw/2),pz(z-rh/2),rw/164*w,rh/140*h);};
-  rect(-65,0,9,140,'#82aaa2');rect(0,4,164,8,'#c0baa4');rect(-25,0,7,132,'#c0baa4');rect(62,0,7,100,'#c0baa4');rect(-42,24,5,62,'#c9b990');rect(4,37,90,4,'#c9b990');rect(-65,4,14,8,'#c7bd9e');rect(-65,37,14,8,'#c7bd9e');
-  world.colliders.forEach(c=>rect(c.x,c.z,c.w,c.d,'#9a8f72'));
-  const q=quests[state.quest];if(state.quest<3){ctx.fillStyle='#c89b42';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
+  for(const zone of DISTRICTS)rect(zone.x,zone.z,zone.w,zone.d,zone.color+'20');
+  rect(-65,0,9,140,'#82aaa2');
+  for(const r of ROADS)rect(r.x,r.z,r.w,r.d,r.kind==='asphalt'?'#a5aaa3':'#c9b990');
+  for(const b of BRIDGES)rect(b.x,b.z,b.w,b.d,'#c7bd9e');
+  for(const c of world.colliders){
+    if(c.kind==='npc')continue;
+    if(c.r!==undefined){ctx.fillStyle='#66745b';ctx.beginPath();ctx.arc(px(c.x),pz(c.z),Math.max(1,c.r*w/164),0,Math.PI*2);ctx.fill();}
+    else rect(c.x,c.z,c.w,c.d,c.kind==='fence'?'#384b3f':'#827765');
+  }
+  for(const b of BUILDINGS){const color=DISTRICTS.find(d=>d.id===b.zone).color;rect(b.x,b.z,b.w,b.d,color+'95');}
+  if(full){
+    for(const b of BUILDINGS){
+      const x=px(b.x),y=pz(b.z);ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fillStyle='#fff8e6';ctx.fill();ctx.strokeStyle='#272630';ctx.lineWidth=1.4;ctx.stroke();
+      ctx.fillStyle='#272630';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(b.id),x,y+.5);
+    }
+    const labels=[[-46,-62,'KAMPUNG'],[18,-63,'KOMUNITI'],[8,-12,'PEKAN'],[48,-2,'TERES'],[20,65,'PASAR / BAS']];
+    ctx.font='bold 11px system-ui';for(const [x,z,label]of labels){ctx.strokeStyle='#fff8e6';ctx.lineWidth=4;ctx.strokeText(label,px(x),pz(z));ctx.fillStyle='#272630';ctx.fillText(label,px(x),pz(z));}
+  }
+  const q=quests[state.quest];if(state.quest<3){ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
   world.npcs.forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});
   const p=player.group.position;ctx.fillStyle='#b15c33';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),full?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#b15c33';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
-  if(full){ctx.textAlign='center';ctx.font='bold 13px system-ui';places.forEach(place=>{let name=place.name;if(place.type==='home')name=`${state.name}'s house`;if(place.type==='terrace')name=`${state.friend}'s terrace`;const x=px(place.x),y=pz(place.z)+(place.type==='school'?22:19);ctx.strokeStyle='#eff1d9';ctx.lineWidth=4;ctx.strokeText(name,x,y);ctx.fillStyle='#485b47';ctx.fillText(name,x,y);});ctx.font='11px system-ui';ctx.fillStyle='#486457';ctx.fillText('N ↑',w-25,25);}
+  if(full){ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#272630';ctx.fillText('N ↑',w-25,20);}
 }
 const clock=new T.Clock();
 const cameraTarget=new T.Vector3(),look=new T.Vector3();
@@ -266,4 +294,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'illustrated-low-poly',avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

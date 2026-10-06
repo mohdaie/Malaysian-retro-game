@@ -19,3 +19,7 @@
 .pit{background:radial-gradient(ellipse at 50% 62%,#846142,#3f2817);box-shadow:inset 0 4px 9px #251407a8,inset 0 -2px 2px #e6b77b}
 .pit small{color:#d3c5a4;opacity:.85}.pit.own:not(:disabled):hover,.pit.active{background:radial-gradient(ellipse at 50% 62%,#79936a,#3c5237)}
 @media(pointer:coarse) and (orientation:landscape){.location{left:max(185px,calc(env(safe-area-inset-left) + 165px));bottom:20px}}
+
+/* Comic ink follows the scene into the controls without changing their layout. */
+.icon-button,.day-chip,.quest-card,.minimap-wrap,.primary,.secondary,#interact-button,.modal,.name-fields input{border:2px solid #2a2832;box-shadow:3px 3px 0 #2a2832;}
+.town-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px;text-align:left}.town-directory details{border:1.5px solid #2a2832;border-radius:8px;padding:8px;background:#fff9eb}.town-directory summary{cursor:pointer;font-size:11px;font-weight:800}.town-directory ol{padding-left:24px;font-size:11px;line-height:1.8;margin:8px 0 0}#town-map{border:2px solid #2a2832;}

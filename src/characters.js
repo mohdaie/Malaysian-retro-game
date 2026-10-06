@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=0.5.0';
-import { gaitPose, solveLeg } from './locomotion.js?v=0.5.0';
+import { toon, outline } from './illustration.js?v=0.6.0';
+import { gaitPose, solveLeg } from './locomotion.js?v=0.6.0';
 
 const palette = new Map(), decals = new Map();
 function material(color) { if (!palette.has(color)) palette.set(color, toon(color)); return palette.get(color); }
