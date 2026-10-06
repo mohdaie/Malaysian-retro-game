@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>Seri Kenangan Map Editor</title>
+<style>
+/* Layout: a site plan filling the screen, with a details rail (bottom sheet on phones). */
+:root{
+  --paper:#f9f4e5;--panel:#fffaf0;--ink:#243f37;--muted:#6f786c;--line:#d9d2bd;--green:#244e43;--gold:#c99c4e;
+  --lawn:#dfe5c6;--edge:#c9d1ad;--river:#82aaa2;--asphalt:#a7aca5;--dirt:#d3c398;--floor:#efe8d2;
+  --error:#b8433a;--warn:#b77b16;--ok:#3f7a55;--select:#1b2f29;
+  --display:Georgia,"Times New Roman",serif;--body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#16241f;--panel:#1c2d27;--ink:#ece4cd;--muted:#a9b29f;--line:#33463e;--green:#8fc3a9;--gold:#d9b06a;
+  --lawn:#2b3b2e;--edge:#3d4f3b;--river:#3f6a66;--asphalt:#5e6560;--dirt:#77694a;--floor:#3a3a2c;
+  --error:#ef7d6f;--warn:#e7ad4e;--ok:#7fc99a;--select:#fff3d2;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#16241f;--panel:#1c2d27;--ink:#ece4cd;--muted:#a9b29f;--line:#33463e;--green:#8fc3a9;--gold:#d9b06a;
+  --lawn:#2b3b2e;--edge:#3d4f3b;--river:#3f6a66;--asphalt:#5e6560;--dirt:#77694a;--floor:#3a3a2c;
+  --error:#ef7d6f;--warn:#e7ad4e;--ok:#7fc99a;--select:#fff3d2;color-scheme:dark}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font:14px/1.45 var(--body);margin:0;overflow:hidden}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:7px 11px;min-height:36px}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--green);border-color:var(--green);color:var(--paper);font-weight:650}
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr)}
+.bar{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{font:33px/1 var(--display);letter-spacing:-7px;padding-right:7px;color:var(--green)}
+.mark span{color:#b56b3b}
+.brand strong{font:20px/1.1 var(--display);font-weight:400;display:block}
+.brand small{display:block;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:650;border:1px solid currentColor}
+.pill.ok{color:var(--ok)}.pill.error{color:var(--error)}.pill.warn{color:var(--warn)}
+.bar .spacer{flex:1}
+.bar .actions{display:flex;gap:8px}
+.stage{grid-row:2;grid-column:1;position:relative;min-height:0;background:var(--edge)}
+#map{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.mapbar{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
+.mapbar button{width:38px;padding:0;font-weight:700}
+.floater{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px 6px 5px 12px;box-shadow:0 4px 18px rgba(20,40,30,.14);max-width:calc(100% - 80px)}
+.floater span{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.scale{position:absolute;left:12px;bottom:12px;font:11px var(--mono);color:var(--ink);background:color-mix(in srgb,var(--panel) 85%,transparent);padding:4px 8px;border-radius:7px}
+.panel{grid-row:2;grid-column:2;border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
+.panel h2{font:19px/1.2 var(--display);font-weight:400;margin:0 0 6px}
+.eyebrow{font-size:10px;font-weight:750;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.panel p{margin:0;color:var(--muted)}
+.rows{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:8px 0;font-variant-numeric:tabular-nums}
+.rows dt{color:var(--muted)}.rows dd{margin:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.field input,.field select{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 8px;width:96px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checks li button{width:100%;text-align:left;display:flex;gap:8px;align-items:flex-start;border-radius:10px;padding:8px 10px}
+.checks .dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px}
+.checks .error .dot{background:var(--error)}.checks .warning .dot{background:var(--warn)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px 10px;font-size:12px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.saveinfo{font-size:12px;color:var(--muted)}
+.confirm{display:flex;flex-direction:column;gap:8px;border:1px solid var(--error);border-radius:10px;padding:10px}
+a{color:var(--green)}
+svg text{font-family:var(--body);pointer-events:none}
+.unit{cursor:grab}.unit.dragging{cursor:grabbing}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(260px,58%) minmax(0,1fr)}
+  .stage{grid-row:2;grid-column:1}
+  .panel{grid-row:3;grid-column:1;border-left:0;border-top:1px solid var(--line)}
+  .bar{padding:8px 16px}
+  .brand strong{font-size:17px}.mark{font-size:26px}
+}
+@media (prefers-reduced-motion:no-preference){.floater{transition:opacity .15s}}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><span class="mark" aria-hidden="true">R<span>M</span></span><div><strong>Pelan Pekan Seri Kenangan</strong><small>Retro Malaysia · map editor</small></div></div>
+    <span id="status" class="pill ok" role="status">Checking…</span>
+    <span class="spacer"></span>
+    <div class="actions">
+      <button id="undo" aria-label="Undo" title="Undo (Ctrl+Z)">Undo</button>
+      <button id="redo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <button id="save" class="primary">Save layout</button>
+    </div>
+  </header>
+  <main class="stage">
+    <svg id="map" aria-label="Town plan. Drag buildings and roads to move them."></svg>
+    <div class="floater" id="floater" hidden>
+      <span id="floater-name"></span>
+      <button id="turn-left" aria-label="Turn left 90 degrees" title="Turn left (Shift+R)">↺</button>
+      <button id="turn-right" aria-label="Turn right 90 degrees" title="Turn right (R)">↻</button>
+      <button id="deselect" aria-label="Deselect" title="Deselect (Esc)">✕</button>
+    </div>
+    <div class="mapbar">
+      <button id="zoom-in" aria-label="Zoom in">+</button>
+      <button id="zoom-out" aria-label="Zoom out">−</button>
+      <button id="zoom-fit" aria-label="Fit the whole town" title="Fit">⤢</button>
+    </div>
+    <div class="scale" id="scale">10 m</div>
+  </main>
+  <aside class="panel">
+    <section id="selection"></section>
+    <section>
+      <p class="eyebrow">Layout checks</p>
+      <ul class="checks" id="checks"></ul>
+    </section>
+    <section>
+      <p class="eyebrow">Save and try it</p>
+      <div class="tools">
+        <button id="save-2" class="primary">Save layout</button>
+        <button id="copy">Copy layout</button>
+        <a id="preview" class="preview" href="#" target="_blank" rel="noopener">Preview in game ↗</a>
+      </div>
+      <p class="saveinfo" id="saveinfo" style="margin-top:8px"></p>
+      <textarea id="copybox" hidden readonly style="width:100%;height:90px;margin-top:8px;font:11px var(--mono)"></textarea>
+    </section>
+    <section>
+      <p class="eyebrow">Districts</p>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section id="reset-zone">
+      <button id="reset">Reset to the game's layout</button>
+    </section>
+  </aside>
+</div>
+
+<script type="module">
+const TOWN_PLAN = {"version":1,"units":[{"id":"home","kind":"home","x":-44,"z":54.5,"rot":2,"places":[1]},{"id":"house-2","kind":"house","x":-15,"z":-55.5,"rot":3,"places":[2]},{"id":"house-3","kind":"house","x":30,"z":-49.5,"rot":3,"places":[3]},{"id":"house-4","kind":"house","x":-34,"z":24.5,"rot":3,"places":[4]},{"id":"house-5","kind":"house","x":11.5,"z":-56.5,"rot":1,"places":[5]},{"id":"house-6","kind":"house","x":-53,"z":13.5,"rot":1,"places":[6]},{"id":"house-7","kind":"house","x":-3,"z":-53.5,"rot":1,"places":[7]},{"id":"house-8","kind":"house","x":-53,"z":28,"rot":1,"places":[8]},{"id":"wakaf","kind":"wakaf","x":-36,"z":13.5,"rot":0,"places":[9]},{"id":"pondok","kind":"pondok","x":-76,"z":-17,"rot":0,"places":[10]},{"id":"terrace-11","kind":"terrace","x":31,"z":15.5,"rot":2,"places":[11]},{"id":"terrace-12","kind":"terrace","x":40,"z":15.5,"rot":2,"places":[12]},{"id":"terrace-13","kind":"terrace","x":48,"z":16,"rot":2,"places":[13]},{"id":"terrace-14","kind":"terrace","x":55,"z":16,"rot":2,"places":[14]},{"id":"terrace-15","kind":"terrace","x":34,"z":31,"rot":0,"places":[15]},{"id":"terrace-16","kind":"terrace","x":41,"z":31,"rot":0,"places":[16]},{"id":"terrace-17","kind":"terrace","x":48,"z":31,"rot":0,"places":[17]},{"id":"terrace-18","kind":"terrace","x":55,"z":31,"rot":0,"places":[18]},{"id":"minishop","kind":"minishop","x":52,"z":-15,"rot":0,"places":[19]},{"id":"nursery","kind":"nursery","x":15.5,"z":46,"rot":2,"places":[20]},{"id":"warung","kind":"warung","x":-13,"z":29.5,"rot":0,"places":[21]},{"id":"shops","kind":"shophouses","x":12.5,"z":-17.5,"rot":0,"places":[22,23,24,25,26,27,28]},{"id":"school","kind":"school","x":-44,"z":-36,"rot":1,"places":[29]},{"id":"canteen","kind":"canteen","x":-15,"z":-35.5,"rot":3,"places":[30]},{"id":"mosque","kind":"mosque","x":55,"z":-53.5,"rot":1,"places":[31]},{"id":"hall","kind":"hall","x":30.5,"z":-35,"rot":0,"places":[32]},{"id":"library","kind":"library","x":48.5,"z":-35,"rot":0,"places":[33]},{"id":"court","kind":"court","x":-11.5,"z":8,"rot":2,"places":[34]},{"id":"bus-stop","kind":"busstop","x":10.5,"z":-35.5,"rot":0,"places":[35]},{"id":"workshop","kind":"workshop","x":33,"z":56,"rot":0,"places":[36]},{"id":"petrol","kind":"petrol","x":54.5,"z":52,"rot":2,"places":[37]},{"id":"market","kind":"market","x":-8,"z":50,"rot":2,"places":[38]},{"id":"square","kind":"square","x":7,"z":22,"rot":0,"places":[]},{"id":"bus","kind":"bus","x":-0.5,"z":-35.5,"rot":0,"places":[]},{"id":"car-red","kind":"sedan","x":-35,"z":6,"rot":1,"places":[],"color":"#d4322c"},{"id":"car-white","kind":"sedan","x":35.5,"z":3,"rot":3,"places":[],"color":"#eeece4"},{"id":"walker-pak","kind":"passerby","x":37,"z":9,"rot":0,"places":[],"who":"pak"},{"id":"walker-nur","kind":"passerby","x":0,"z":3,"rot":0,"places":[],"who":"nur"}],"roads":[{"id":"main-road","kind":"asphalt","x":-0.5,"z":-3,"w":155.5,"d":8},{"id":"west-road","kind":"asphalt","x":-25,"z":0,"w":7,"d":132},{"id":"east-road","kind":"asphalt","x":68.5,"z":1.5,"w":7,"d":132},{"id":"kampung-lane","kind":"dirt","x":-43,"z":15.5,"w":4,"d":47},{"id":"kampung-path-south","kind":"dirt","x":21.75,"z":-26.5,"w":86.5,"d":3},{"id":"market-lane","kind":"dirt","x":5.5,"z":36.5,"w":118.5,"d":4},{"id":"pekan-lane","kind":"dirt","x":11.5,"z":63,"w":69,"d":4},{"id":"warung-path","kind":"dirt","x":24,"z":19,"w":4,"d":35.5},{"id":"terrace-path-front","kind":"dirt","x":45.5,"z":9,"w":39,"d":3},{"id":"terrace-path-back","kind":"dirt","x":45.75,"z":24,"w":41.5,"d":3},{"id":"market-path","kind":"dirt","x":24,"z":49,"w":4,"d":30},{"id":"bus-path","kind":"dirt","x":43.75,"z":43,"w":41.5,"d":3},{"id":"petrol-path","kind":"dirt","x":44,"z":52,"w":3,"d":27},{"id":"hall-path","kind":"dirt","x":20.5,"z":-44.5,"w":4,"d":38.5},{"id":"square-path-south","kind":"dirt","x":7,"z":7,"w":3,"d":13},{"id":"square-path-north","kind":"dirt","x":7,"z":32.75,"w":3,"d":4.5}]};
+
+// Town plan geometry shared by the game, the tests and the map editor. The
+// editable positions live in town-plan.js; everything here is derived from
+// them. Rects are [x, z, w, d] in metres, centred, in a unit's own frame.
+const TOWN_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
+// The river is fixed terrain. Every road that crosses it gets a bridge as
+// wide as the road; the old footbridge stays where no road crosses nearby.
+const RIVER = { x: -65, w: 10.5 };
+const FOOTBRIDGES = [{ x: -65, z: 37, w: 13, d: 8 }];
+const BANKS = [RIVER.x - 5, RIVER.x + 5];
+function bridgesFor(roads) {
+  const decks = roads.filter(r => r.w >= r.d && r.x - r.w / 2 <= BANKS[0] && r.x + r.w / 2 >= BANKS[1]).map(r => ({ x: RIVER.x, z: r.z, w: 13, d: r.d, road: r.id }));
+  return [...decks, ...FOOTBRIDGES.filter(f => !decks.some(b => Math.abs(b.z - f.z) < (b.d + f.d) / 2 + 2))];
+}
+const DISTRICT_INFO = [
+  { id: 'kampung', name: 'Kampung Melati', short: 'KAMPUNG', color: '#c87537' },
+  { id: 'terrace', name: 'Taman Kenangan', short: 'TERES', color: '#9271b4' },
+  { id: 'pekan', name: 'Pekan lama', short: 'PEKAN', color: '#b95670' },
+  { id: 'community', name: 'Sekolah & komuniti', short: 'KOMUNITI', color: '#4a9270' },
+  { id: 'transport', name: 'Pasar & stesen bas', short: 'PASAR / BAS', color: '#4b8db4' }
+];
+// The 38 numbered places: [name, district, kind].
+const PLACES = {
+  1: ['Rumah Amir', 'kampung', 'home'], 2: ['Rumah Tok', 'kampung', 'house'], 3: ['Rumah Pak Mail', 'kampung', 'house'],
+  4: ['Rumah Mak Cik Salmah', 'kampung', 'house'], 5: ['Rumah Jiran A', 'kampung', 'house'], 6: ['Rumah Jiran B', 'kampung', 'house'],
+  7: ['Rumah Jiran C', 'kampung', 'house'], 8: ['Rumah Warisan Kosong', 'kampung', 'house'], 9: ['Wakaf Kebun', 'kampung', 'pavilion'],
+  10: ['Pondok Tepi Sungai', 'kampung', 'pavilion'], 11: ['Rumah Nur', 'terrace', 'terrace'], 12: ['Rumah Kak Lina', 'terrace', 'terrace'],
+  13: ['Rumah Pak Abu', 'terrace', 'terrace'], 14: ['Rumah Jiran D', 'terrace', 'terrace'], 15: ['Rumah Jiran E', 'terrace', 'terrace'],
+  16: ['Rumah Jiran F', 'terrace', 'terrace'], 17: ['Rumah Jiran G', 'terrace', 'terrace'], 18: ['Rumah Jiran H', 'terrace', 'terrace'],
+  19: ['Kedai Sudut Mini', 'terrace', 'mini-shop'], 20: ['Tadika Kenangan', 'terrace', 'nursery'], 21: ['Warung Pak Mat', 'pekan', 'warung'],
+  22: ['Kedai Runcit 99', 'pekan', 'shop'], 23: ['Kedai Gunting', 'pekan', 'shop'], 24: ['Kedai Basikal', 'pekan', 'shop'],
+  25: ['Alat Tulis & Game', 'pekan', 'shop'], 26: ['Kedai Jahit', 'pekan', 'shop'], 27: ['Klinik & Farmasi', 'pekan', 'shop'],
+  28: ['Kedai Roti & Kuih', 'pekan', 'shop'], 29: ['SK Seri Kenangan', 'community', 'school'], 30: ['Kantin Sekolah', 'community', 'canteen'],
+  31: ['Masjid Seri Kenangan', 'community', 'mosque'], 32: ['Balai Raya', 'community', 'hall'], 33: ['Perpustakaan Mini', 'community', 'library'],
+  34: ['Gelanggang Serbaguna', 'community', 'court'], 35: ['Perhentian Bas', 'transport', 'station'], 36: ['Bengkel & Tayar', 'transport', 'workshop'],
+  37: ['Kiosk Petrol Retro', 'transport', 'petrol'], 38: ['Tapak Pasar Malam', 'transport', 'market']
+};
+
+// Stilt houses: the verandah and four stair treads are raised floors.
+function stiltHouse(w, d, extra = {}) {
+  const stairs = [0, 1, 2, 3].map(i => [0, d / 2 + 3.1 - i * .6, 2, .65, .25 + i * .28]);
+  return { label: 'Kampung house', places: [[0, 0, w, d]], solids: [[0, 1.725, w + 1, d + 3.45]], floors: [[0, d / 2 + 1.125, w + 1, 2.25, 1.525], ...stairs], ...extra };
+}
+const pavilion = (label, w, d) => ({ label, places: [[0, 0, w, d]], solids: [[0, .25, w + 1, d + 1.5]], floors: [[0, 0, w, d, .17]] });
+const civic = (label, w, d, extra = {}) => ({ label, places: [[0, 0, w, d]], floors: [], ...extra, solids: [[0, 0, w + 1, d + 1], ...(extra.solids || [])] });
+
+// Each kind lists, in its own frame: `places` (one rect per numbered place),
+// `solids` (what may not overlap another unit), `floors` ([x,z,w,d,height]
+// raised walkable ground), `spots` ([x,z,heading] for people) and `decor`
+// (trees planted only where they fit). `open` kinds may sit on roads.
+const KINDS = {
+  home: stiltHouse(10, 8, {
+    label: 'Rumah Amir and yard',
+    solids: [[0, 1.725, 11, 11.45], [0, -7, 20, .12], [-10, 3.5, .12, 21], [-6.5, 14, 7, .12], [7.5, 14, 5, .12], [-7.5, -9, 7.5, .4], [9, 6, 2.4, .55]],
+    spots: { spawn: [0, 11, 0], nur: [8, 9, -.7] },
+    decor: [['palm', -14, 4, 1.1], ['palm', 10, -5, .9], ['tree', -13, 18, .8]],
+    patches: [[-6, 8, 6], [-5, 12, 5], [6, 3, 4], [8, 13, 5], [-7, -4, 5]]
+  }),
+  house: stiltHouse(9, 7),
+  wakaf: pavilion('Wakaf (garden shelter)', 7, 6),
+  pondok: pavilion('Riverside hut', 4, 5),
+  canteen: pavilion('School canteen', 10, 6),
+  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]] },
+  minishop: civic('Corner shop', 9, 8),
+  nursery: civic('Nursery', 9, 10, { solids: [[-.9, 7, 3, .6]] }),
+  hall: civic('Village hall', 13, 8),
+  library: civic('Library', 12, 8),
+  petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]] }),
+  warung: { label: 'Warung Pak Mat', places: [[0, 0, 11, 6.5]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { pak: [0, 6, .2] } },
+  shophouses: {
+    label: 'Shophouse terrace (7 shops)',
+    places: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 0, 8.8, 10]),
+    solids: [[0, 1.48, 63, 12.95], [-7, 9, 2.4, .55]], floors: [[0, 6.475, 63, 2.95, .26]]
+  },
+  school: {
+    label: 'School compound', yard: true,
+    places: [[-5.5, -4, 38, 10]],
+    solids: [[-5.5, -4, 38, 10], [19.5, -3, 9, 20], [0, -15, 51, .12], [-25.5, 0, .12, 30], [25.5, 0, .12, 30], [-17.5, 15, 16, .12], [12, 15, 27, .12], [-21.5, 14.3, .3, .3], [10.5, 14.3, .3, .3]],
+    floors: [[-5.5, 2.5, 40, 3.5, .23], [-5.5, 10, 31, 9, .13]]
+  },
+  court: { label: 'Sports court', open: true, places: [[0, 0, 14, 8]], solids: [[0, 0, 14, 8]], floors: [[0, 0, 14, 8, .18]] },
+  mosque: {
+    label: 'Mosque and plaza', places: [[0, 0, 12, 11]], solids: [[0, .2, 16.7, 15.1]], floors: [[0, 0, 19, 19, .21]],
+    decor: [['palm', -15, -5, 1], ['palm', 18, -4, 1], ['tree', 19, 8, .8]]
+  },
+  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]] },
+  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['palm', 6, 8, .9]] },
+  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], solids: [[0, 0, 22, 17]], floors: [], decor: [['palm', -12, -11, .85], ['tree', 11, 12, .7]] },
+  square: {
+    label: 'Town square', open: true, places: [],
+    solids: [[0, 0, 22, 17], [-12, -6, .6, .6], [12, -6, .6, .6], [-12, 7, .6, .6], [12, 7, .6, .6]], floors: [[0, 0, 22, 17, .09]]
+  },
+  bus: { label: 'Town bus', vehicle: true, places: [], solids: [[0, 0, 4.3, 10.3]], floors: [] },
+  sedan: { label: 'Family car', vehicle: true, places: [], solids: [[0, 0, 1.9, 4.5]], floors: [] },
+  passerby: { label: 'Passer-by', vehicle: true, places: [], solids: [[0, 0, .6, .6]], floors: [] }
+};
+
+// Quarter-turn transforms match Three.js rotation.y = rot·π/2:
+// world = (x + lx·cos + lz·sin, z − lx·sin + lz·cos).
+const COS = [1, 0, -1, 0], SIN = [0, 1, 0, -1];
+const turn = rot => ((Math.round(rot || 0) % 4) + 4) % 4;
+function toWorld(unit, lx, lz) {
+  const r = turn(unit.rot);
+  return [unit.x + lx * COS[r] + lz * SIN[r], unit.z - lx * SIN[r] + lz * COS[r]];
+}
+function rectToWorld(unit, [x, z, w, d]) {
+  const [wx, wz] = toWorld(unit, x, z);
+  return turn(unit.rot) % 2 ? [wx, wz, d, w] : [wx, wz, w, d];
+}
+const headingToWorld = (unit, heading) => heading + turn(unit.rot) * Math.PI / 2;
+function bounds(rects) {
+  if (!rects.length) return null;
+  let a = Infinity, b = -Infinity, c = Infinity, e = -Infinity;
+  for (const [x, z, w, d] of rects) { a = Math.min(a, x - w / 2); b = Math.max(b, x + w / 2); c = Math.min(c, z - d / 2); e = Math.max(e, z + d / 2); }
+  return [(a + b) / 2, (c + e) / 2, b - a, e - c];
+}
+const overlap = (p, q, gap = 0) => Math.abs(p[0] - q[0]) < (p[2] + q[2]) / 2 + gap && Math.abs(p[1] - q[1]) < (p[3] + q[3]) / 2 + gap;
+const EPS = -.02;
+
+// Everything the game needs, derived from one plan.
+function derive(plan) {
+  const units = plan.units.map(u => {
+    const def = KINDS[u.kind];
+    if (!def) throw new Error(`Unknown kind ${u.kind} for ${u.id}`);
+    const solids = def.solids.map(r => rectToWorld(u, r));
+    const floors = (def.floors || []).map(f => [...rectToWorld(u, f), f[4]]);
+    const places = (u.places || []).map((id, i) => ({ id, rect: rectToWorld(u, def.places[i]) }));
+    return { ...u, rot: turn(u.rot), def, solids, floors, places, area: bounds([...solids, ...floors.map(f => f.slice(0, 4)), ...places.map(p => p.rect)]) };
+  });
+  const buildings = units.flatMap(u => u.places.map(({ id, rect: [x, z, w, d] }) => {
+    const [name, zone, kind] = PLACES[id];
+    return { id, name, zone, kind, x, z, w, d, unit: u.id };
+  })).sort((a, b) => a.id - b.id);
+  const districts = DISTRICT_INFO.map(info => {
+    const box = bounds(buildings.filter(b => b.zone === info.id).map(b => [b.x, b.z, b.w, b.d])) || [0, 0, 0, 0];
+    return { ...info, x: box[0], z: box[1], w: box[2] + 8, d: box[3] + 8 };
+  });
+  const spot = (kind, name) => {
+    const u = units.find(unit => unit.kind === kind), s = u && u.def.spots?.[name];
+    if (!s) return null;
+    const [x, z] = toWorld(u, s[0], s[1]); return { x, z, heading: headingToWorld(u, s[2]) };
+  };
+  return {
+    units, buildings, districts, roads: plan.roads.map(r => ({ ...r })), bridges: bridgesFor(plan.roads),
+    floors: units.flatMap(u => u.floors),
+    spots: { spawn: spot('home', 'spawn'), nur: spot('home', 'nur'), pak: spot('warung', 'pak') },
+    passersby: units.filter(u => u.kind === 'passerby').map(u => ({ x: u.x, z: u.z, heading: headingToWorld(u, 0), who: u.who || 'nur' }))
+  };
+}
+
+// Layout checks shared by the tests and the editor. Errors make a plan
+// unusable; warnings are worth a look but still play.
+function planProblems(plan) {
+  const problems = [], town = derive(plan);
+  const river = [RIVER.x, 0, RIVER.w, 400];
+  const label = u => `${u.def.label}${u.places.length ? ' (' + u.places.map(p => p.id).join(', ') + ')' : ''}`;
+  for (const u of town.units) {
+    const edges = u.def.vehicle ? u.solids : u.places.map(p => p.rect);
+    for (const [x, z, w, d] of edges.length ? edges : u.solids)
+      if (x - w / 2 < TOWN_BOUNDS.minX - .01 || x + w / 2 > TOWN_BOUNDS.maxX + .01 || z - d / 2 < TOWN_BOUNDS.minZ - .01 || z + d / 2 > TOWN_BOUNDS.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
+    if (u.solids.some(r => overlap(r, river, EPS))) problems.push({ level: 'error', units: [u.id], text: `${label(u)} is in the river.` });
+  }
+  for (let i = 0; i < town.units.length; i++) for (let j = i + 1; j < town.units.length; j++) {
+    const a = town.units[i], b = town.units[j];
+    if (!overlap(a.area, b.area, 0)) continue;
+    if (a.solids.some(p => b.solids.some(q => overlap(p, q, EPS)))) problems.push({ level: 'error', units: [a.id, b.id], text: `${label(a)} overlaps ${label(b)}.` });
+  }
+  for (const u of town.units) {
+    if (u.def.vehicle || u.def.open) continue;
+    for (const r of town.roads) if (r.kind === 'asphalt' && u.places.some(p => overlap(p.rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
+  }
+  for (const r of town.roads) {
+    const inRiver = r.x - r.w / 2 < BANKS[1] && r.x + r.w / 2 > BANKS[0];
+    if (inRiver && !town.bridges.some(b => b.road === r.id)) problems.push({ level: 'warning', units: [], roads: [r.id], text: `The ${r.id.replace(/-/g, ' ')} runs into the river. Roads get a bridge only when they cross it from bank to bank, east–west.` });
+  }
+  const spawn = town.spots.spawn;
+  if (!spawn || !town.spots.nur || !town.spots.pak) problems.push({ level: 'error', units: [], text: 'Rumah Amir and Warung Pak Mat must both be on the map.' });
+  if (new Set(town.buildings.map(b => b.id)).size !== Object.keys(PLACES).length) problems.push({ level: 'error', units: [], text: 'All 38 numbered places must be on the map exactly once.' });
+  return problems;
+}
+
+// The editor's "Preview in game" link carries a plan in the URL hash
+// (#plan=<base64url JSON>). It applies to that visit only, and only when the
+// plan has no layout errors; otherwise the saved town plan is used.
+function planFromHash(hash) {
+  try {
+    const match = (hash || '').match(/[#&]plan=([A-Za-z0-9_-]+)/);
+    if (!match) return null;
+    const plan = JSON.parse(atob(match[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return planProblems(plan).some(p => p.level === 'error') ? null : plan;
+  } catch { return null; }
+}
+const PLAN = planFromHash(globalThis.location?.hash) || TOWN_PLAN;
+const PREVIEW = PLAN !== TOWN_PLAN;
+const TOWN = derive(PLAN);
+const UNITS = TOWN.units;
+const BUILDINGS = TOWN.buildings;
+const DISTRICTS = TOWN.districts;
+const ROADS = TOWN.roads;
+const BRIDGES = TOWN.bridges;
+const FLOORS = TOWN.floors;
+const SPOTS = TOWN.spots;
+const PASSERSBY = TOWN.passersby;
+// Name the district of the nearest numbered place, so labels follow edits.
+function districtAt(x, z) {
+  let best = BUILDINGS[0], distance = Infinity;
+  for (const b of BUILDINGS) {
+    const dx = Math.max(0, Math.abs(x - b.x) - b.w / 2), dz = Math.max(0, Math.abs(z - b.z) - b.d / 2), dist = dx * dx + dz * dz;
+    if (dist < distance) { distance = dist; best = b; }
+  }
+  return DISTRICTS.find(d => d.id === best.zone);
+}
+
+
+// ---------------------------------------------------------------- state
+const GAME_URL = 'https://mohdaie.github.io/Malaysian-retro-game/';
+const BASE = JSON.stringify(TOWN_PLAN);
+const SNAP = .5;
+const $ = id => document.getElementById(id);
+const svg = $('map'), NS = 'http://www.w3.org/2000/svg';
+let plan = JSON.parse(BASE), town = derive(plan), problems = planProblems(plan);
+let selected = null; // {type: 'unit'|'road', id}
+let history = [BASE], step = 0, dirty = false, savedAt = null, db = null;
+const view = { cx: -1, cz: 0, scale: 4 };
+const zoneColor = Object.fromEntries(DISTRICT_INFO.map(d => [d.id, d.color]));
+const kindColor = { square: '#7f9c6a', bus: '#557a8c', sedan: '#557a8c', passerby: '#b15c33' };
+const FACING = ['south', 'east', 'north', 'west'];
+const snap = v => Math.round(v / SNAP) * SNAP;
+const unitById = id => plan.units.find(u => u.id === id);
+const roadById = id => plan.roads.find(r => r.id === id);
+// Plan units list place ids; derived units list {id, rect}. Accept both.
+const placeIds = u => u.places.map(p => typeof p === 'object' ? p.id : p);
+const nameOf = u => { const ids = placeIds(u); return ids.length === 1 ? PLACES[ids[0]][0] : ids.length ? KINDS[u.kind].label : (u.kind === 'passerby' ? (u.who === 'pak' ? 'Pak Mat (walking)' : 'Nur (walking)') : KINDS[u.kind].label); };
+const colorOf = u => { const ids = placeIds(u); return ids.length ? zoneColor[PLACES[ids[0]][1]] : kindColor[u.kind] || '#888'; };
+const roadName = r => r.id.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase());
+function readLocal() { try { return JSON.parse(localStorage.getItem('pelan-draft') || 'null'); } catch { return null; } }
+function writeLocal() { try { localStorage.setItem('pelan-draft', JSON.stringify({ plan, editedAt: Date.now() })); } catch { /* storage unavailable */ } }
+
+// ---------------------------------------------------------------- edits
+function commit() {
+  const json = JSON.stringify(plan);
+  if (json === history[step]) return;
+  history = history.slice(0, step + 1); history.push(json); step = history.length - 1;
+  if (history.length > 200) { history.shift(); step--; }
+  dirty = true; writeLocal(); refresh();
+}
+function load(next, { keepHistory = false } = {}) {
+  plan = JSON.parse(JSON.stringify(next));
+  if (!keepHistory) { history = [JSON.stringify(plan)]; step = 0; }
+  if (selected && !(selected.type === 'unit' ? unitById(selected.id) : roadById(selected.id))) selected = null;
+  refresh();
+}
+function undo() { if (step > 0) { step--; load(JSON.parse(history[step]), { keepHistory: true }); dirty = true; writeLocal(); } }
+function redo() { if (step < history.length - 1) { step++; load(JSON.parse(history[step]), { keepHistory: true }); dirty = true; writeLocal(); } }
+function turnSelected(dir) {
+  if (!selected) return;
+  if (selected.type === 'unit') { const u = unitById(selected.id); u.rot = ((u.rot || 0) + (dir > 0 ? 3 : 1)) % 4; }
+  else { const r = roadById(selected.id); [r.w, r.d] = [r.d, r.w]; }
+  commit();
+}
+function nudge(dx, dz) {
+  if (!selected) return;
+  const item = selected.type === 'unit' ? unitById(selected.id) : roadById(selected.id);
+  item.x = snap(item.x + dx); item.z = snap(item.z + dz); commit();
+}
+
+// ---------------------------------------------------------------- drawing
+function el(name, attrs = {}, parent) {
+  const node = document.createElementNS(NS, name);
+  for (const [k, v] of Object.entries(attrs)) if (v !== undefined && v !== null) node.setAttribute(k, v);
+  if (parent) parent.append(node); return node;
+}
+const rect = ([x, z, w, d], attrs, parent) => el('rect', { x: x - w / 2, y: z - d / 2, width: w, height: d, ...attrs }, parent);
+function fitView() {
+  const { width, height } = svg.getBoundingClientRect();
+  view.scale = Math.max(.5, Math.min(width / 168, height / 146)); view.cx = -1; view.cz = 0; applyView();
+}
+function applyView() {
+  const { width, height } = svg.getBoundingClientRect();
+  const w = Math.max(1, width) / view.scale, h = Math.max(1, height) / view.scale;
+  svg.setAttribute('viewBox', `${view.cx - w / 2} ${view.cz - h / 2} ${w} ${h}`);
+  const metres = [5, 10, 20, 50].find(m => m * view.scale >= 60) || 50;
+  $('scale').innerHTML = `<span style="display:inline-block;width:${Math.round(metres * view.scale)}px;border-bottom:2px solid currentColor;margin-right:6px"></span>${metres} m`;
+  draw();
+}
+function draw() {
+  svg.textContent = '';
+  const px = 1 / view.scale, css = getComputedStyle(document.documentElement), token = n => css.getPropertyValue(n).trim();
+  const errorUnits = new Set(), warnUnits = new Set(), warnRoads = new Set();
+  for (const p of problems) for (const id of p.units) (p.level === 'error' ? errorUnits : warnUnits).add(id);
+  for (const p of problems) for (const id of p.roads || []) warnRoads.add(id);
+  // Ground, town edge, the fixed river and bridges.
+  rect([-1, 0, 200, 170], { fill: token('--edge') }, svg);
+  const B = TOWN_BOUNDS;
+  rect([(B.minX + B.maxX) / 2, (B.minZ + B.maxZ) / 2, B.maxX - B.minX, B.maxZ - B.minZ], { fill: token('--lawn') }, svg);
+  const grid = el('g', { stroke: token('--ink'), 'stroke-opacity': .07, 'stroke-width': px }, svg);
+  for (let x = Math.ceil(B.minX / 10) * 10; x <= B.maxX; x += 10) el('line', { x1: x, x2: x, y1: B.minZ, y2: B.maxZ }, grid);
+  for (let z = Math.ceil(B.minZ / 10) * 10; z <= B.maxZ; z += 10) el('line', { y1: z, y2: z, x1: B.minX, x2: B.maxX }, grid);
+  rect([RIVER.x, 0, RIVER.w - 2.5, B.maxZ - B.minZ + 8], { fill: token('--river') }, svg);
+  for (const b of town.bridges) rect([b.x, b.z, b.w, b.d], { fill: token('--dirt'), stroke: token('--ink'), 'stroke-opacity': .3, 'stroke-width': px }, svg);
+  // Raised floors and plazas under everything else.
+  for (const u of town.units) for (const f of u.floors) if (f[2] * f[3] > 30) rect(f, { fill: token('--floor'), opacity: .85 }, svg);
+  // Roads: tap to select, drag to move; end handles change the length.
+  for (const r of plan.roads) {
+    const on = selected?.type === 'road' && selected.id === r.id;
+    const node = rect([r.x, r.z, r.w, r.d], { fill: r.kind === 'asphalt' ? token('--asphalt') : token('--dirt'), stroke: on ? token('--select') : warnRoads.has(r.id) ? token('--warn') : 'none', 'stroke-width': on ? 3 * px : 2 * px, 'data-road': r.id, class: 'unit' }, svg);
+    node.append(el('title')); node.firstChild.textContent = roadName(r);
+  }
+  // Units: solids, places with numbers, a front arrow and problem outlines.
+  const labels = [];
+  for (const u of town.units) {
+    const on = selected?.type === 'unit' && selected.id === u.id, color = colorOf(u);
+    const g = el('g', { 'data-unit': u.id, class: 'unit' }, svg);
+    const [ax, az, aw, ad] = u.area, hit = Math.max(aw, ad) < 3 ? 6 * px * 2 : 0;
+    if (hit) rect([ax, az, Math.max(aw, hit), Math.max(ad, hit)], { fill: 'transparent' }, g);
+    for (const s of u.solids) rect(s, { fill: color, 'fill-opacity': u.places.length ? .35 : .7, stroke: color, 'stroke-opacity': .7, 'stroke-width': px }, g);
+    for (const p of u.places) rect(p.rect, { fill: color, 'fill-opacity': .85, stroke: token('--ink'), 'stroke-opacity': .45, 'stroke-width': px }, g);
+    // Front arrow: local +z edge of the unit.
+    const [, , , d0] = u.def.places[0] || u.def.solids[0], tipLocal = (u.def.places[0] || u.def.solids[0])[1] + d0 / 2 + 1.6;
+    const sizeArrow = Math.max(1.1, 7 * px), lx = (u.def.places[0] || u.def.solids[0])[0];
+    const pts = [[lx, tipLocal], [lx - sizeArrow, tipLocal - sizeArrow * 1.2], [lx + sizeArrow, tipLocal - sizeArrow * 1.2]].map(([a, b]) => toWorld(u, a, b).join(',')).join(' ');
+    if (u.kind !== 'passerby') el('polygon', { points: pts, fill: token('--ink'), 'fill-opacity': on ? .9 : .45 }, g);
+    if (errorUnits.has(u.id) || warnUnits.has(u.id)) rect([ax, az, aw + 1, ad + 1], { fill: 'none', stroke: errorUnits.has(u.id) ? token('--error') : token('--warn'), 'stroke-width': 3 * px, 'stroke-dasharray': errorUnits.has(u.id) ? 'none' : `${6 * px} ${4 * px}`, rx: 1 }, g);
+    if (on) rect([ax, az, aw + 2.4, ad + 2.4], { fill: 'none', stroke: token('--select'), 'stroke-width': 2.5 * px, 'stroke-dasharray': `${8 * px} ${5 * px}`, rx: 1.5 }, g);
+    const badge = Math.max(1.8, 9 * px);
+    for (const p of u.places) {
+      el('circle', { cx: p.rect[0], cy: p.rect[1], r: badge, fill: token('--panel'), stroke: token('--ink'), 'stroke-width': px * 1.3 }, g);
+      const t = el('text', { x: p.rect[0], y: p.rect[1], 'font-size': badge * 1.05, 'font-weight': 700, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: token('--ink') }, g); t.textContent = p.id;
+    }
+    if (on || view.scale > 7) labels.push([ax, az - ad / 2 - Math.max(1.2, 6 * px), nameOf(u), on]);
+  }
+  // Names go on top of every unit so neighbours never cover them.
+  for (const [x, z, text, on] of labels.sort((a, b) => a[3] - b[3])) {
+    const t = el('text', { x, y: z, 'font-size': Math.max(1.6, (on ? 13 : 11) * px), 'font-weight': on ? 750 : 650, 'text-anchor': 'middle', fill: token('--ink'), stroke: token('--lawn'), 'stroke-width': 4 * px, 'paint-order': 'stroke' }, svg);
+    t.textContent = text;
+  }
+  // People: Amir's start, Nur and Pak Mat (they move with their buildings).
+  for (const [key, label] of [['spawn', 'Amir'], ['nur', 'Nur'], ['pak', 'Pak Mat']]) {
+    const s = town.spots[key]; if (!s) continue;
+    el('circle', { cx: s.x, cy: s.z, r: Math.max(.8, 4 * px), fill: key === 'spawn' ? '#b15c33' : token('--green'), stroke: token('--panel'), 'stroke-width': 1.5 * px }, svg);
+    if (view.scale > 5) { const t = el('text', { x: s.x + Math.max(1.2, 6 * px), y: s.z, 'font-size': Math.max(1.4, 10 * px), 'dominant-baseline': 'central', fill: token('--ink') }, svg); t.textContent = label; }
+  }
+  // Road end handles for the selected road.
+  if (selected?.type === 'road') {
+    const r = roadById(selected.id); if (r) {
+      const alongX = r.w >= r.d, ends = alongX ? [[r.x - r.w / 2, r.z, -1], [r.x + r.w / 2, r.z, 1]] : [[r.x, r.z - r.d / 2, -1], [r.x, r.z + r.d / 2, 1]];
+      for (const [x, z, side] of ends) el('circle', { cx: x, cy: z, r: Math.max(1, 8 * px), fill: token('--panel'), stroke: token('--select'), 'stroke-width': 2 * px, 'data-handle': side, class: 'unit' }, svg);
+    }
+  }
+}
+// ---------------------------------------------------------------- panel
+function gapTo(u) {
+  const self = town.units.find(x => x.id === u.id); let best = null;
+  for (const other of town.units) {
+    if (other === self || other.def.vehicle) continue;
+    for (const a of self.solids) for (const b of other.solids) {
+      const gx = Math.max(0, Math.abs(a[0] - b[0]) - (a[2] + b[2]) / 2), gz = Math.max(0, Math.abs(a[1] - b[1]) - (a[3] + b[3]) / 2), gap = Math.hypot(gx, gz);
+      if (!best || gap < best.gap) best = { gap, unit: other };
+    }
+  }
+  return best;
+}
+function renderPanel() {
+  const box = $('selection'); box.textContent = '';
+  const add = html => box.insertAdjacentHTML('beforeend', html);
+  if (!selected) {
+    add(`<p class="eyebrow">Move the town</p><h2>Tap a building, car or road</h2><p>Drag to move it. Turn buildings with ↺ ↻ or the R key. Arrow keys nudge by half a metre (Shift: 5 m). The river and town edge stay fixed; a road that crosses the river from bank to bank gets its own bridge.</p>`);
+  } else if (selected.type === 'unit') {
+    const u = unitById(selected.id), gap = gapTo(u);
+    add(`<p class="eyebrow">${KINDS[u.kind].label}</p><h2></h2>`); box.querySelector('h2').textContent = nameOf(u);
+    if (u.places.length > 1) { const p = document.createElement('p'); p.textContent = u.places.map(id => `${id} ${PLACES[id][0]}`).join(' · '); box.append(p); }
+    add(`<dl class="rows"><dt>Position</dt><dd>x ${u.x.toFixed(1)} m · z ${u.z.toFixed(1)} m</dd><dt>Front faces</dt><dd>${FACING[u.rot || 0]}</dd><dt>Nearest building</dt><dd id="gap"></dd></dl>`);
+    $('gap').textContent = gap ? `${gap.gap.toFixed(1)} m · ${nameOf(gap.unit)}` : '—';
+    add(`<div class="tools"><button data-act="left">↺ Turn left</button><button data-act="right">↻ Turn right</button><button data-act="centre">Centre on map</button></div>`);
+  } else {
+    const r = roadById(selected.id);
+    add(`<p class="eyebrow">${r.kind === 'asphalt' ? 'Asphalt road' : 'Dirt path'}</p><h2></h2>`); box.querySelector('h2').textContent = roadName(r);
+    add(`<div class="tools"><label class="field">Length (m)<input id="road-length" type="number" min="2" max="160" step="0.5"></label><label class="field">Width (m)<input id="road-width" type="number" min="1" max="12" step="0.5"></label><label class="field">Surface<select id="road-kind"><option value="dirt">Dirt path</option><option value="asphalt">Asphalt</option></select></label></div>`);
+    const alongX = r.w >= r.d; $('road-length').value = alongX ? r.w : r.d; $('road-width').value = alongX ? r.d : r.w; $('road-kind').value = r.kind;
+    add(`<div class="tools" style="margin-top:8px"><button data-act="right">Turn 90°</button><button data-act="delete">Delete road</button></div>`);
+    const setSize = () => { const len = Math.max(2, snap(+$('road-length').value || 2)), wid = Math.max(1, snap(+$('road-width').value || 1)); if (r.w >= r.d) { r.w = len; r.d = wid; } else { r.d = len; r.w = wid; } commit(); };
+    $('road-length').onchange = setSize; $('road-width').onchange = setSize; $('road-kind').onchange = () => { r.kind = $('road-kind').value; commit(); };
+  }
+  add(`<div class="tools" style="margin-top:10px"><button data-act="add-road">+ Add a path</button></div>`);
+  box.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    const act = b.dataset.act;
+    if (act === 'left') turnSelected(-1); else if (act === 'right') turnSelected(1);
+    else if (act === 'centre') { const u = unitById(selected.id); view.cx = u.x; view.cz = u.z; applyView(); }
+    else if (act === 'delete') { plan.roads = plan.roads.filter(r => r.id !== selected.id); selected = null; commit(); }
+    else if (act === 'add-road') { let n = 1; while (roadById('new-path-' + n)) n++; plan.roads.push({ id: 'new-path-' + n, kind: 'dirt', x: snap(view.cx), z: snap(view.cz), w: 20, d: 3 }); selected = { type: 'road', id: 'new-path-' + n }; commit(); }
+  });
+  // Checks and header status.
+  const list = $('checks'); list.textContent = '';
+  const errors = problems.filter(p => p.level === 'error').length, warnings = problems.length - errors;
+  if (!problems.length) { const li = document.createElement('li'); li.innerHTML = '<p>All 38 places are on the map, nothing overlaps, and no building sits on an asphalt road.</p>'; list.append(li); }
+  for (const p of problems) {
+    const li = document.createElement('li'); li.className = p.level; const b = document.createElement('button');
+    b.innerHTML = '<span class="dot" aria-hidden="true"></span><span></span>'; b.lastChild.textContent = p.text;
+    b.onclick = () => { if (p.units[0]) { selected = { type: 'unit', id: p.units[0] }; const u = unitById(p.units[0]); view.cx = u.x; view.cz = u.z; applyView(); refresh(); } };
+    li.append(b); list.append(li);
+  }
+  const status = $('status');
+  status.className = 'pill ' + (errors ? 'error' : warnings ? 'warn' : 'ok');
+  status.textContent = errors ? `${errors} problem${errors > 1 ? 's' : ''} to fix` : warnings ? `${warnings} warning${warnings > 1 ? 's' : ''}` : 'Ready to play';
+  $('undo').disabled = step === 0; $('redo').disabled = step >= history.length - 1;
+  const floater = $('floater'); floater.hidden = !selected;
+  if (selected) { $('floater-name').textContent = selected.type === 'unit' ? nameOf(unitById(selected.id)) : roadName(roadById(selected.id)); }
+  const b64 = btoa(JSON.stringify(plan)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  $('preview').href = GAME_URL + '#plan=' + b64;
+  const info = $('saveinfo');
+  info.textContent = !db ? 'Saving is available when this editor is opened as a Claude artifact. Use Copy layout and send it to Claude instead.'
+    : dirty ? (savedAt ? `Unsaved changes since ${new Date(savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.` : 'Unsaved changes.') + ' Save so Claude can apply this layout.'
+    : savedAt ? `Saved ${new Date(savedAt).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}. Claude can read this layout.` : 'This is the layout in the game now.';
+  for (const id of ['save', 'save-2']) { $(id).textContent = db ? 'Save layout' : 'Copy layout'; $(id).disabled = !!db && !dirty; }
+  $('save-2').hidden = !db;
+}
+function refresh() {
+  try { town = derive(plan); problems = planProblems(plan); } catch (error) { problems = [{ level: 'error', units: [], text: 'This layout could not be read: ' + error.message }]; }
+  draw(); renderPanel();
+}
+
+// ---------------------------------------------------------------- input
+function toWorldPoint(event) {
+  const p = svg.createSVGPoint(); p.x = event.clientX; p.y = event.clientY;
+  const m = svg.getScreenCTM().inverse(), q = p.matrixTransform(m); return [q.x, q.y];
+}
+const pointers = new Map(); let drag = null, pinch = null;
+svg.addEventListener('pointerdown', event => {
+  svg.setPointerCapture(event.pointerId);
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (pointers.size === 2) { drag = null; const [a, b] = [...pointers.values()]; pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), scale: view.scale }; return; }
+  const [x, z] = toWorldPoint(event), target = event.target.closest('[data-unit],[data-road],[data-handle]');
+  if (target?.dataset.handle) { const r = roadById(selected.id); drag = { kind: 'handle', side: +target.dataset.handle, road: r, start: [x, z], orig: { ...r }, moved: false }; }
+  else if (target?.dataset.unit) { const u = unitById(target.dataset.unit); selected = { type: 'unit', id: u.id }; drag = { kind: 'item', item: u, start: [x, z], orig: [u.x, u.z], moved: false }; refresh(); }
+  else if (target?.dataset.road) { const r = roadById(target.dataset.road); selected = { type: 'road', id: r.id }; drag = { kind: 'item', item: r, start: [x, z], orig: [r.x, r.z], moved: false }; refresh(); }
+  else drag = { kind: 'pan', screen: [event.clientX, event.clientY], orig: [view.cx, view.cz], moved: false };
+});
+let frame = 0;
+svg.addEventListener('pointermove', event => {
+  if (!pointers.has(event.pointerId)) return;
+  pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (pinch && pointers.size === 2) { const [a, b] = [...pointers.values()]; view.scale = Math.min(40, Math.max(1, pinch.scale * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.dist))); cancelAnimationFrame(frame); frame = requestAnimationFrame(applyView); return; }
+  if (!drag) return;
+  if (drag.kind === 'pan') {
+    const dx = event.clientX - drag.screen[0], dy = event.clientY - drag.screen[1];
+    if (Math.hypot(dx, dy) > 4) drag.moved = true;
+    view.cx = drag.orig[0] - dx / view.scale; view.cz = drag.orig[1] - dy / view.scale;
+    cancelAnimationFrame(frame); frame = requestAnimationFrame(applyView); return;
+  }
+  const [x, z] = toWorldPoint(event), dx = x - drag.start[0], dz = z - drag.start[1];
+  if (Math.hypot(dx, dz) * view.scale > 4) drag.moved = true;
+  if (!drag.moved) return;
+  if (drag.kind === 'item') { drag.item.x = snap(drag.orig[0] + dx); drag.item.z = snap(drag.orig[1] + dz); }
+  else {
+    const r = drag.road, o = drag.orig, alongX = o.w >= o.d, delta = alongX ? dx : dz, len = alongX ? o.w : o.d;
+    const next = Math.max(2, snap(len + delta * drag.side)), shift = (next - len) / 2 * drag.side;
+    if (alongX) { r.w = next; r.x = o.x + shift; } else { r.d = next; r.z = o.z + shift; }
+  }
+  cancelAnimationFrame(frame); frame = requestAnimationFrame(refresh);
+});
+function release(event) {
+  pointers.delete(event.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (!drag) return;
+  if (drag.kind === 'pan' && !drag.moved && selected) { selected = null; refresh(); }
+  else if (drag.kind !== 'pan' && drag.moved) commit();
+  drag = null;
+}
+svg.addEventListener('pointerup', release); svg.addEventListener('pointercancel', release);
+svg.addEventListener('wheel', event => {
+  event.preventDefault();
+  const [x, z] = toWorldPoint(event), factor = Math.exp(-event.deltaY * .0015);
+  const next = Math.min(40, Math.max(1, view.scale * factor));
+  view.cx = x - (x - view.cx) * view.scale / next; view.cz = z - (z - view.cz) * view.scale / next; view.scale = next; applyView();
+}, { passive: false });
+window.addEventListener('keydown', event => {
+  if (event.target.closest('input,select,textarea')) return;
+  const mod = event.ctrlKey || event.metaKey, k = event.key;
+  if (mod && k.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? redo() : undo(); return; }
+  if (mod && k.toLowerCase() === 'y') { event.preventDefault(); redo(); return; }
+  if (!selected) return;
+  const stepSize = event.shiftKey ? 5 : SNAP;
+  if (k === 'ArrowLeft') { event.preventDefault(); nudge(-stepSize, 0); } else if (k === 'ArrowRight') { event.preventDefault(); nudge(stepSize, 0); }
+  else if (k === 'ArrowUp') { event.preventDefault(); nudge(0, -stepSize); } else if (k === 'ArrowDown') { event.preventDefault(); nudge(0, stepSize); }
+  else if (k.toLowerCase() === 'r') turnSelected(event.shiftKey ? -1 : 1);
+  else if (k === 'Escape') { selected = null; refresh(); }
+  else if ((k === 'Delete' || k === 'Backspace') && selected.type === 'road') { plan.roads = plan.roads.filter(r => r.id !== selected.id); selected = null; commit(); }
+});
+$('undo').onclick = undo; $('redo').onclick = redo;
+$('turn-left').onclick = () => turnSelected(-1); $('turn-right').onclick = () => turnSelected(1);
+$('deselect').onclick = () => { selected = null; refresh(); };
+$('zoom-in').onclick = () => { view.scale = Math.min(40, view.scale * 1.3); applyView(); };
+$('zoom-out').onclick = () => { view.scale = Math.max(1, view.scale / 1.3); applyView(); };
+$('zoom-fit').onclick = fitView;
+new ResizeObserver(() => applyView()).observe(svg);
+function showCopy() {
+  const text = JSON.stringify(plan, null, 2), box = $('copybox');
+  const done = () => { $('saveinfo').textContent = 'Layout copied. Paste it into your chat with Claude.'; };
+  navigator.clipboard?.writeText(text).then(done, () => { box.hidden = false; box.value = text; box.select(); $('saveinfo').textContent = 'Select all and copy this text, then paste it to Claude.'; }) ?? (box.hidden = false, box.value = text, box.select());
+}
+$('copy').onclick = showCopy;
+async function save() {
+  if (!db) { showCopy(); return; }
+  const errors = problems.filter(p => p.level === 'error').length;
+  try {
+    const at = new Date().toISOString();
+    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v0.9.0' });
+    savedAt = at; dirty = false; writeLocal(); renderPanel();
+  } catch (error) {
+    $('saveinfo').textContent = error?.code === 'invalid_argument' ? 'Only the owner and editors of this page can save. Use Copy layout instead.' : 'Saving failed. Check your connection and try again.';
+  }
+}
+$('save').onclick = save; $('save-2').onclick = save;
+function resetPrompt() {
+  const zone = $('reset-zone');
+  zone.innerHTML = '<div class="confirm"><strong>Go back to the layout in the game now?</strong><p>Undo can still bring your edits back until you leave the page.</p><div class="tools"><button id="reset-yes">Reset layout</button><button id="reset-no">Keep editing</button></div></div>';
+  const back = () => { zone.innerHTML = '<button id="reset">Reset to the game\'s layout</button>'; $('reset').onclick = resetPrompt; };
+  $('reset-no').onclick = back;
+  $('reset-yes').onclick = () => { plan = JSON.parse(BASE); selected = null; commit(); back(); };
+}
+$('reset').onclick = resetPrompt;
+$('legend').innerHTML = DISTRICT_INFO.map(d => `<span><i style="background:${d.color}"></i>${d.name}</span>`).join('') + `<span><i style="background:${kindColor.bus}"></i>Vehicles</span><span><i style="background:${kindColor.square}"></i>Town square</span>`;
+
+// ---------------------------------------------------------------- start
+const local = readLocal();
+if (local?.plan && JSON.stringify(local.plan) !== BASE) { load(local.plan); dirty = true; }
+fitView(); refresh();
+(async () => {
+  db = window.claude?.use ? await window.claude.use('db') : null;
+  if (!db) { renderPanel(); return; }
+  // The saved layout wins on open unless this browser holds newer unsaved
+  // edits; later snapshots (another tab saving) load only when nothing here
+  // is unsaved, so Undo history survives this page's own saves.
+  let first = true;
+  db.doc('plans/draft').onSnapshot(snap => {
+    const data = snap.exists ? snap.data() : null;
+    const differs = data?.plan && JSON.stringify(data.plan) !== JSON.stringify(plan);
+    if (differs && (first ? !(dirty && local && local.editedAt > Date.parse(data.savedAt)) : !dirty)) { load(data.plan); dirty = false; }
+    first = false; savedAt = data?.savedAt || null; renderPanel();
+  }, () => renderPanel());
+  renderPanel();
+})();
+</script>
+
+</body></html>

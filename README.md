@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.7.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.9.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -11,7 +11,8 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Landscape-only gameplay, with fullscreen/orientation locking where the browser supports it and a portrait gate otherwise.
 - Third-person chase camera low behind the shoulder with a wide lens: it swings in behind the runner, pulls in front of walls, frames conversations over the shoulder, and still allows swipe look, pinch and wheel zoom.
 - Amir, Nur and Pak Mat rebuilt to the Jaguh Kampung sheet: heads about a quarter of their height with anime faces, Amir's spiked hair and ringer T-shirt, Nur's hijab under her hoodie hood, baggy cargo trousers, shell-toe sneakers, backpacks, and Pak Mat in kopiah, baju and kain pelikat. A walk blends into a run with bent-arm pumping and a forward lean.
-- Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts, detailed warung props and rounded vehicles.
+- Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts and detailed warung props.
+- Landmarks modelled from the concept sheets: a Straits shophouse terrace (salmon five-foot-way pillars over a terracotta-and-cream tiled walkway, arched louvred windows, scalloped valance, weathered plaster, hipped clay roof), a Kuala Kangsar-style mosque (gilded onion dome, four striped minarets with open galleries, cusped red-and-cream arcades) and boxy 1990s family sedans.
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
 - Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.
@@ -20,6 +21,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
 - Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus and congkak.
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
+- The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
 ## Controls
@@ -73,10 +75,13 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ## Code layout
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
+- `src/landmarks.js`: low-poly shophouse terrace, mosque and sedan built from the concept sheets.
 - `src/characters.js`: reference-sheet characters in metres, anime face drawings, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
 - `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
-- `src/town-layout.js`: 38 numbered locations, five districts, paths, roads and bridges.
+- `src/town-plan.js`: the editable plan: where every building, vehicle, passer-by and road stands and which way it faces.
+- `src/town-layout.js`: building kinds (footprints, raised floors, people spots), the 38 numbered places, districts, the fixed river and bridges, and the layout checks.
+- `tools/map-editor.src.html`, `scripts/editor.mjs`: the map editor and its build script (`npm run editor` writes `tools/map-editor.html`).
 - `src/collision.js`: circle/rectangle contacts, body-aware bounds and bridge-only river crossings.
 - `src/movement.js`: analog input and small collision steps independent of frame rate.
 - `src/soundscape.js`: original local ambience and foley.
@@ -90,6 +95,10 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![Shophouse terrace](docs/shophouses-v080.webp)
+
+![Mosque](docs/mosque-v080.webp)
 
 ![Chase camera running through the pekan](docs/chase-camera-v070.webp)
 

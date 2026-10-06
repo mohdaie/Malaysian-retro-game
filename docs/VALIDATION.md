@@ -104,3 +104,29 @@ Characters were checked in front, three-quarter, side and back renders of the ac
 The chase camera was checked in a 844 × 390 mobile landscape viewport. The new game starts behind Amir. Steering to Nur under the auto-following camera reached her Talk button, and the dialogue two-shot showed both speakers facing each other above the panel. With Amir on his verandah and the lens behind him pointing into the house, the camera pulled in to 1.89 m instead of entering the wall; on the open lane it stayed at 4.4 m (`kampung-run-v070.webp`, `chase-camera-v070.webp`, `dialogue-v070.webp`).
 
 Full chapter regression passed under both repository-root and built-folder hosting: meeting Nur and advancing her dialogue, resuming beside Pak Mat, a complete congkak round (13 player moves, 30–68), chapter completion, return to exploration and the saved Continue after reload. There were no page or renderer errors and no missing assets. Physical Android/iPhone frame rate remains unmeasured.
+
+## v0.8.0 — concept-sheet shophouses, mosque and sedan
+
+`npm test`: **29 tests passed**. `npm run build`: passed, and `dist/` includes the new `landmarks.js` module.
+
+The new models were checked in the actual game scene from gameplay and review angles (`shophouses-v080.webp`, `shophouse-corner-v080.webp`, `mosque-v080.webp`, `sedan-v080.webp`, `five-foot-way-v080.webp`). A 0.5 m flood-fill of walkable space from Amir's spawn still reaches the approach to all 38 locations. The raised five-foot way is walkable along the whole terrace, as is the gap between the shophouses and the mosque. The scene now has 239 collision bodies, up from 232.
+
+Draw calls at the same chase-camera viewpoints as v0.7.0: 504 in the widest kampung view across the town (was 527), 367 on the main road (was 372) and 285 by the mosque (was 329). On the shophouse street it was 387. Triangles rose to 197–321k because of the arches and domes. These are software-rendered workload counts, not phone frame-rate measurements.
+
+Full chapter regression passed under both repository-root and built-folder hosting: meeting Nur, resuming beside Pak Mat, a complete congkak round (13 moves, 30–68), chapter completion and Continue after reload, with no page or renderer errors and no missing assets.
+
+## v0.9.0 — one editable town plan and the map editor
+
+`npm test`: **38 tests passed**. The new layout tests check that the saved plan has no errors or warnings, that all 38 places appear once and every unit fills its kind's slots, that quarter turns match Three.js `rotation.y` and swap rect sides, that turning Rumah Amir carries its verandah floor, start point and heading, that the checker reports overlaps, the river, the town edge and buildings on asphalt roads while letting cars park on roads and the canteen and court stand in the school yard, that district names follow the nearest place, and that preview links accept only plans without errors. A publishing test checks that `tools/map-editor.html` matches the current layout code and plan.
+
+The refactor reproduces the previous town apart from four small fixes the new checks found: the school compound moved 2 m east and the village hall 1 m east (the school block and fence stood half a metre into the west road), the terrace rows moved 1 m west (the end houses stood 0.9 m into the east road), and the library moved 3 m west (it stood 2.5 m into the east road). The hall path now stops at the hall's front instead of running 2 m into it. The square's paths end at its edge, with two short paths joining it to the main road and the market lane. Kerbs, drains and centre dashes are now generated along every asphalt road, and street lamps along one verge of each.
+
+A 0.5 m flood-fill from Amir's start reaches all 38 places. A preview link with the mosque moved onto the open lawn and turned 90°, and the warung, one terrace house and the square turned, rendered correctly, kept the mosque arcades walkable, moved the numbered map, and labelled the HUD "Map preview". A save position that became blocked (inside a parked car) fell back to Amir's start.
+
+The editor was exercised at 1280 × 800 and 390 × 844 (touch). Dragging the mosque onto the shophouses showed the overlap error; turning it reported the new facing; two undos restored a clean layout; the preview link carried the plan. Outside Claude the save button falls back to copying the layout. In the published artifact the shared store was readable and empty before the first save.
+
+### First edited layout
+
+The layout saved from the map editor on 6 October (30 buildings and vehicles moved, 14 roads changed) had no layout errors. Checks beyond the editor found three issues, fixed when it was applied: the main road had moved 7 m north of the fixed river bridge, so it ran into the water (bridges are now generated under every road that crosses the river); the market lane cut 1 m into the backs of terrace houses 15–18 (moved 1 m south); and one kampung path had shrunk to a 2 × 2 m stub (removed). The in-game map now tints each place by its district instead of drawing one rectangle per district, since districts can be spread across town, and places each label near the largest group of its places.
+
+`npm test`: **39 tests passed**; the layout tests no longer assume particular positions. A 0.5 m flood-fill from Amir's new start (beside Rumah Amir, now facing north) reaches all 38 places. The full chapter regression passed under root and built-folder hosting: walking to Nur and talking, resuming beside Pak Mat at the warung's new place by the market lane, a complete congkak round (13 moves, 30–68), chapter completion and Continue after reload, with no errors or missing assets. Views measured 238–448 draw calls.

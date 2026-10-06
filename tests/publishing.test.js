@@ -30,3 +30,8 @@ test('checked-in runtime exactly matches the pinned installed dependency', async
     assert.ok(published.equals(installed), `${path} must match the pinned dependency`);
   }
 });
+test('the map editor is rebuilt from the current layout code and plan', async () => {
+  const { buildEditor, page } = await import('../scripts/editor.mjs');
+  const built = page(await buildEditor()), committed = await readFile(resolve(root, 'tools/map-editor.html'), 'utf8');
+  assert.equal(committed, built, 'run `npm run editor` after changing town-layout.js, town-plan.js or the editor template');
+});
