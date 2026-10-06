@@ -1,19 +1,19 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.5.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.6.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
 Leave Amir's timber house → meet Nur → walk through the pekan → talk to Pak Mat at his warung → finish a congkak practice round → return to exploration. Afterward, explore or play a rematch.
 
-The compact town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original stylized 3D meshes inspired by the agreed references, not exact recreations.
+All **38 locations across five districts** fit the original compact map: 10 kampung, 10 terrace, 8 pekan, 6 community and 4 transport/market. The numbered map includes a district directory. The town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original stylized 3D meshes inspired by the agreed references, not exact recreations.
 
 - Landscape-only gameplay, with fullscreen/orientation locking where the browser supports it and a portrait gate otherwise.
 - Closer following 3D camera with drag/swipe orbit, vertical tilt, pinch and wheel zoom.
 - Original rounded characters with jointed walking/running, clothing, facial detail and a canvas satchel.
 - Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts, detailed warung props and rounded vehicles.
-- Feathered palms, fuller tree canopies, afternoon lighting and soft contact shadows. Buildings fade when they hide the player.
-- Faster walking at 7.2 world metres/second and running at 11, with obstacle collision and river crossings.
+- Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
+- Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.
 - Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
 - Local progress saves with resume, save validation and graceful storage failure.
@@ -66,7 +66,7 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 0.5.0 follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 0.6.0 packs the five-district plan into the compact map, adds solid scenery collisions and strengthens the low-poly 3D comic style. It follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
 Save data is stored in the browser on this device and origin; it does not sync across devices. Only completed chapter progress is saved, not a partly played congkak round. Leaving an unfinished round starts a fresh practice round on return.
 
@@ -74,7 +74,9 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
 - `src/characters.js`: reference-based low-poly characters, illustrated face/clothing drawings, jointed animation and batching.
-- `src/illustration.js`: shared cel-light ramp, halftone shading and character ink hull.
+- `src/illustration.js`: cel-light ramp, halftone shading, character hulls and pixel-width town ink.
+- `src/town-layout.js`: 38 numbered locations, five districts, paths, roads and bridges.
+- `src/collision.js`: circle/rectangle contacts, body-aware bounds and bridge-only river crossings.
 - `src/movement.js`: analog input and small collision steps independent of frame rate.
 - `src/soundscape.js`: original local ambience and foley.
 - `assets/`: generated game materials and provenance.
@@ -88,10 +90,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 ## Preview
 
-![Version 0.5.0 landscape gameplay](docs/landscape-gameplay-v050.png)
+![Actual compact town with all 38 locations](docs/town-overview-v060.webp)
 
-![Actual walking poses of Amir and Nur](docs/walking-poses-v050.png)
+![Comic shopfronts](docs/comic-shops-v060.webp)
 
-[Watch the actual walking animation](docs/walking-preview-v050.mp4)
-
-Characters use child/adult metre scale; the school includes a full classroom block and side wing. New illustrated grass decals and distance-driven leg/ankle animation are implemented in v0.5.0.
+The overhead review camera postpones distant fog to show the entire layout. Gameplay keeps its normal fog and closer camera. Screenshots show the implemented scene. Existing metre-scale Amir/Nur and their distance-driven walking animation are retained from v0.5.0.

@@ -9,7 +9,8 @@ export function stickInput(x, y, radius) {
 
 // Keep collision steps small even when a slower device renders longer frames.
 export function moveWithCollision(position, dx, dz, speed, dt, canWalk) {
-  const steps = Math.max(1, Math.ceil(dt / .025));
+  // Distance subdivision also protects narrow posts at high input speeds.
+  const steps = Math.max(1, Math.ceil(dt / .025), Math.ceil(Math.hypot(dx,dz)*speed*dt/.12));
   const step = speed * dt / steps;
   for (let i = 0; i < steps; i++) {
     if (canWalk(position.x + dx * step, position.z)) position.x += dx * step;

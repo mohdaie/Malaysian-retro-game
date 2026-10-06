@@ -2,7 +2,7 @@ import * as T from 'three';
 
 // Shared three-step light ramp: geometry remains interactive in 3D while the
 // surfaces read as inked colour blocks rather than polished plastic.
-const ramp = new T.DataTexture(new Uint8Array([85,85,85,255, 175,175,175,255, 255,255,255,255]), 3, 1, T.RGBAFormat);
+const ramp = new T.DataTexture(new Uint8Array([65,65,65,255, 155,155,155,255, 255,255,255,255]), 3, 1, T.RGBAFormat);
 ramp.minFilter = ramp.magFilter = T.NearestFilter;
 ramp.generateMipmaps = false; ramp.needsUpdate = true;
 export function toon(color, options = {}) {
@@ -22,7 +22,7 @@ export function toon(color, options = {}) {
   return material;
 }
 const ink = new T.ShaderMaterial({
-  uniforms: { color: { value: new T.Color(0x282734) }, width: { value: .013 } },
+  uniforms: { color: { value: new T.Color(0x242332) }, width: { value: .035 } },
   vertexShader: `uniform float width; void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position+normal*width,1.0);}`,
   fragmentShader: `uniform vec3 color; void main(){gl_FragColor=vec4(color,1.0);
 #include <colorspace_fragment>
@@ -35,4 +35,44 @@ export function outline(mesh) {
   const hull = new T.Mesh(mesh.geometry, ink);
   hull.position.copy(mesh.position); hull.quaternion.copy(mesh.quaternion); hull.scale.copy(mesh.scale);
   hull.userData.ink = true; mesh.parent.add(hull);
+}
+
+// Triangle ribbons give real CSS-pixel thickness on WebGL, where ordinary
+// line widths are usually fixed at one pixel. One draw call per spatial batch.
+export const inkViewport = new T.Vector2(1,1);
+export const inkFog = new T.Vector2(95,230);
+export function comicEdges(edges, width=2.5) {
+  const source=edges.attributes.position.array, positions=[], other=[], sides=[];
+  for(let i=0;i<source.length;i+=6){
+    const a=Array.from(source.slice(i,i+3)), b=Array.from(source.slice(i+3,i+6));
+    for(const corner of [0,1,2,2,1,3]){
+      positions.push(...(corner<2?a:b));other.push(...(corner<2?b:a));
+      sides.push([-1,1,1,-1][corner]);
+    }
+  }
+  const geometry=new T.BufferGeometry();
+  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('other',new T.Float32BufferAttribute(other,3));
+  geometry.setAttribute('inkSide',new T.Float32BufferAttribute(sides,1));
+  geometry.computeBoundingSphere();edges.dispose();
+  const material=new T.ShaderMaterial({
+    uniforms:{viewport:{value:inkViewport},fogRange:{value:inkFog},width:{value:width},inkOpacity:{value:1}},
+    vertexShader:`attribute vec3 other; attribute float inkSide;
+      uniform vec2 viewport; uniform float width; varying float depth;
+      void main(){
+        vec4 view=modelViewMatrix*vec4(position,1.0);
+        vec4 clip=projectionMatrix*view;
+        vec4 endpoint=projectionMatrix*modelViewMatrix*vec4(other,1.0);
+        vec2 delta=(endpoint.xy/max(endpoint.w,.001)-clip.xy/max(clip.w,.001))*viewport;
+        vec2 tangent=delta/max(length(delta),.001);
+        clip.xy+=vec2(-tangent.y,tangent.x)*inkSide*width/viewport*clip.w;
+        clip.z-=.00001*clip.w; gl_Position=clip;depth=-view.z;
+      }`,
+    fragmentShader:`uniform float inkOpacity;uniform vec2 fogRange;varying float depth;
+      void main(){gl_FragColor=vec4(mix(vec3(.012,.010,.018),vec3(.57,.71,.75),smoothstep(fogRange.x,fogRange.y,depth)),inkOpacity);
+        #include <colorspace_fragment>
+      }`,
+    transparent:true,depthWrite:false,side:T.DoubleSide
+  });
+  return new T.Mesh(geometry,material);
 }
