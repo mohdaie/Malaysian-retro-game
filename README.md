@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.9.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.10.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -13,6 +13,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Amir, Nur and Pak Mat rebuilt to the Jaguh Kampung sheet: heads about a quarter of their height with anime faces, Amir's spiked hair and ringer T-shirt, Nur's hijab under her hoodie hood, baggy cargo trousers, shell-toe sneakers, backpacks, and Pak Mat in kopiah, baju and kain pelikat. A walk blends into a run with bent-arm pumping and a forward lean.
 - Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts and detailed warung props.
 - Landmarks modelled from the concept sheets: a Straits shophouse terrace (salmon five-foot-way pillars over a terracotta-and-cream tiled walkway, arched louvred windows, scalloped valance, weathered plaster, hipped clay roof), a Kuala Kangsar-style mosque (gilded onion dome, four striped minarets with open galleries, cusped red-and-cream arcades) and boxy 1990s family sedans.
+- Kampung trees c. 2001, low-poly: leaning kelapa, tattered pisang with jantung, rambutan and mangga in season, jambu air, nangka in its sack, pinang, durian, bamboo, the pekan's rain trees, the school's ketapang and bunga raya hedge, kemboja at the mosque, kebun dapur herbs, and an old beringin by Warung Pak Mat. A dense dusun and rubber smallholding (with tapping cups) rings the town; roads leave through gaps in it. Leaves sway in the breeze. Planting follows the town plan, so it moves with the map editor.
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
 - Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.

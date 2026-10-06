@@ -179,26 +179,32 @@ const civic = (label, w, d, extra = {}) => ({ label, places: [[0, 0, w, d]], flo
 // Each kind lists, in its own frame: `places` (one rect per numbered place),
 // `solids` (what may not overlap another unit), `floors` ([x,z,w,d,height]
 // raised walkable ground), `spots` ([x,z,heading] for people) and `decor`
-// (trees planted only where they fit). `open` kinds may sit on roads.
+// ([species, x, z, size] trees, planted only where they fit, see planting.js;
+// `decorVariants` offers several yards to pick from). `open` kinds may sit on roads.
 const KINDS = {
   home: stiltHouse(10, 8, {
     label: 'Rumah Amir and yard',
     solids: [[0, 1.725, 11, 11.45], [0, -7, 20, .12], [-10, 3.5, .12, 21], [-6.5, 14, 7, .12], [7.5, 14, 5, .12], [-7.5, -9, 7.5, .4], [9, 6, 2.4, .55]],
     spots: { spawn: [0, 11, 0], nur: [8, 9, -.7] },
-    decor: [['palm', -14, 4, 1.1], ['palm', 10, -5, .9], ['tree', -13, 18, .8]],
+    decor: [['kelapa', -14, 4, 1.1], ['kelapa', 11.5, -4.5, .95], ['rambutan', -7.2, 10.5, .8], ['pisang', 7.8, -4.6, .95], ['pisang', -14, 11.5, .9], ['mangga', -13.5, 19, .9], ['serai', -8.6, -5.2], ['pandan', -6.6, -5.6], ['cili', -8.7, -2.6]],
     patches: [[-6, 8, 6], [-5, 12, 5], [6, 3, 4], [8, 13, 5], [-7, -4, 5]]
   }),
-  house: stiltHouse(9, 7),
-  wakaf: pavilion('Wakaf (garden shelter)', 7, 6),
-  pondok: pavilion('Riverside hut', 4, 5),
-  canteen: pavilion('School canteen', 10, 6),
-  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]] },
-  minishop: civic('Corner shop', 9, 8),
-  nursery: civic('Nursery', 9, 10, { solids: [[-.9, 7, 3, .6]] }),
-  hall: civic('Village hall', 13, 8),
-  library: civic('Library', 12, 8),
-  petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]] }),
-  warung: { label: 'Warung Pak Mat', places: [[0, 0, 11, 6.5]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { pak: [0, 6, .2] } },
+  // Every kampung house gets one of three yards, picked by its id.
+  house: stiltHouse(9, 7, { decorVariants: [
+    [['kelapa', -6.8, -1.5, 1], ['pisang', 6.4, -3.2, .9], ['rambutan', 0, -7.8, .8], ['serai', -3.6, 8.2]],
+    [['kelapa', 6.8, .5, 1.05], ['kelapa', -7, -4, .9], ['pisang', -6.6, 4.6, .9], ['mangga', .5, -8.4, .85]],
+    [['nangka', -7, -1, .9], ['pisang', 6.4, -3, .95], ['pinang', 6.8, 3.6, 1], ['jambu', 0, -7.8, .8], ['pandan', -3.8, 8.4]]
+  ] }),
+  wakaf: { ...pavilion('Wakaf (garden shelter)', 7, 6), decor: [['rambutan', -6.8, -1, .9], ['mangga', 6.8, 1.5, .85], ['pisang', -5.6, 4.8, .85]] },
+  pondok: { ...pavilion('Riverside hut', 4, 5), decor: [['kelapa', 0, -5.6, 1], ['buluh', 0, 6.4, .9], ['pisang', -4, 0, .85]] },
+  canteen: { ...pavilion('School canteen', 10, 6), decor: [['ketapang', 8, 1, .8]] },
+  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]], decor: [['bungaraya', -2.8, -5.6, .8], ['bungaraya', 2.8, -5.6, .8]] },
+  minishop: civic('Corner shop', 9, 8, { decor: [['kelapa', -6.4, -2.5, .9], ['bungaraya', 6, 3.5, .8]] }),
+  nursery: civic('Nursery', 9, 10, { solids: [[-.9, 7, 3, .6]], decor: [['jambu', 6.6, -3, .8], ['bungaraya', 3.8, 7, .8], ['bungaraya', -4.4, 7, .8]] }),
+  hall: civic('Village hall', 13, 8, { decor: [['kelapa', -8.2, -2, .95]] }),
+  library: civic('Library', 12, 8, { decor: [['ketapang', 8, -2, .8]] }),
+  petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]], decor: [['kelapa', 6.6, 2.5, .95], ['kelapa', -6.4, 2, .9], ['pisang', 6.4, -4.5, .85]] }),
+  warung: { label: 'Warung Pak Mat', places: [[0, 0, 11, 6.5]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { pak: [0, 6, .2] }, decor: [['kelapa', -7.8, -3, 1.05], ['pisang', 7.8, -3.2, .95], ['pisang', -8.2, 1.8, .85], ['serai', 7.6, 1.6]] },
   shophouses: {
     label: 'Shophouse terrace (7 shops)',
     places: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 0, 8.8, 10]),
@@ -208,19 +214,22 @@ const KINDS = {
     label: 'School compound', yard: true,
     places: [[-5.5, -4, 38, 10]],
     solids: [[-5.5, -4, 38, 10], [19.5, -3, 9, 20], [0, -15, 51, .12], [-25.5, 0, .12, 30], [25.5, 0, .12, 30], [-17.5, 15, 16, .12], [12, 15, 27, .12], [-21.5, 14.3, .3, .3], [10.5, 14.3, .3, .3]],
-    floors: [[-5.5, 2.5, 40, 3.5, .23], [-5.5, 10, 31, 9, .13]]
+    floors: [[-5.5, 2.5, 40, 3.5, .23], [-5.5, 10, 31, 9, .13]],
+    // A rain tree shades the assembly ground; bunga raya lines the front fence.
+    decor: [['hujan', -22.6, 10.5, .75], ['ketapang', 13, 11, .8], ...[-24, -19, -16, -13, 1, 4, 7, 13, 16, 19, 22].map(x => ['bungaraya', x, 13.9, .8])]
   },
   court: { label: 'Sports court', open: true, places: [[0, 0, 14, 8]], solids: [[0, 0, 14, 8]], floors: [[0, 0, 14, 8, .18]] },
   mosque: {
     label: 'Mosque and plaza', places: [[0, 0, 12, 11]], solids: [[0, .2, 16.7, 15.1]], floors: [[0, 0, 19, 19, .21]],
-    decor: [['palm', -15, -5, 1], ['palm', 18, -4, 1], ['tree', 19, 8, .8]]
+    decor: [['kelapa', -15, -5, 1], ['kelapa', 18, -4, 1], ['kemboja', -12, 7.5, .9], ['kemboja', 12, 7.5, .9], ['hujan', 20, 10, .8]]
   },
-  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]] },
-  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['palm', 6, 8, .9]] },
-  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], solids: [[0, 0, 22, 17]], floors: [], decor: [['palm', -12, -11, .85], ['tree', 11, 12, .7]] },
+  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]], decor: [['hujan', -1, -9, .9]] },
+  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['kelapa', 6, 8, .9], ['pisang', 7.6, 2.5, .9]] },
+  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], solids: [[0, 0, 22, 17]], floors: [], decor: [['kelapa', -12.5, -11, .9], ['hujan', 14, 11.5, .85], ['kelapa', 14.5, -10, .9]] },
   square: {
     label: 'Town square', open: true, places: [],
-    solids: [[0, 0, 22, 17], [-12, -6, .6, .6], [12, -6, .6, .6], [-12, 7, .6, .6], [12, 7, .6, .6]], floors: [[0, 0, 22, 17, .09]]
+    solids: [[0, 0, 22, 17]], floors: [[0, 0, 22, 17, .09]],
+    decor: [['ketapang', -12, -6, .8], ['ketapang', 12, -6, .8], ['ketapang', -12, 7, .8], ['ketapang', 12, 7, .8]]
   },
   bus: { label: 'Town bus', vehicle: true, places: [], solids: [[0, 0, 4.3, 10.3]], floors: [] },
   sedan: { label: 'Family car', vehicle: true, places: [], solids: [[0, 0, 1.9, 4.5]], floors: [] },
@@ -636,7 +645,7 @@ async function save() {
   const errors = problems.filter(p => p.level === 'error').length;
   try {
     const at = new Date().toISOString();
-    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v0.9.0' });
+    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v0.10.0' });
     savedAt = at; dirty = false; writeLocal(); renderPanel();
   } catch (error) {
     $('saveinfo').textContent = error?.code === 'invalid_argument' ? 'Only the owner and editors of this page can save. Use Copy layout instead.' : 'Saving failed. Check your connection and try again.';

@@ -1,4 +1,4 @@
-# Illustrated prototype design — v0.9.0
+# Illustrated prototype design — v0.10.0
 
 Amir and Nur follow the supplied Jaguh Kampung character sheet, and the camera follows the third-person reference recording: low behind the shoulder, a wide lens, the street and horizon ahead. The world keeps 3D movement, collision and animation, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
 
@@ -29,6 +29,12 @@ The shophouses, mosque and car follow the supplied low-poly concept sheets, rebu
 | Sedan | A boxy 1990s four-door family car with a wedge nose, upright glasshouse with pillars, wide headlamps and grille, wing mirrors, door handles, side trim, tail lamps, a roof aerial and five-spoke alloy wheels. A red and a white one are parked on the main-road verge. No real badges or brand names are used. |
 
 Plain-coloured parts carry their colour per vertex and share two materials (smooth and faceted), so the town batcher still merges each 24 m cell into a few draw calls. Shop walls, roof tiles and walkway tiles use world-scaled textures so they keep one scale along the terrace. Building colliders match the new footprints: shophouse pillars are round 0.4 m posts, minarets are 1.05 m round bodies.
+
+## Trees — v0.10.0
+
+`src/planting.js` decides where trees go from the town plan alone; `src/trees.js` models 18 kampung species in low-poly, coloured per vertex. Yards come from each building kind's `decor` (kampung houses pick one of three yards). Open lawn gets a district mix: kelapa, pisang and fruit trees in the kampung, mangga, jambu and bunga raya by the terraces, rain trees and ketapang in the pekan and community grounds. Bamboo, banana and leaning coconut line the river banks. One beringin stands in the most open lawn near Warung Pak Mat. Past the walkable edge, three to four rows of dusun (behind the kampung) or straight rubber rows (elsewhere) ring the town, with gaps where asphalt roads continue out of town.
+
+Trees in town have trunk colliders; crowns sit above head height, so the camera passes under them instead of fading them. Wood and crowns get ink lines; leaves, fruit and flowers do not, and leaves sway in a vertex-shader breeze. Trees are batched like the rest of the town but are never culled with distance.
 
 ## Environment
 
