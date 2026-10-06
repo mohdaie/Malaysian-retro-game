@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.6.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.7.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -9,8 +9,8 @@ Leave Amir's timber house → meet Nur → walk through the pekan → talk to Pa
 All **38 locations across five districts** fit the original compact map: 10 kampung, 10 terrace, 8 pekan, 6 community and 4 transport/market. The numbered map includes a district directory. The town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original stylized 3D meshes inspired by the agreed references, not exact recreations.
 
 - Landscape-only gameplay, with fullscreen/orientation locking where the browser supports it and a portrait gate otherwise.
-- Closer following 3D camera with drag/swipe orbit, vertical tilt, pinch and wheel zoom.
-- Original rounded characters with jointed walking/running, clothing, facial detail and a canvas satchel.
+- Third-person chase camera low behind the shoulder with a wide lens: it swings in behind the runner, pulls in front of walls, frames conversations over the shoulder, and still allows swipe look, pinch and wheel zoom.
+- Amir, Nur and Pak Mat rebuilt to the Jaguh Kampung sheet: heads about a quarter of their height with anime faces, Amir's spiked hair and ringer T-shirt, Nur's hijab under her hoodie hood, baggy cargo trousers, shell-toe sneakers, backpacks, and Pak Mat in kopiah, baju and kain pelikat. A walk blends into a run with bent-arm pumping and a forward lean.
 - Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts, detailed warung props and rounded vehicles.
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
 - Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
@@ -54,7 +54,7 @@ npm run build
 
 GitHub Actions runs tests and builds a downloadable `retro-malaysia-playable` artifact. The repository also contains the pinned browser runtime in `vendor/` and `.nojekyll`, so GitHub Pages can serve `main` directly without an npm build. The manual Pages workflow can alternatively publish `dist/` when Pages is configured to use GitHub Actions.
 
-Playing in portrait pauses movement and congkak animation behind a rotate prompt. The initial camera distance is 8 world units, adjustable from 6 to 20, keeping the metre-scale characters readable.
+Playing in portrait pauses movement and congkak animation behind a rotate prompt. The chase camera starts 4.4 m behind and about 2 m above the ground with a 58° lens, adjustable from 3 to 12 m. A swipe pauses the automatic follow for a moment.
 
 ## Congkak practice rules
 
@@ -66,32 +66,37 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 0.6.0 packs the five-district plan into the compact map, adds solid scenery collisions and strengthens the low-poly 3D comic style. It follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 0.7.0 replaces the high orbiting view with a third-person chase camera and rebuilds the characters to the reference sheet's proportions and outfits. Each character is now one skinned mesh plus one ink outline, so the closer, wider view costs fewer character draw calls than before. The five-district town, collisions, comic rendering and painted panorama from v0.6.0 are unchanged. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
 Save data is stored in the browser on this device and origin; it does not sync across devices. Only completed chapter progress is saved, not a partly played congkak round. Leaving an unfinished round starts a fresh practice round on return.
 
 ## Code layout
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
-- `src/characters.js`: reference-based low-poly characters, illustrated face/clothing drawings, jointed animation and batching.
-- `src/illustration.js`: cel-light ramp, halftone shading, character hulls and pixel-width town ink.
+- `src/characters.js`: reference-sheet characters in metres, anime face drawings, rigidly skinned single-draw meshes and joint animation.
+- `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
+- `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
 - `src/town-layout.js`: 38 numbered locations, five districts, paths, roads and bridges.
 - `src/collision.js`: circle/rectangle contacts, body-aware bounds and bridge-only river crossings.
 - `src/movement.js`: analog input and small collision steps independent of frame rate.
 - `src/soundscape.js`: original local ambience and foley.
 - `assets/`: generated game materials and provenance.
-- `src/main.js`: camera, input, quest/dialogue flow, map and minigame presentation.
+- `src/main.js`: chase camera, input, quest/dialogue flow, map and minigame presentation.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
 - `src/save.js`: versioned local save validation and storage.
-- `tests/`: congkak invariants, complete simulated games and storage failure handling.
+- `tests/`: congkak invariants, complete simulated games, gait and IK reachability, collisions and storage failure handling.
 - `scripts/`: dependency-free development server and static build.
 - `vendor/`: checked-in Three.js browser runtime and its MIT license, required for direct branch publishing.
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
 
+![Chase camera running through the pekan](docs/chase-camera-v070.webp)
+
+![Amir, Nur and Pak Mat turnaround](docs/character-turnaround-v070.webp)
+
 ![Actual compact town with all 38 locations](docs/town-overview-v060.webp)
 
 ![Comic shopfronts](docs/comic-shops-v060.webp)
 
-The overhead review camera postpones distant fog to show the entire layout. Gameplay keeps its normal fog and closer camera. Screenshots show the implemented scene. Existing metre-scale Amir/Nur and their distance-driven walking animation are retained from v0.5.0.
+The overhead review camera postpones distant fog to show the entire layout. Gameplay keeps its normal fog and the chase camera. All screenshots are renders of the actual game modules.
