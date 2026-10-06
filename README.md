@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-First playable browser prototype, **v0.1.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+First playable browser prototype, **v0.1.1**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -47,7 +47,7 @@ npm run build
 
 `dist/` contains the complete static game with local Three.js modules. Serve it using `node scripts/dev.mjs --dist`, or deploy that folder to a static host. Opening `index.html` directly through `file://` does not support the module imports.
 
-GitHub Actions runs tests and builds a downloadable `retro-malaysia-playable` artifact. A manual Pages deployment workflow is included for use after the changes are merged and GitHub Pages is configured to use GitHub Actions.
+GitHub Actions runs tests and builds a downloadable `retro-malaysia-playable` artifact. The repository also contains the pinned browser runtime in `vendor/` and `.nojekyll`, so GitHub Pages can serve `main` directly without an npm build. The manual Pages workflow can alternatively publish `dist/` when Pages is configured to use GitHub Actions.
 
 ## Congkak practice rules
 
@@ -69,6 +69,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/save.js`: versioned local save validation and storage.
 - `tests/`: congkak invariants, complete simulated games and storage failure handling.
 - `scripts/`: dependency-free development server and static build.
+- `vendor/`: checked-in Three.js browser runtime and its MIT license, required for direct branch publishing.
+- `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
 
