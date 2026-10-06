@@ -1,11 +1,11 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=0.7.0';
+import { makeWorld } from './world.js?v=0.8.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.7.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.7.0';
-import { createSoundscape } from './soundscape.js?v=0.7.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, districtAt } from './town-layout.js?v=0.7.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.8.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.8.0';
+import { createSoundscape } from './soundscape.js?v=0.8.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, districtAt } from './town-layout.js?v=0.8.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {

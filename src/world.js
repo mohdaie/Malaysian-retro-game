@@ -1,8 +1,9 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.7.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=0.7.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES } from './town-layout.js?v=0.7.0';
-import { createWalkability } from './collision.js?v=0.7.0';
+import { createCharacter } from './characters.js?v=0.8.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=0.8.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES } from './town-layout.js?v=0.8.0';
+import { createWalkability } from './collision.js?v=0.8.0';
+import { createLandmarks } from './landmarks.js?v=0.8.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -42,14 +43,21 @@ export async function makeWorld(canvas) {
     if(kind==='asphalt')for(let i=0;i<900;i++){ctx.fillStyle=i%2?'#ffffff25':'#253b3925';ctx.fillRect(rand()*256,rand()*256,1,1);}
     if(kind==='tile'){ctx.fillStyle='#e9d8c3';ctx.fillRect(0,0,256,256);for(let row=0;row<12;row++)for(let col=0;col<20;col++){const x=col*14-(row%2)*7,y=row*23;ctx.fillStyle=(row+col)%3?'#e8c5a1':'#d4a480';ctx.fillRect(x,y,13,22);ctx.strokeStyle='#71544d80';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+2,y);ctx.quadraticCurveTo(x+6,y+11,x+2,y+22);ctx.stroke();ctx.strokeRect(x,y,13,22);}}
     if(kind==='plaster')for(let i=0;i<3000;i++){ctx.fillStyle=i%2?'#ffffff30':'#afa99a20';ctx.fillRect(rand()*256,rand()*256,1+rand()*3,1);}
+    // Weathered lime plaster: angular ochre, peach and grey patches, drawn
+    // with wrapped copies so the tile repeats without seams.
+    if(kind==='weathered'){ctx.fillStyle='#f3e6c8';ctx.fillRect(0,0,256,256);const tones=['rgba(234,190,110,.42)','rgba(226,160,108,.34)','rgba(178,171,152,.3)','rgba(255,249,232,.5)','rgba(240,210,146,.4)'];for(let i=0;i<46;i++){ctx.fillStyle=tones[i%tones.length];const cx=rand()*256,cy=rand()*256,r=14+rand()*46,n=5+Math.floor(rand()*3),pts=[];for(let k=0;k<n;k++){const a=k/n*Math.PI*2+rand()*.6,rr=r*(.55+rand()*.6);pts.push([Math.cos(a)*rr,Math.sin(a)*rr*.75]);}for(const ox of [-256,0,256])for(const oy of [-256,0,256]){ctx.beginPath();for(const [px,py] of pts)ctx.lineTo(cx+px+ox,cy+py+oy);ctx.closePath();ctx.fill();}}}
+    // Five-foot-way floor: terracotta and cream encaustic squares.
+    if(kind==='floor')for(let row=0;row<8;row++)for(let col=0;col<8;col++){ctx.fillStyle=(row+col)%2?'#e9dcc0':'#b9654b';ctx.fillRect(col*32,row*32,32,32);ctx.strokeStyle='#8c7a68';ctx.lineWidth=1.5;ctx.strokeRect(col*32+.75,row*32+.75,30.5,30.5);}
+    // Clay roof tiles laid in rows down the slope.
+    if(kind==='clay'){ctx.fillStyle='#b95a39';ctx.fillRect(0,0,256,256);for(let row=0;row<8;row++)for(let col=0;col<10;col++){const x=col*25.6,y=row*32;ctx.fillStyle=['#c4643f','#b95a39','#cc6b46','#bf6140'][(row*3+col)%4];ctx.fillRect(x+1,y,23.6,30);ctx.fillStyle='rgba(255,196,150,.35)';ctx.fillRect(x+8,y+2,7,26);ctx.fillStyle='rgba(90,35,22,.45)';ctx.fillRect(x,y,2,32);ctx.fillRect(x,y+28,25.6,4);}}
     const texture = new T.CanvasTexture(c); texture.colorSpace = T.SRGBColorSpace; texture.wrapS = texture.wrapT = T.RepeatWrapping; texture.anisotropy = Math.min(8,renderer.capabilities.getMaxAnisotropy());
-    texture.repeat.set(kind==='wood'?1:24,kind==='wood'?1:24); return texture;
+    const unit=['wood','weathered','floor','clay'].includes(kind);texture.repeat.set(unit?1:24,unit?1:24); return texture;
   }
   const loader=new T.TextureLoader();
   const [grass,wood]=await Promise.all(['kampung-grass.webp','kampung-timber.webp'].map(name=>loader.loadAsync(new URL('../assets/textures/'+name,import.meta.url).href)));
   for(const texture of [grass,wood]){texture.colorSpace=T.SRGBColorSpace;texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
   wood.repeat.set(2,2);
-  const textures = {grass:surface('grass'), dirt:surface('dirt'), wood, asphalt:surface('asphalt'), plaster:surface('plaster'), tile:surface('tile')};
+  const textures = {grass:surface('grass'), dirt:surface('dirt'), wood, asphalt:surface('asphalt'), plaster:surface('plaster'), tile:surface('tile'), weathered:surface('weathered'), floor:surface('floor'), clay:surface('clay')};
   textures.dirt.repeat.set(1,1);textures.asphalt.repeat.set(1,1);textures.plaster.repeat.set(2,2);textures.tile.repeat.set(1,1);
   // Illustrated distant scenery wraps the playable 3D streets: flat painted
   // houses/trees/hills carry the horizon instead of additional modeled town.
@@ -277,28 +285,14 @@ export async function makeWorld(canvas) {
   collider(-3,-50,38,10);collider(22,-49,9,20);
   fence(-23,-61,51);fence(-23,-61,30,'z');fence(28,-61,30,'z');
   fence(-23,-31,16);fence(1,-31,27); // 8-metre school gate.
-  // Old-town shophouses: five-foot walkways, pastel walls, timber shutters.
-  const shopColors=[0xe5a88c,0x9fc8ba,0xf0d18d,0xd99cb6,0x89b0ca,0xe0cda4,0xc9bd92];
+  // Old-town shophouses: a Straits terrace with salmon five-foot-way pillars,
+  // arched louvred windows, a scalloped valance and a hipped clay roof.
+  const landmarks=createLandmarks({scene,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
   const shopNames=BUILDINGS.filter(b=>b.kind==='shop').map(b=>b.name.toUpperCase());
-  for(let i=0;i<shopNames.length;i++){
-    const x=-10+i*9;
-    box(8.8,7.3,10,textured(shopColors[i],'plaster'),x,3.7,-24);roof(9.2,11,x,7.4,-24,0x8d6151);
-    for(const a of [-1,1]){box(1.7,2,.15,0x536d61,x+a*2.4,5.5,-18.93);box(.13,2.1,.18,0xe7d8b4,x+a*2.4,5.5,-18.82);}
-    box(7.8,2.4,.15,0x7b7156,x,1.3,-18.93);box(9,.22,2.6,0xd6c4a0,x,.15,-17.4);box(9,.22,2.7,shopColors[i],x,3.2,-17.4);
-    for(const a of [-1,1])box(.22,3,.22,0xeee0b9,x+a*4.15,1.5,-16.3);
-    // A narrow fascia above the awning keeps the shop name unobstructed.
-    const shopSign=sign(shopNames[i],x,3.85,-18.6,7);shopSign.scale.y=.43;
-    collider(x,-24,8.8,10,'building');
-    for(const side of [-1,1])collider(x+side*4.15,-16.3,.22,.22,'post');
-    for(const a of [-1,1]){windowDetail(x+a*2.4,5.5,-18.75,1.7,2);for(let l=0;l<8;l++)box(.65,.035,.08,0x3f6856,x+a*2.4-.3,4.65+l*.23,-18.64);}
-    box(8.8,.15,.3,0xeee2c7,x,7.12,-18.88);box(8.8,.15,.4,0xeee2c7,x,3.67,-18.85);
-    for(let col=0;col<14;col++)for(let row=0;row<3;row++)box(.6,.02,.62,(col+row)%2?0xb7baa5:0xdbceb4,x-4.05+col*.62,.275,-18.04+row*.65);
-    for(let slat=0;slat<20;slat++)box(.025,2.3,.025,0x4f5d4e,x-3.7+slat*.39,1.35,-18.81);
-    for(let stripe=0;stripe<12;stripe++){const awning=box(.71,.045,1.4,stripe%2?0xe9dfc1:shopColors[i],x-3.93+stripe*.715,3.04,-16.35);awning.rotation.x=-.1;box(.7,.28,.04,stripe%2?0xe9dfc1:shopColors[i],x-3.93+stripe*.715,2.83,-15.64);}
-    if(i===0){for(let j=0;j<3;j++)box(.65,.6,.65,0x9e7954,x-2+j*.72,.5,-16.25);}
-    if(i===1){softBox(.7,.95,.08,0x34584b,x+2.7,.8,-16,undefined,.07);sign('GUNTING',x+2.7,.8,-15.94,.65);}
-
-  }
+  landmarks.shophouseRow(shopNames);
+  // Sacks outside the sundry shop and the barber's sandwich board.
+  for(let j=0;j<3;j++){box(.65,.6,.65,0x9e7954,-12.6+j*.72,.56,-18.4);}collider(-11.9,-18.4,2.2,.7,'goods');
+  softBox(.7,.95,.08,0x34584b,1.7,1.05,-17.2,undefined,.07);sign('GUNTING',1.7,1.05,-17.14,.65);
   // Warung has an open social space facing the lane.
   box(11,.25,6.5,0xcbbb96,12,.14,-6.5);box(11,2.8,.3,0xd4c597,12,1.5,-9.65);
   for(const x of [6.7,17.3])for(const z of [-9,-3.5]){cylinder(.13,.13,3.3,0x766746,x,1.7,z);roundCollider(x,z,.13,'post');}
@@ -317,17 +311,10 @@ export async function makeWorld(canvas) {
   for(const a of [-1,1]){const store=mesh(new T.TorusGeometry(.085,.018,5,14),0x654328,15.5+a*.76,1.147,-5.675);store.rotation.x=Math.PI/2;}
   for(let i=0;i<4;i++){cylinder(.3,.27,.6,0x839987,10.2+i*.85,1.35,-8.7,undefined,12);cylinder(.33,.33,.035,0xc4c7b3,10.2+i*.85,1.67,-8.7,undefined,12);}
   softBox(.65,1.0,.35,0x667d6e,17.5,.65,-8.2,undefined,.06);sign('TEH TARIK · RM1',12,2.04,-9.44,3.2);
-  // Mosque: yellow dome and slender minaret, inspired by Kuala Kangsar.
-  box(19,.18,19,0xdbd2b4,48,.12,-39);box(12,5.5,11,textured(0xf0dfad,'plaster'),48,2.85,-39);
-  box(13.3,.35,12.3,0xe9d9ac,48,5.6,-39);
-  mesh(new T.SphereGeometry(4,20,12,0,Math.PI*2,0,Math.PI/2),0xd4b24b,48,5.85,-39);
-  cylinder(.7,.7,.6,0xe9cb68,48,9.8,-39);cylinder(.05,.05,1.6,0xb39442,48,10.7,-39);
-  for(const x of [44,48,52]){box(1.6,3,.13,0x477163,x,1.9,-33.4);mesh(new T.SphereGeometry(.8,12,8,0,Math.PI,0,Math.PI),0x477163,x,3.3,-33.35).scale.z=.1;}
-  cylinder(1.2,1.6,11,0xefddaf,58,5.6,-44,undefined,12);cylinder(1.8,1.8,.45,0xd2bd81,58,10.5,-44,undefined,12);mesh(new T.SphereGeometry(1.5,12,8,0,Math.PI*2,0,Math.PI/2),0xd3b450,58,11,-44);
-  sign('MASJID SERI KENANGAN',48,3.8,-33.2,9);collider(48,-39,13,12);collider(58,-44,3.5,3.5);
-  for(const xx of [42.1,44,48,52,53.9]){cylinder(.09,.12,3.8,0xe9dbbb,xx,1.95,-33.15);cylinder(.17,.17,.16,0xc9ae6f,xx,3.72,-33.15,undefined,12);}
-  for(const zz of [-43,-39,-35]){box(.05,2.5,1.3,glass,54.03,2.6,zz);box(.08,.1,1.5,0xe3cfa1,54.07,3.9,zz);}
-  for(let i=0;i<12;i++)box(.3,.1,.3,0xc6b180,43.4+i*.84,5.83,-32.8);
+  // Mosque inspired by Kuala Kangsar: cusped arcades, a gilded onion dome and
+  // four striped minarets with open galleries.
+  box(19,.18,19,0xdbd2b4,48,.12,-39);
+  landmarks.mosque(48,-39,'MASJID SERI KENANGAN');
   palm(33,-44,1);palm(66,-43,1);tree(67,-31,.8);
   // Two dense rows on the right; each fenced front yard has a real gate.
   for(const b of BUILDINGS.filter(b=>b.kind==='terrace')){
@@ -416,17 +403,9 @@ export async function makeWorld(canvas) {
     for(const side of [-1,1])box(.16,.04,.08,0x56584a,x-.1,.64,z+side*.16);
   }
   bicycle(-34,33);bicycle(10,-15);
-  const car=new T.Group();car.position.set(-13,0,11);scene.add(car);
-  softBox(2.8,.85,5.25,0xc6d2bd,0,.97,0,car,.22);softBox(2.48,.84,2.65,0xc6d2bd,0,1.69,-.16,car,.18);
-  softBox(2.2,.64,.06,glass,0,1.74,1.17,car,.045);softBox(2.2,.58,.06,glass,0,1.73,-1.51,car,.04);
-  for(const side of [-1,1]){
-    softBox(.05,.57,2.05,glass,side*1.26,1.75,-.15,car,.016);box(.07,.61,.08,0xa0b49e,side*1.29,1.76,-.1,car);
-    softBox(.22,.15,.26,0xa1b39c,side*1.48,1.65,.89,car,.045);
-    box(.25,.035,.04,0x687b6a,side*1.39,1.3,.12,car);
-    for(const zz of [-1.6,1.6]){const wheel=cylinder(.43,.43,.3,0x343e36,side*1.39,.57,zz,car,20);wheel.rotation.z=Math.PI/2;const hub=cylinder(.25,.25,.31,0xa6b1a4,side*1.4,.57,zz,car,12);hub.rotation.z=Math.PI/2;}
-    softBox(.68,.25,.055,0xf6e2b1,side*.86,1.02,2.645,car,.045);softBox(.55,.2,.055,0x9e4f40,side*.88,1.02,-2.645,car,.035);
-  }
-  box(1.03,.25,.06,0x4c5e51,0,.86,2.65,car);box(2.6,.12,.11,0x6b7d6d,0,.62,2.67,car);box(.6,.17,.055,0x2f3f35,0,.7,2.735,car);collider(-13,11,3.3,6);
+  // Boxy 1990s family sedans parked along the main road verge.
+  landmarks.sedan(-13,10.8,Math.PI/2,0xd4322c);collider(-13,10.8,4.5,1.9,'vehicle');
+  landmarks.sedan(21,10.8,-Math.PI/2,0xeeece4);collider(21,10.8,4.5,1.9,'vehicle');
 
   for(let i=0;i<42;i++){
     const x=-76+((i*37)%152),z=-66+((i*29)%130);
@@ -490,12 +469,13 @@ export async function makeWorld(canvas) {
   for (const object of staticMeshes) { object.removeFromParent(); object.geometry.dispose(); }
   for (const {material,geometries,occluder} of buckets.values()) {
     const count = geometries.reduce((sum, geometry) => sum + geometry.attributes.position.count, 0);
-    const positions = new Float32Array(count * 3), normals = new Float32Array(count * 3), uvs = new Float32Array(count * 2);
+    const positions = new Float32Array(count * 3), normals = new Float32Array(count * 3), uvs = new Float32Array(count * 2), colors = material.vertexColors ? new Float32Array(count * 3).fill(1) : null;
     let offset = 0;
     for (const geometry of geometries) {
       positions.set(geometry.attributes.position.array, offset);
       normals.set(geometry.attributes.normal.array, offset);
       if (geometry.attributes.uv) uvs.set(geometry.attributes.uv.array, offset / 3 * 2);
+      if (colors && geometry.attributes.color) colors.set(geometry.attributes.color.array, offset);
       offset += geometry.attributes.position.array.length;
       geometry.dispose();
     }
@@ -503,6 +483,7 @@ export async function makeWorld(canvas) {
     merged.setAttribute('position', new T.BufferAttribute(positions, 3));
     merged.setAttribute('normal', new T.BufferAttribute(normals, 3));
     merged.setAttribute('uv', new T.BufferAttribute(uvs, 2));
+    if (colors) merged.setAttribute('color', new T.BufferAttribute(colors, 3));
     merged.computeBoundingSphere();
     const object = new T.Mesh(merged, occluder?material.clone():material);if(occluder){object.material.onBeforeCompile=material.onBeforeCompile;object.material.customProgramCacheKey=material.customProgramCacheKey;}if(occluder){object.material.transparent=true;cameraOccluders.push(object);}
     object.castShadow = true; object.receiveShadow = true; scene.add(object);
@@ -519,6 +500,7 @@ export async function makeWorld(canvas) {
     const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.computeBoundingSphere();const lines=comicEdges(g,1.8);scene.add(lines);distantDetails.push(lines);
   }
   function groundHeight(x,z){
+    if(x>-14.5&&x<48.5&&z>-19&&z<-16.05)return .26;
     if(x>-71.5&&x<-58.5&&(Math.abs(z-4)<4||Math.abs(z-37)<4))return .24;
     for(const b of BUILDINGS.filter(b=>b.kind==='home'||b.kind==='house')){
       if(Math.abs(x-b.x)<b.w/2+.5&&z>b.z+b.d/2&&z<b.z+b.d/2+2.25)return 1.525;

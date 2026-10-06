@@ -1,4 +1,4 @@
-# Illustrated prototype design — v0.7.0
+# Illustrated prototype design — v0.8.0
 
 Amir and Nur follow the supplied Jaguh Kampung character sheet, and the camera follows the third-person reference recording: low behind the shoulder, a wide lens, the street and horizon ahead. The world keeps 3D movement, collision and animation, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
 
@@ -17,6 +17,18 @@ The gait is measured in leg lengths and blends with actual travel speed. A walk 
 ## Camera
 
 The chase camera sits 4.4 m behind the player, about 2 m above the ground (0.2 rad pitch over a 1.15 m look point), with a 58° vertical lens. The player stands just below the centre with the horizon in the upper third. While moving, the camera swings in behind the direction of travel. It swings gently when turning and not at all when the player runs back toward the lens, and a recent swipe pauses the follow. A ray to the lens pulls the camera in front of walls and roofs instead of passing through them. Sun shadows are centred on the street ahead. In conversations the NPC turns to face the player and the camera moves to an over-the-shoulder two-shot above the dialogue panel. The title screen keeps its overhead view.
+
+## Landmarks — v0.8.0
+
+The shophouses, mosque and car follow the supplied low-poly concept sheets, rebuilt as code-authored 3D models in `src/landmarks.js`. The images themselves are not used in the game.
+
+| Landmark | Implemented details |
+|---|---|
+| Shophouse terrace | Seven two-storey Straits shophouses with the upper floor carried over a five-foot way. Salmon brick-toned pillars with banded shafts and cream capitals, a terracotta-and-cream encaustic tiled walkway (walkable, raised 0.26 m), dark shop interiors with folding doors and rolled-up green shutters. Upstairs, arched windows with radial fanlights and louvred shutters alternate peach and sage between cream pilasters. A string course carries each shop's name, then a stepped cornice, a scalloped timber valance and a single hipped clay-tile roof with ridge and hip caps. Walls use a weathered lime-plaster texture of ochre, peach and grey patches; the west end wall has an arched side door. |
+| Mosque | Inspired by Kuala Kangsar: open red-and-cream arcades of cusped pointed arches on all four sides, black pier bases, a parapet with saw-tooth cresting and eight gilded pinnacles, a drum with a band of cresting, the large gilded onion dome with finial, and four cream minarets with brown bands, open galleries and gilded caps. The entrance porch has a larger cusped arch and the name plate. |
+| Sedan | A boxy 1990s four-door family car with a wedge nose, upright glasshouse with pillars, wide headlamps and grille, wing mirrors, door handles, side trim, tail lamps, a roof aerial and five-spoke alloy wheels. A red and a white one are parked on the main-road verge. No real badges or brand names are used. |
+
+Plain-coloured parts carry their colour per vertex and share two materials (smooth and faceted), so the town batcher still merges each 24 m cell into a few draw calls. Shop walls, roof tiles and walkway tiles use world-scaled textures so they keep one scale along the terrace. Building colliders match the new footprints: shophouse pillars are round 0.4 m posts, minarets are 1.05 m round bodies.
 
 ## Environment
 

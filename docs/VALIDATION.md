@@ -104,3 +104,13 @@ Characters were checked in front, three-quarter, side and back renders of the ac
 The chase camera was checked in a 844 × 390 mobile landscape viewport. The new game starts behind Amir. Steering to Nur under the auto-following camera reached her Talk button, and the dialogue two-shot showed both speakers facing each other above the panel. With Amir on his verandah and the lens behind him pointing into the house, the camera pulled in to 1.89 m instead of entering the wall; on the open lane it stayed at 4.4 m (`kampung-run-v070.webp`, `chase-camera-v070.webp`, `dialogue-v070.webp`).
 
 Full chapter regression passed under both repository-root and built-folder hosting: meeting Nur and advancing her dialogue, resuming beside Pak Mat, a complete congkak round (13 player moves, 30–68), chapter completion, return to exploration and the saved Continue after reload. There were no page or renderer errors and no missing assets. Physical Android/iPhone frame rate remains unmeasured.
+
+## v0.8.0 — concept-sheet shophouses, mosque and sedan
+
+`npm test`: **29 tests passed**. `npm run build`: passed, and `dist/` includes the new `landmarks.js` module.
+
+The new models were checked in the actual game scene from gameplay and review angles (`shophouses-v080.webp`, `shophouse-corner-v080.webp`, `mosque-v080.webp`, `sedan-v080.webp`, `five-foot-way-v080.webp`). A 0.5 m flood-fill of walkable space from Amir's spawn still reaches the approach to all 38 locations. The raised five-foot way is walkable along the whole terrace, as is the gap between the shophouses and the mosque. The scene now has 239 collision bodies, up from 232.
+
+Draw calls at the same chase-camera viewpoints as v0.7.0: 504 in the widest kampung view across the town (was 527), 367 on the main road (was 372) and 285 by the mosque (was 329). On the shophouse street it was 387. Triangles rose to 197–321k because of the arches and domes. These are software-rendered workload counts, not phone frame-rate measurements.
+
+Full chapter regression passed under both repository-root and built-folder hosting: meeting Nur, resuming beside Pak Mat, a complete congkak round (13 moves, 30–68), chapter completion and Continue after reload, with no page or renderer errors and no missing assets.
