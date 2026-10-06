@@ -4,7 +4,8 @@ import * as T from 'three';
 // shophouse terrace, a Kuala Kangsar-style mosque and a 1990s family sedan.
 // Plain-coloured parts carry their colour per vertex and share two materials
 // (smooth and faceted), so the town batcher still merges them per cell.
-export function createLandmarks({ scene, toon, textured, register, sign, collider, roundCollider }) {
+// Models are built in their unit's local frame under `parent()`.
+export function createLandmarks({ parent, toon, textured, register, sign, collider, roundCollider }) {
   const paint = register('paint', toon(0xffffff, { vertexColors: true }));
   const facet = register('paint-facet', toon(0xffffff, { vertexColors: true, flatShading: true }));
   const tint = new T.Color();
@@ -18,7 +19,7 @@ export function createLandmarks({ scene, toon, textured, register, sign, collide
     const m = new T.Mesh(geometry, o.material || (o.facet ? facet : paint));
     m.position.set(x, y, z); if (o.rot) m.rotation.set(...o.rot);
     m.castShadow = true; m.receiveShadow = true; if (o.occluder) m.userData.cameraOccluder = true;
-    (o.parent || scene).add(m); return m;
+    (o.parent || parent()).add(m); return m;
   }
   const box = (w, h, d, hex, x, y, z, o) => add(new T.BoxGeometry(w, h, d), hex, x, y, z, o);
   const cyl = (r1, r2, h, hex, x, y, z, segments = 8, o) => add(new T.CylinderGeometry(r1, r2, h, segments), hex, x, y, z, o);
@@ -190,7 +191,7 @@ export function createLandmarks({ scene, toon, textured, register, sign, collide
     const W = 13, D = 11, H = 4.4, spring = 2.25;
     // Open arcades on all four sides around the prayer hall.
     for (const [len, x, z, ry] of [[W, cx, cz + D / 2, 0], [W, cx, cz - D / 2, Math.PI], [D, cx + W / 2, cz, Math.PI / 2], [D, cx - W / 2, cz, -Math.PI / 2]]) {
-      const g = new T.Group(); g.position.set(x, .21, z); g.rotation.y = ry; scene.add(g);
+      const g = new T.Group(); g.position.set(x, .21, z); g.rotation.y = ry; parent().add(g);
       arcade(g, len, Math.round(len / 1.85), H, spring);
     }
     box(W - 2.2, H - .2, D - 2.2, 0xe9dcc0, cx, .21 + (H - .2) / 2, cz, { occluder: true });
@@ -225,7 +226,7 @@ export function createLandmarks({ scene, toon, textured, register, sign, collide
       roundCollider(x, z, 1.05, 'minaret');
     }
     // Entrance porch with a larger cusped arch and two gilded corner caps.
-    const porch = new T.Group(); porch.position.set(cx, .21, cz + D / 2 + 1.5); scene.add(porch);
+    const porch = new T.Group(); porch.position.set(cx, .21, cz + D / 2 + 1.5); parent().add(porch);
     add(extrude(shape([new T.Vector2(-2.1, -.06), new T.Vector2(2.1, -.06), new T.Vector2(2.1, 5.6), new T.Vector2(-2.1, 5.6)], [arch(2.3, 2.7, 'cusped')]), .3), WHITE, 0, 0, -.3, { parent: porch });
     add(extrude(shape(arch(2.3, 2.7, 'cusped', .22), [arch(2.3, 2.7, 'cusped')]), .06), RED, 0, 0, 0, { parent: porch });
     for (const s of [-1, 1]) { box(.3, 5.6, 1.5, WHITE, s * 1.95, 2.8, -.75, { parent: porch }); box(.5, .45, .3, BLACK, s * 1.95, .23, .05, { parent: porch }); }
@@ -239,7 +240,7 @@ export function createLandmarks({ scene, toon, textured, register, sign, collide
   // ---------------------------------------------------------------- sedan
   // A boxy 1990s four-door: wedge nose, upright glasshouse, five-spoke rims.
   function sedan(x, z, heading, body = 0xd4322c) {
-    const car = new T.Group(); car.position.set(x, 0, z); car.rotation.y = heading; scene.add(car);
+    const car = new T.Group(); car.position.set(x, 0, z); car.rotation.y = heading; parent().add(car);
     const o = { parent: car, facet: true }, dark = 0x2c2f33, glassTone = 0x8fa4ae, light = new T.Color(body).offsetHSL(0, 0, -.12).getHex();
     const shell = new T.BoxGeometry(1.68, .56, 4.3, 2, 2, 6), p = shell.attributes.position;
     for (let i = 0; i < p.count; i++) {

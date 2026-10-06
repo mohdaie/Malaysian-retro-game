@@ -1,11 +1,11 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=0.8.0';
+import { makeWorld } from './world.js?v=0.9.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.8.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.8.0';
-import { createSoundscape } from './soundscape.js?v=0.8.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, districtAt } from './town-layout.js?v=0.8.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.9.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.9.0';
+import { createSoundscape } from './soundscape.js?v=0.9.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=0.9.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -29,10 +29,10 @@ let saved = readSave(storage);
 $('continue-button').hidden = !saved;
 if (saved) { $('player-name').value = saved.name; $('friend-name').value = saved.friend; }
 const quests = [
-  { title: 'A familiar face', text: () => `Find ${state.friend} outside your kampung house.`, x: -35, z: 36 },
-  { title: 'Down to the pekan', text: () => 'Follow the lane to Warung Pak Mat. He has a congkak board waiting.', x: 12, z: -.5 },
-  { title: 'Seven little houses', text: () => 'Talk to Pak Mat and finish your first congkak practice round.', x: 12, z: -.5 },
-  { title: 'An afternoon well spent', text: () => 'First chapter complete. Explore the town, or ask Pak Mat for a rematch.', x: 12, z: -.5 }
+  { title: 'A familiar face', text: () => `Find ${state.friend} outside your kampung house.`, x: world.npcs[0].x, z: world.npcs[0].z },
+  { title: 'Down to the pekan', text: () => 'Follow the lane to Warung Pak Mat. He has a congkak board waiting.', x: world.npcs[1].x, z: world.npcs[1].z },
+  { title: 'Seven little houses', text: () => 'Talk to Pak Mat and finish your first congkak practice round.', x: world.npcs[1].x, z: world.npcs[1].z },
+  { title: 'An afternoon well spent', text: () => 'First chapter complete. Explore the town, or ask Pak Mat for a rematch.', x: world.npcs[1].x, z: world.npcs[1].z }
 ];
 function refreshQuest() {
   const q = quests[state.quest];
@@ -66,14 +66,16 @@ function persist() {
 function begin(value = null) {
   if(value) Object.assign(state, { name: value.name, friend: value.friend, quest: value.quest, completed: value.completed });
   else Object.assign(state, { name: $('player-name').value.trim().slice(0,20) || 'Amir', friend: $('friend-name').value.trim().slice(0,20) || 'Nur', quest: 0, completed: false });
-  let x = value?.x ?? -43, z = value?.z ?? 38;
-  if(!world.canWalk(x,z)) { x=-43; z=38; }
+  // A save from an older layout may stand inside a moved building.
+  let x = value?.x ?? world.spawn.x, z = value?.z ?? world.spawn.z;
+  if(!world.canWalk(x,z)) { x=world.spawn.x; z=world.spawn.z; }
   player.group.position.set(x,world.groundHeight(x,z)-.065,z);
   yaw = player.group.rotation.y + Math.PI; cameraPitch = CAMERA_PITCH; cameraSettle = 0;
   world.renameHomes(state.name, state.friend);
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); persist();
-  toast(value ? `Selamat kembali, ${state.name}.` : `Welcome home, ${state.name}. Find ${state.friend} by the lane.`);
+  toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value ? `Selamat kembali, ${state.name}.` : `Welcome home, ${state.name}. Find ${state.friend} by the lane.`);
+  if(PREVIEW)$('day-label').textContent='Map preview';
 }
 $('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
   showDialogue('A new afternoon', ['Starting a new story replaces the saved journey on this device.'], () => begin());
@@ -227,6 +229,21 @@ for(const zone of DISTRICTS){
   for(const b of BUILDINGS.filter(b=>b.zone===zone.id)){const item=document.createElement('li');item.value=b.id;item.dataset.building=b.id;item.textContent=b.name;list.append(item);}
   details.append(list);directory.append(details);
 }
+// District labels sit on the emptiest ground inside each district, so they
+// stay readable wherever the plan moves buildings.
+const overlapArea=(a,b)=>Math.max(0,Math.min(a[0]+a[2]/2,b[0]+b[2]/2)-Math.max(a[0]-a[2]/2,b[0]-b[2]/2))*Math.max(0,Math.min(a[1]+a[3]/2,b[1]+b[3]/2)-Math.max(a[1]-a[3]/2,b[1]-b[3]/2));
+const mapLabels=DISTRICTS.map(d=>{
+  const members=BUILDINGS.filter(b=>b.zone===d.id),cx=members.reduce((n,b)=>n+b.x,0)/members.length,cz=members.reduce((n,b)=>n+b.z,0)/members.length;
+  const w=d.short.length*1.9+2,h=4;let best={x:cx,z:cz,cost:Infinity};
+  for(let x=d.x-d.w/2+w/2;x<=d.x+d.w/2-w/2;x+=2)for(let z=d.z-d.d/2+h/2;z<=d.z+d.d/2-h/2;z+=2){
+    const box=[x,z,w,h];let cost=Math.hypot(x-cx,z-cz)*.4;
+    for(const b of BUILDINGS)cost+=overlapArea(box,[b.x,b.z,b.w,b.d])*4;
+    for(const r of ROADS)cost+=overlapArea(box,[r.x,r.z,r.w,r.d]);
+    for(const c of world.colliders)if(c.w!==undefined)cost+=overlapArea(box,[c.x,c.z,c.w,c.d])*2;
+    if(cost<best.cost)best={x,z,cost};
+  }
+  return [best.x,best.z,d.short];
+});
 function drawMap(canvas,full=false){
   const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   const px=x=>(x+82)/164*w,pz=z=>(z+70)/140*h;
@@ -247,8 +264,7 @@ function drawMap(canvas,full=false){
       const x=px(b.x),y=pz(b.z);ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fillStyle='#fff8e6';ctx.fill();ctx.strokeStyle='#272630';ctx.lineWidth=1.4;ctx.stroke();
       ctx.fillStyle='#272630';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(b.id),x,y+.5);
     }
-    const labels=[[-46,-62,'KAMPUNG'],[18,-63,'KOMUNITI'],[8,-12,'PEKAN'],[48,-2,'TERES'],[20,65,'PASAR / BAS']];
-    ctx.font='bold 11px system-ui';for(const [x,z,label]of labels){ctx.strokeStyle='#fff8e6';ctx.lineWidth=4;ctx.strokeText(label,px(x),pz(z));ctx.fillStyle='#272630';ctx.fillText(label,px(x),pz(z));}
+    ctx.font='bold 11px system-ui';ctx.textAlign='center';for(const [x,z,label]of mapLabels){ctx.strokeStyle='#fff8e6';ctx.lineWidth=4;ctx.strokeText(label,px(x),pz(z));ctx.fillStyle='#272630';ctx.fillText(label,px(x),pz(z));}
   }
   const q=quests[state.quest];if(state.quest<3){ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
   world.npcs.forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});

@@ -1,75 +1,202 @@
-// Authored metre-scale plan. Rendering and the numbered map share these records.
+import { TOWN_PLAN } from './town-plan.js?v=0.9.0';
+
+// Town plan geometry shared by the game, the tests and the map editor. The
+// editable positions live in town-plan.js; everything here is derived from
+// them. Rects are [x, z, w, d] in metres, centred, in a unit's own frame.
 export const TOWN_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
-export const DISTRICTS = [
-  { id: 'kampung', name: 'Kampung Melati', color: '#c87537', x: -48, z: -4, w: 36, d: 119 },
-  { id: 'terrace', name: 'Taman Kenangan', color: '#9271b4', x: 53, z: 15, w: 45, d: 44 },
-  { id: 'pekan', name: 'Pekan lama', color: '#b95670', x: 14, z: -16, w: 66, d: 30 },
-  { id: 'community', name: 'Sekolah & komuniti', color: '#4a9270', x: 21, z: -47, w: 87, d: 34 },
-  { id: 'transport', name: 'Pasar & stesen bas', color: '#4b8db4', x: 33, z: 51, w: 87, d: 29 }
-];
-const building = (id, name, zone, kind, x, z, w, d) => ({ id, name, zone, kind, x, z, w, d });
-export const BUILDINGS = [
-  building(1, 'Rumah Amir', 'kampung', 'home', -43, 27, 10, 8),
-  building(2, 'Rumah Tok', 'kampung', 'house', -51, -47, 9, 7),
-  building(3, 'Rumah Pak Mail', 'kampung', 'house', -37, -47, 9, 7),
-  building(4, 'Rumah Mak Cik Salmah', 'kampung', 'house', -51, -27, 9, 7),
-  building(5, 'Rumah Jiran A', 'kampung', 'house', -37, -27, 9, 7),
-  building(6, 'Rumah Jiran B', 'kampung', 'house', -51, -11, 9, 7),
-  building(7, 'Rumah Jiran C', 'kampung', 'house', -37, -11, 9, 7),
-  building(8, 'Rumah Warisan Kosong', 'kampung', 'house', -51, 51, 9, 7),
-  building(9, 'Wakaf Kebun', 'kampung', 'pavilion', -37, 51, 7, 6),
-  building(10, 'Pondok Tepi Sungai', 'kampung', 'pavilion', -76, -17, 4, 5),
-  building(11, 'Rumah Nur', 'terrace', 'terrace', 35, 16, 6.8, 7),
-  building(12, 'Rumah Kak Lina', 'terrace', 'terrace', 42, 16, 6.8, 7),
-  building(13, 'Rumah Pak Abu', 'terrace', 'terrace', 49, 16, 6.8, 7),
-  building(14, 'Rumah Jiran D', 'terrace', 'terrace', 56, 16, 6.8, 7),
-  building(15, 'Rumah Jiran E', 'terrace', 'terrace', 35, 31, 6.8, 7),
-  building(16, 'Rumah Jiran F', 'terrace', 'terrace', 42, 31, 6.8, 7),
-  building(17, 'Rumah Jiran G', 'terrace', 'terrace', 49, 31, 6.8, 7),
-  building(18, 'Rumah Jiran H', 'terrace', 'terrace', 56, 31, 6.8, 7),
-  building(19, 'Kedai Sudut Mini', 'terrace', 'mini-shop', 70, -10, 9, 8),
-  building(20, 'Tadika Kenangan', 'terrace', 'nursery', 70, 18, 9, 10),
-  building(21, 'Warung Pak Mat', 'pekan', 'warung', 12, -6.5, 11, 6.5),
-  building(22, 'Kedai Runcit 99', 'pekan', 'shop', -10, -24, 8.8, 10),
-  building(23, 'Kedai Gunting', 'pekan', 'shop', -1, -24, 8.8, 10),
-  building(24, 'Kedai Basikal', 'pekan', 'shop', 8, -24, 8.8, 10),
-  building(25, 'Alat Tulis & Game', 'pekan', 'shop', 17, -24, 8.8, 10),
-  building(26, 'Kedai Jahit', 'pekan', 'shop', 26, -24, 8.8, 10),
-  building(27, 'Klinik & Farmasi', 'pekan', 'shop', 35, -24, 8.8, 10),
-  building(28, 'Kedai Roti & Kuih', 'pekan', 'shop', 44, -24, 8.8, 10),
-  building(29, 'SK Seri Kenangan', 'community', 'school', -3, -50, 38, 10),
-  building(30, 'Kantin Sekolah', 'community', 'canteen', -14, -36, 10, 6),
-  building(31, 'Masjid Seri Kenangan', 'community', 'mosque', 48, -39, 12, 11),
-  building(32, 'Balai Raya', 'community', 'hall', 37, -56, 13, 8),
-  building(33, 'Perpustakaan Mini', 'community', 'library', 55, -56, 12, 8),
-  building(34, 'Gelanggang Serbaguna', 'community', 'court', 9, -36, 14, 8),
-  building(35, 'Perhentian Bas', 'transport', 'station', 52, 39, 13, 9),
-  building(36, 'Bengkel & Tayar', 'transport', 'workshop', 33, 56, 10, 10),
-  building(37, 'Kiosk Petrol Retro', 'transport', 'petrol', 70, 50, 9, 8),
-  building(38, 'Tapak Pasar Malam', 'transport', 'market', 8, 52, 24, 20)
-];
-export const ROADS = [
-  { x: 0, z: 4, w: 150, d: 8, kind: 'asphalt' },
-  { x: -25, z: 0, w: 7, d: 132, kind: 'asphalt' },
-  { x: 62, z: 0, w: 7, d: 132, kind: 'asphalt' },
-  { x: -43, z: 1, w: 4, d: 114, kind: 'dirt' },
-  { x: -44, z: -36, w: 30, d: 3, kind: 'dirt' },
-  { x: -44, z: -18, w: 30, d: 3, kind: 'dirt' },
-  { x: 4, z: 37, w: 90, d: 4, kind: 'dirt' },
-  { x: 17, z: -13, w: 69, d: 4, kind: 'dirt' },
-  { x: 29, z: -1, w: 4, d: 30, kind: 'dirt' },
-  { x: 46, z: 9, w: 30, d: 3, kind: 'dirt' },
-  { x: 46, z: 24, w: 30, d: 3, kind: 'dirt' },
-  { x: 24, z: 49, w: 4, d: 30, kind: 'dirt' },
-  { x: 39, z: 43, w: 32, d: 3, kind: 'dirt' },
-  { x: 44, z: 53, w: 3, d: 25, kind: 'dirt' },
-  { x: 40, z: -49, w: 4, d: 10, kind: 'dirt' }
-];
+// The river and its two bridges stay fixed: they are terrain, not buildings.
+export const RIVER = { x: -65, w: 10.5 };
 export const BRIDGES = [{ x: -65, z: 4, w: 13, d: 8 }, { x: -65, z: 37, w: 13, d: 8 }];
+export const DISTRICT_INFO = [
+  { id: 'kampung', name: 'Kampung Melati', short: 'KAMPUNG', color: '#c87537' },
+  { id: 'terrace', name: 'Taman Kenangan', short: 'TERES', color: '#9271b4' },
+  { id: 'pekan', name: 'Pekan lama', short: 'PEKAN', color: '#b95670' },
+  { id: 'community', name: 'Sekolah & komuniti', short: 'KOMUNITI', color: '#4a9270' },
+  { id: 'transport', name: 'Pasar & stesen bas', short: 'PASAR / BAS', color: '#4b8db4' }
+];
+// The 38 numbered places: [name, district, kind].
+export const PLACES = {
+  1: ['Rumah Amir', 'kampung', 'home'], 2: ['Rumah Tok', 'kampung', 'house'], 3: ['Rumah Pak Mail', 'kampung', 'house'],
+  4: ['Rumah Mak Cik Salmah', 'kampung', 'house'], 5: ['Rumah Jiran A', 'kampung', 'house'], 6: ['Rumah Jiran B', 'kampung', 'house'],
+  7: ['Rumah Jiran C', 'kampung', 'house'], 8: ['Rumah Warisan Kosong', 'kampung', 'house'], 9: ['Wakaf Kebun', 'kampung', 'pavilion'],
+  10: ['Pondok Tepi Sungai', 'kampung', 'pavilion'], 11: ['Rumah Nur', 'terrace', 'terrace'], 12: ['Rumah Kak Lina', 'terrace', 'terrace'],
+  13: ['Rumah Pak Abu', 'terrace', 'terrace'], 14: ['Rumah Jiran D', 'terrace', 'terrace'], 15: ['Rumah Jiran E', 'terrace', 'terrace'],
+  16: ['Rumah Jiran F', 'terrace', 'terrace'], 17: ['Rumah Jiran G', 'terrace', 'terrace'], 18: ['Rumah Jiran H', 'terrace', 'terrace'],
+  19: ['Kedai Sudut Mini', 'terrace', 'mini-shop'], 20: ['Tadika Kenangan', 'terrace', 'nursery'], 21: ['Warung Pak Mat', 'pekan', 'warung'],
+  22: ['Kedai Runcit 99', 'pekan', 'shop'], 23: ['Kedai Gunting', 'pekan', 'shop'], 24: ['Kedai Basikal', 'pekan', 'shop'],
+  25: ['Alat Tulis & Game', 'pekan', 'shop'], 26: ['Kedai Jahit', 'pekan', 'shop'], 27: ['Klinik & Farmasi', 'pekan', 'shop'],
+  28: ['Kedai Roti & Kuih', 'pekan', 'shop'], 29: ['SK Seri Kenangan', 'community', 'school'], 30: ['Kantin Sekolah', 'community', 'canteen'],
+  31: ['Masjid Seri Kenangan', 'community', 'mosque'], 32: ['Balai Raya', 'community', 'hall'], 33: ['Perpustakaan Mini', 'community', 'library'],
+  34: ['Gelanggang Serbaguna', 'community', 'court'], 35: ['Perhentian Bas', 'transport', 'station'], 36: ['Bengkel & Tayar', 'transport', 'workshop'],
+  37: ['Kiosk Petrol Retro', 'transport', 'petrol'], 38: ['Tapak Pasar Malam', 'transport', 'market']
+};
+
+// Stilt houses: the verandah and four stair treads are raised floors.
+function stiltHouse(w, d, extra = {}) {
+  const stairs = [0, 1, 2, 3].map(i => [0, d / 2 + 3.1 - i * .6, 2, .65, .25 + i * .28]);
+  return { label: 'Kampung house', places: [[0, 0, w, d]], solids: [[0, 1.725, w + 1, d + 3.45]], floors: [[0, d / 2 + 1.125, w + 1, 2.25, 1.525], ...stairs], ...extra };
+}
+const pavilion = (label, w, d) => ({ label, places: [[0, 0, w, d]], solids: [[0, .25, w + 1, d + 1.5]], floors: [[0, 0, w, d, .17]] });
+const civic = (label, w, d, extra = {}) => ({ label, places: [[0, 0, w, d]], floors: [], ...extra, solids: [[0, 0, w + 1, d + 1], ...(extra.solids || [])] });
+
+// Each kind lists, in its own frame: `places` (one rect per numbered place),
+// `solids` (what may not overlap another unit), `floors` ([x,z,w,d,height]
+// raised walkable ground), `spots` ([x,z,heading] for people) and `decor`
+// (trees planted only where they fit). `open` kinds may sit on roads.
+export const KINDS = {
+  home: stiltHouse(10, 8, {
+    label: 'Rumah Amir and yard',
+    solids: [[0, 1.725, 11, 11.45], [0, -7, 20, .12], [-10, 3.5, .12, 21], [-6.5, 14, 7, .12], [7.5, 14, 5, .12], [-7.5, -9, 7.5, .4], [9, 6, 2.4, .55]],
+    spots: { spawn: [0, 11, 0], nur: [8, 9, -.7] },
+    decor: [['palm', -14, 4, 1.1], ['palm', 10, -5, .9], ['tree', -13, 18, .8]],
+    patches: [[-6, 8, 6], [-5, 12, 5], [6, 3, 4], [8, 13, 5], [-7, -4, 5]]
+  }),
+  house: stiltHouse(9, 7),
+  wakaf: pavilion('Wakaf (garden shelter)', 7, 6),
+  pondok: pavilion('Riverside hut', 4, 5),
+  canteen: pavilion('School canteen', 10, 6),
+  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]] },
+  minishop: civic('Corner shop', 9, 8),
+  nursery: civic('Nursery', 9, 10, { solids: [[-.9, 7, 3, .6]] }),
+  hall: civic('Village hall', 13, 8),
+  library: civic('Library', 12, 8),
+  petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]] }),
+  warung: { label: 'Warung Pak Mat', places: [[0, 0, 11, 6.5]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { pak: [0, 6, .2] } },
+  shophouses: {
+    label: 'Shophouse terrace (7 shops)',
+    places: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 0, 8.8, 10]),
+    solids: [[0, 1.48, 63, 12.95], [-7, 9, 2.4, .55]], floors: [[0, 6.475, 63, 2.95, .26]]
+  },
+  school: {
+    label: 'School compound', yard: true,
+    places: [[-5.5, -4, 38, 10]],
+    solids: [[-5.5, -4, 38, 10], [19.5, -3, 9, 20], [0, -15, 51, .12], [-25.5, 0, .12, 30], [25.5, 0, .12, 30], [-17.5, 15, 16, .12], [12, 15, 27, .12], [-21.5, 14.3, .3, .3], [10.5, 14.3, .3, .3]],
+    floors: [[-5.5, 2.5, 40, 3.5, .23], [-5.5, 10, 31, 9, .13]]
+  },
+  court: { label: 'Sports court', open: true, places: [[0, 0, 14, 8]], solids: [[0, 0, 14, 8]], floors: [[0, 0, 14, 8, .18]] },
+  mosque: {
+    label: 'Mosque and plaza', places: [[0, 0, 12, 11]], solids: [[0, .2, 16.7, 15.1]], floors: [[0, 0, 19, 19, .21]],
+    decor: [['palm', -15, -5, 1], ['palm', 18, -4, 1], ['tree', 19, 8, .8]]
+  },
+  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]] },
+  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['palm', 6, 8, .9]] },
+  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], solids: [[0, 0, 22, 17]], floors: [], decor: [['palm', -12, -11, .85], ['tree', 11, 12, .7]] },
+  square: {
+    label: 'Town square', open: true, places: [],
+    solids: [[0, 0, 22, 17], [-12, -6, .6, .6], [12, -6, .6, .6], [-12, 7, .6, .6], [12, 7, .6, .6]], floors: [[0, 0, 22, 17, .09]]
+  },
+  bus: { label: 'Town bus', vehicle: true, places: [], solids: [[0, 0, 4.3, 10.3]], floors: [] },
+  sedan: { label: 'Family car', vehicle: true, places: [], solids: [[0, 0, 1.9, 4.5]], floors: [] },
+  passerby: { label: 'Passer-by', vehicle: true, places: [], solids: [[0, 0, .6, .6]], floors: [] }
+};
+
+// Quarter-turn transforms match Three.js rotation.y = rot·π/2:
+// world = (x + lx·cos + lz·sin, z − lx·sin + lz·cos).
+const COS = [1, 0, -1, 0], SIN = [0, 1, 0, -1];
+const turn = rot => ((Math.round(rot || 0) % 4) + 4) % 4;
+export function toWorld(unit, lx, lz) {
+  const r = turn(unit.rot);
+  return [unit.x + lx * COS[r] + lz * SIN[r], unit.z - lx * SIN[r] + lz * COS[r]];
+}
+export function rectToWorld(unit, [x, z, w, d]) {
+  const [wx, wz] = toWorld(unit, x, z);
+  return turn(unit.rot) % 2 ? [wx, wz, d, w] : [wx, wz, w, d];
+}
+export const headingToWorld = (unit, heading) => heading + turn(unit.rot) * Math.PI / 2;
+function bounds(rects) {
+  if (!rects.length) return null;
+  let a = Infinity, b = -Infinity, c = Infinity, e = -Infinity;
+  for (const [x, z, w, d] of rects) { a = Math.min(a, x - w / 2); b = Math.max(b, x + w / 2); c = Math.min(c, z - d / 2); e = Math.max(e, z + d / 2); }
+  return [(a + b) / 2, (c + e) / 2, b - a, e - c];
+}
+const overlap = (p, q, gap = 0) => Math.abs(p[0] - q[0]) < (p[2] + q[2]) / 2 + gap && Math.abs(p[1] - q[1]) < (p[3] + q[3]) / 2 + gap;
+const EPS = -.02;
+
+// Everything the game needs, derived from one plan.
+export function derive(plan) {
+  const units = plan.units.map(u => {
+    const def = KINDS[u.kind];
+    if (!def) throw new Error(`Unknown kind ${u.kind} for ${u.id}`);
+    const solids = def.solids.map(r => rectToWorld(u, r));
+    const floors = (def.floors || []).map(f => [...rectToWorld(u, f), f[4]]);
+    const places = (u.places || []).map((id, i) => ({ id, rect: rectToWorld(u, def.places[i]) }));
+    return { ...u, rot: turn(u.rot), def, solids, floors, places, area: bounds([...solids, ...floors.map(f => f.slice(0, 4)), ...places.map(p => p.rect)]) };
+  });
+  const buildings = units.flatMap(u => u.places.map(({ id, rect: [x, z, w, d] }) => {
+    const [name, zone, kind] = PLACES[id];
+    return { id, name, zone, kind, x, z, w, d, unit: u.id };
+  })).sort((a, b) => a.id - b.id);
+  const districts = DISTRICT_INFO.map(info => {
+    const box = bounds(buildings.filter(b => b.zone === info.id).map(b => [b.x, b.z, b.w, b.d])) || [0, 0, 0, 0];
+    return { ...info, x: box[0], z: box[1], w: box[2] + 8, d: box[3] + 8 };
+  });
+  const spot = (kind, name) => {
+    const u = units.find(unit => unit.kind === kind), s = u && u.def.spots?.[name];
+    if (!s) return null;
+    const [x, z] = toWorld(u, s[0], s[1]); return { x, z, heading: headingToWorld(u, s[2]) };
+  };
+  return {
+    units, buildings, districts, roads: plan.roads.map(r => ({ ...r })),
+    floors: units.flatMap(u => u.floors),
+    spots: { spawn: spot('home', 'spawn'), nur: spot('home', 'nur'), pak: spot('warung', 'pak') },
+    passersby: units.filter(u => u.kind === 'passerby').map(u => ({ x: u.x, z: u.z, heading: headingToWorld(u, 0), who: u.who || 'nur' }))
+  };
+}
+
+// Layout checks shared by the tests and the editor. Errors make a plan
+// unusable; warnings are worth a look but still play.
+export function planProblems(plan) {
+  const problems = [], town = derive(plan);
+  const river = [RIVER.x, 0, RIVER.w, 400];
+  const label = u => `${u.def.label}${u.places.length ? ' (' + u.places.map(p => p.id).join(', ') + ')' : ''}`;
+  for (const u of town.units) {
+    const edges = u.def.vehicle ? u.solids : u.places.map(p => p.rect);
+    for (const [x, z, w, d] of edges.length ? edges : u.solids)
+      if (x - w / 2 < TOWN_BOUNDS.minX - .01 || x + w / 2 > TOWN_BOUNDS.maxX + .01 || z - d / 2 < TOWN_BOUNDS.minZ - .01 || z + d / 2 > TOWN_BOUNDS.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
+    if (u.solids.some(r => overlap(r, river, EPS))) problems.push({ level: 'error', units: [u.id], text: `${label(u)} is in the river.` });
+  }
+  for (let i = 0; i < town.units.length; i++) for (let j = i + 1; j < town.units.length; j++) {
+    const a = town.units[i], b = town.units[j];
+    if (!overlap(a.area, b.area, 0)) continue;
+    if (a.solids.some(p => b.solids.some(q => overlap(p, q, EPS)))) problems.push({ level: 'error', units: [a.id, b.id], text: `${label(a)} overlaps ${label(b)}.` });
+  }
+  for (const u of town.units) {
+    if (u.def.vehicle || u.def.open) continue;
+    for (const r of town.roads) if (r.kind === 'asphalt' && u.places.some(p => overlap(p.rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
+  }
+  const spawn = town.spots.spawn;
+  if (!spawn || !town.spots.nur || !town.spots.pak) problems.push({ level: 'error', units: [], text: 'Rumah Amir and Warung Pak Mat must both be on the map.' });
+  if (new Set(town.buildings.map(b => b.id)).size !== Object.keys(PLACES).length) problems.push({ level: 'error', units: [], text: 'All 38 numbered places must be on the map exactly once.' });
+  return problems;
+}
+
+// The editor's "Preview in game" link carries a plan in the URL hash
+// (#plan=<base64url JSON>). It applies to that visit only, and only when the
+// plan has no layout errors; otherwise the saved town plan is used.
+export function planFromHash(hash) {
+  try {
+    const match = (hash || '').match(/[#&]plan=([A-Za-z0-9_-]+)/);
+    if (!match) return null;
+    const plan = JSON.parse(atob(match[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return planProblems(plan).some(p => p.level === 'error') ? null : plan;
+  } catch { return null; }
+}
+export const PLAN = planFromHash(globalThis.location?.hash) || TOWN_PLAN;
+export const PREVIEW = PLAN !== TOWN_PLAN;
+const TOWN = derive(PLAN);
+export const UNITS = TOWN.units;
+export const BUILDINGS = TOWN.buildings;
+export const DISTRICTS = TOWN.districts;
+export const ROADS = TOWN.roads;
+export const FLOORS = TOWN.floors;
+export const SPOTS = TOWN.spots;
+export const PASSERSBY = TOWN.passersby;
+// Name the district of the nearest numbered place, so labels follow edits.
 export function districtAt(x, z) {
-  if (x < -29) return DISTRICTS[0];
-  if (z < -30) return DISTRICTS[3];
-  if (z > 35) return DISTRICTS[4];
-  if (x > 30 && z > -17) return DISTRICTS[1];
-  return DISTRICTS[2];
+  let best = BUILDINGS[0], distance = Infinity;
+  for (const b of BUILDINGS) {
+    const dx = Math.max(0, Math.abs(x - b.x) - b.w / 2), dz = Math.max(0, Math.abs(z - b.z) - b.d / 2), dist = dx * dx + dz * dz;
+    if (dist < distance) { distance = dist; best = b; }
+  }
+  return DISTRICTS.find(d => d.id === best.zone);
 }

@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.8.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.9.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -21,6 +21,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
 - Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus and congkak.
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
+- The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
 ## Controls
@@ -78,7 +79,9 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/characters.js`: reference-sheet characters in metres, anime face drawings, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
 - `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
-- `src/town-layout.js`: 38 numbered locations, five districts, paths, roads and bridges.
+- `src/town-plan.js`: the editable plan: where every building, vehicle, passer-by and road stands and which way it faces.
+- `src/town-layout.js`: building kinds (footprints, raised floors, people spots), the 38 numbered places, districts, the fixed river and bridges, and the layout checks.
+- `tools/map-editor.src.html`, `scripts/editor.mjs`: the map editor and its build script (`npm run editor` writes `tools/map-editor.html`).
 - `src/collision.js`: circle/rectangle contacts, body-aware bounds and bridge-only river crossings.
 - `src/movement.js`: analog input and small collision steps independent of frame rate.
 - `src/soundscape.js`: original local ambience and foley.

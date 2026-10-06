@@ -1,4 +1,4 @@
-# Illustrated prototype design — v0.8.0
+# Illustrated prototype design — v0.9.0
 
 Amir and Nur follow the supplied Jaguh Kampung character sheet, and the camera follows the third-person reference recording: low behind the shoulder, a wide lens, the street and horizon ahead. The world keeps 3D movement, collision and animation, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
 
