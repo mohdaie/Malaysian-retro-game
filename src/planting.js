@@ -1,4 +1,4 @@
-import { TOWN_BOUNDS, RIVER } from './town-layout.js?v=0.10.0';
+import { TOWN_BOUNDS, RIVER } from './town-layout.js?v=0.11.0';
 
 // Where every tree goes, worked out from the town plan alone so the tests can
 // check it and the planting follows the editor when buildings move.

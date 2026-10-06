@@ -23,3 +23,16 @@
 /* Comic ink follows the scene into the controls without changing their layout. */
 .icon-button,.day-chip,.quest-card,.minimap-wrap,.primary,.secondary,#interact-button,.modal,.name-fields input{border:2px solid #2a2832;box-shadow:3px 3px 0 #2a2832;}
 .town-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:12px;text-align:left}.town-directory details{border:1.5px solid #2a2832;border-radius:8px;padding:8px;background:#fff9eb}.town-directory summary{cursor:pointer;font-size:11px;font-weight:800}.town-directory ol{padding-left:24px;font-size:11px;line-height:1.8;margin:8px 0 0}#town-map{border:2px solid #2a2832;}
+
+.wallet{display:flex;align-items:baseline;gap:6px}.wallet small{font-size:8px;letter-spacing:1.2px;color:#7b805e;font-weight:800}.wallet b{font-size:13px}
+.icon-button .count:not(:empty){display:inline-block;min-width:16px;margin-left:5px;padding:1px 5px;border-radius:9px;background:var(--green);color:var(--cream);font-size:10px;text-align:center}
+.job-line{margin-top:12px;padding-top:10px;border-top:1px dashed #b9b79a}.job-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.job-head span:last-child{font-size:10px;color:var(--muted);white-space:nowrap}.job-line p{margin:5px 0 0!important;font-weight:650;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.counter-modal{width:min(480px,100%)}#counter-body{display:grid;gap:8px;margin-top:6px}#counter-body .secondary{margin-top:0}#counter-body .primary,#counter-body .secondary{text-align:center}
+.primary:disabled,.shop-row button:disabled{opacity:.42}
+.job-offer{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;margin:0 0 8px;padding:14px 16px;background:#fffaf0;border-radius:10px;border:1px solid #e3dcc6;font-size:13px}
+.job-offer dt{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;padding-top:2px}.job-offer dd{margin:0;font-weight:650}.job-offer dd.upah{color:#2f6b4f;font-size:16px}
+.shop-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #e6dfca;font-size:13px}.shop-row b{font-weight:650}
+.shop-row button{padding:8px 16px;border-radius:8px;background:var(--green);color:var(--cream);font-weight:650;font-size:12px}
+.list-panel{width:min(520px,100%)}.list-panel h3{font-size:10px;letter-spacing:1.5px;color:#7b805e;margin:14px 0 4px;text-transform:uppercase}.list-panel ul{list-style:none;padding:0;margin:0}
+.list-panel li{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid #e6dfca;font-size:13px}.list-panel li span:last-child{color:var(--muted);text-align:right}
+@media(orientation:landscape) and (max-height:600px){.wallet small{display:none}.job-line{margin-top:7px;padding-top:6px}.job-line p{font-size:11px}.quest-card:has(#job-line:not([hidden])) #quest-description{display:none}#counter-body{grid-template-columns:1fr 1fr}#counter-body .job-offer,#counter-body .shop-row{grid-column:1/-1}.counter-modal h2,.list-panel h2{font-size:22px;margin:6px 0 8px}.counter-modal p{margin:0 0 8px}}

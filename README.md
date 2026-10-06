@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.10.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.11.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -17,6 +17,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
 - Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.
+- Every one of the 38 places has a named contact and an interaction point (door, counter or gate) that follows the map editor. Talk to them to buy, take delivery work or hand over a delivery. A Duit Poket wallet, a bag and a quest book save with your progress. Uncle Ah Seng at Kedai Runcit 99 offers paid delivery runs, starting with Nenek's gula at Rumah Tok.
 - Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
 - Local progress saves with resume, save validation and graceful storage failure.
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
