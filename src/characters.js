@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=0.10.0';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=0.10.0';
+import { toon, outline } from './illustration.js?v=0.11.0';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=0.11.0';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map();

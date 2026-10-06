@@ -1,11 +1,11 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.10.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=0.10.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=0.10.0';
-import { createWalkability } from './collision.js?v=0.10.0';
-import { createLandmarks } from './landmarks.js?v=0.10.0';
-import { createTrees } from './trees.js?v=0.10.0';
-import { plantTown, TRUNK } from './planting.js?v=0.10.0';
+import { createCharacter } from './characters.js?v=0.11.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=0.11.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=0.11.0';
+import { createWalkability } from './collision.js?v=0.11.0';
+import { createLandmarks } from './landmarks.js?v=0.11.0';
+import { createTrees } from './trees.js?v=0.11.0';
+import { plantTown, TRUNK } from './planting.js?v=0.11.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -538,6 +538,10 @@ export async function makeWorld(canvas) {
   for(const p of PASSERSBY){const walker=character(p.x,p.z,p.who);walker.group.rotation.y=p.heading;}
   // Small overhead diamonds remain legible at the elevated gameplay angle.
   for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.17,0),0xe4bc68,npc.x,npc.character.group.position.y+npc.character.height+.44,npc.z,scene);marker.userData.height=npc.character.group.position.y+npc.character.height+.44;animated.push(marker);npc.marker=marker;}
+  // A floating parcel marks the next stop of a delivery job.
+  const jobMarker=mesh(new T.BoxGeometry(.34,.26,.34),0xb5986a,0,0,0,scene);jobMarker.visible=false;jobMarker.userData.height=0;animated.push(jobMarker);
+  mesh(new T.BoxGeometry(.36,.04,.08),0xe8dbb8,0,.08,0,jobMarker);
+  function setJobMarker(spot){jobMarker.visible=Boolean(spot);if(spot){const y=groundHeight(spot.x,spot.z)+2.3;jobMarker.position.set(spot.x,y,spot.z);jobMarker.userData.height=y;}}
   const ray=new T.Raycaster(),blocked=new Set();let occlusionTime=0;
   function updateOcclusion(camera,look,dt,active){
     occlusionTime+=dt;
@@ -564,5 +568,5 @@ export async function makeWorld(canvas) {
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,wind:trees.wind,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,wind:trees.wind,setJobMarker,jobMarker,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
