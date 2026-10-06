@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { newRound, legalMoves, playMove, opponentMove } from '../src/congkak.js';
+test('a board starts with 98 shells and only player houses are legal',()=>{const s=newRound();assert.equal(s.pits.reduce((a,b)=>a+b),98);assert.deepEqual(legalMoves(s),[0,1,2,3,4,5,6]);assert.throws(()=>playMove(s,8));});
+test('last shell in own store grants another turn and leaves input unchanged',()=>{const s=newRound();s.pits[6]=1;const before=structuredClone(s);const r=playMove(s,6);assert.equal(r.extraTurn,true);assert.equal(r.state.turn,0);assert.equal(r.state.pits[7],1);assert.deepEqual(s,before);});
+test('landing in empty own house captures opposite shells',()=>{const s=newRound();s.pits[0]=1;s.pits[1]=0;s.pits[13]=5;const r=playMove(s,0);assert.equal(r.capture,6);assert.equal(r.state.pits[7],6);assert.equal(r.state.pits[1],0);assert.equal(r.state.pits[13],0);});
+test('relay continues from an occupied house',()=>{const s=newRound();s.pits[0]=1;const r=playMove(s,0);assert.ok(r.frames.length>3);assert.ok(r.frames.some(f=>f.active===1&&f.hand===8));});
+test('sowing skips opponent store',()=>{const s=newRound();s.pits[6]=12;const r=playMove(s,6);assert.equal(r.state.pits[15],0);});
+test('end sweeps remaining shells into respective stores',()=>{const s={pits:[0,0,0,0,0,0,1,40,2,3,4,5,6,7,8,22],turn:0,over:false,winner:null};const r=playMove(s,6);assert.equal(r.state.over,true);assert.equal(r.state.pits[7],41);assert.equal(r.state.pits[15],57);assert.equal(r.state.winner,1);});
+test('complete simulated games preserve shell totals, finish, and have legal AI moves',()=>{for(let seed=0;seed<30;seed++){let s=newRound(),count=0;while(!s.over&&count<2000){const moves=legalMoves(s);const pit=s.turn===1?opponentMove(s):moves[(seed+count*7)%moves.length];assert.ok(moves.includes(pit));const r=playMove(s,pit);for(const f of r.frames){assert.ok(f.pits.every(n=>n>=0));assert.equal(f.pits.reduce((a,b)=>a+b,0)+f.hand,98);}s=r.state;assert.equal(s.pits.reduce((a,b)=>a+b,0),98);count++;}assert.ok(s.over,'game must finish');assert.equal(s.pits[7]+s.pits[15],98);}});
