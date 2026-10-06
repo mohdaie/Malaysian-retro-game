@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { hitsObstacle, createWalkability, PLAYER_RADIUS } from '../src/collision.js';
 import { moveWithCollision, RUN_SPEED } from '../src/movement.js';
-import { BUILDINGS, DISTRICTS, TOWN_BOUNDS } from '../src/town-layout.js';
+import { BUILDINGS, DISTRICTS, TOWN_BOUNDS, BRIDGES } from '../src/town-layout.js';
 
 test('the compact plan contains 38 unique numbered locations in the five agreed districts', () => {
   assert.deepEqual(BUILDINGS.map(b=>b.id), Array.from({length:38},(_,i)=>i+1));
@@ -22,12 +22,14 @@ test('player body collides with walls and round trunks without square invisible 
 });
 test('only real bridge decks allow river crossings and body stays inside the map', () => {
   const walk=createWalkability([]);
-  for(const z of [4,37]){
+  assert.ok(BRIDGES.length>=1);
+  for(const {z,d} of BRIDGES){
     for(const x of [-70,-65,-60])assert.ok(walk(x,z));
-    assert.ok(walk(-65,z+4-PLAYER_RADIUS-.01));
-    assert.ok(!walk(-65,z+4-PLAYER_RADIUS+.01));
+    assert.ok(walk(-65,z+d/2-PLAYER_RADIUS-.01));
+    assert.ok(!walk(-65,z+d/2-PLAYER_RADIUS+.01));
   }
-  assert.ok(!walk(-65,20));assert.ok(!walk(NaN,0));assert.ok(!walk(0,Infinity));
+  const open=[-60,-40,-20,0,20,40,60].find(z=>!BRIDGES.some(b=>Math.abs(b.z-z)<b.d/2+1));
+  assert.ok(!walk(-65,open));assert.ok(!walk(NaN,0));assert.ok(!walk(0,Infinity));
   assert.ok(!walk(TOWN_BOUNDS.maxX,0));assert.ok(walk(TOWN_BOUNDS.maxX-PLAYER_RADIUS-.01,0));
 });
 test('fences block running and their authored 1.4-metre gates remain open', () => {

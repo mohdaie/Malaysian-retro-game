@@ -10,7 +10,7 @@ Open the map editor (the Claude artifact "Seri Kenangan Map Editor", or `tools/m
 - Turn the selected building with ↺ ↻ in the floating bar, or the R key (Shift+R turns the other way). The small arrow on each building shows which way its front faces.
 - Arrow keys nudge by half a metre; Shift+arrow by 5 m. Undo and Redo keep up to 200 steps.
 - Roads: drag the round end handles to change the length, set length, width and surface in the panel, turn them 90°, delete them, or add new paths.
-- The river, the two bridges and the town edge stay fixed.
+- The river and the town edge stay fixed. A road that crosses the river from bank to bank, east–west, gets its own bridge as wide as the road; the old footbridge stays where no road crosses nearby. A road that runs into the river without crossing it is flagged.
 
 The **Layout checks** list updates as you edit. Errors are overlapping buildings, anything in the river or past the town edge, or a missing Rumah Amir or Warung Pak Mat; warnings are buildings standing on an asphalt road. The school's fenced yard may hold the canteen and court. Cars and passers-by may stand on roads.
 

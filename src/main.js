@@ -232,11 +232,15 @@ for(const zone of DISTRICTS){
 // District labels sit on the emptiest ground inside each district, so they
 // stay readable wherever the plan moves buildings.
 const overlapArea=(a,b)=>Math.max(0,Math.min(a[0]+a[2]/2,b[0]+b[2]/2)-Math.max(a[0]-a[2]/2,b[0]-b[2]/2))*Math.max(0,Math.min(a[1]+a[3]/2,b[1]+b[3]/2)-Math.max(a[1]-a[3]/2,b[1]-b[3]/2));
+// Districts can be spread across town, so each label looks for open ground
+// near its own places, preferring the biggest cluster of them.
 const mapLabels=DISTRICTS.map(d=>{
-  const members=BUILDINGS.filter(b=>b.zone===d.id),cx=members.reduce((n,b)=>n+b.x,0)/members.length,cz=members.reduce((n,b)=>n+b.z,0)/members.length;
-  const w=d.short.length*1.9+2,h=4;let best={x:cx,z:cz,cost:Infinity};
-  for(let x=d.x-d.w/2+w/2;x<=d.x+d.w/2-w/2;x+=2)for(let z=d.z-d.d/2+h/2;z<=d.z+d.d/2-h/2;z+=2){
-    const box=[x,z,w,h];let cost=Math.hypot(x-cx,z-cz)*.4;
+  const members=BUILDINGS.filter(b=>b.zone===d.id);
+  const crowd=b=>members.filter(o=>Math.hypot(o.x-b.x,o.z-b.z)<25).length,anchor=members.reduce((a,b)=>crowd(b)>crowd(a)?b:a,members[0]);
+  const w=d.short.length*1.9+2,h=4;let best={x:anchor.x,z:anchor.z,cost:Infinity};
+  for(let x=anchor.x-24;x<=anchor.x+24;x+=2)for(let z=anchor.z-24;z<=anchor.z+24;z+=2){
+    if(x-w/2<-80||x+w/2>78||z-h/2<-68||z+h/2>68)continue;
+    const box=[x,z,w,h];let cost=Math.hypot(x-anchor.x,z-anchor.z)*.4;
     for(const b of BUILDINGS)cost+=overlapArea(box,[b.x,b.z,b.w,b.d])*4;
     for(const r of ROADS)cost+=overlapArea(box,[r.x,r.z,r.w,r.d]);
     for(const c of world.colliders)if(c.w!==undefined)cost+=overlapArea(box,[c.x,c.z,c.w,c.d])*2;
@@ -249,7 +253,8 @@ function drawMap(canvas,full=false){
   const px=x=>(x+82)/164*w,pz=z=>(z+70)/140*h;
   ctx.fillStyle='#dce3c2';ctx.fillRect(0,0,w,h);
   const rect=(x,z,rw,rh,color)=>{ctx.fillStyle=color;ctx.fillRect(px(x-rw/2),pz(z-rh/2),rw/164*w,rh/140*h);};
-  for(const zone of DISTRICTS)rect(zone.x,zone.z,zone.w,zone.d,zone.color+'20');
+  // A soft halo of district colour around each place, wherever it stands.
+  for(const b of BUILDINGS)rect(b.x,b.z,b.w+8,b.d+8,DISTRICTS.find(d=>d.id===b.zone).color+'1c');
   rect(-65,0,9,140,'#82aaa2');
   for(const r of ROADS)rect(r.x,r.z,r.w,r.d,r.kind==='asphalt'?'#a5aaa3':'#c9b990');
   for(const b of BRIDGES)rect(b.x,b.z,b.w,b.d,'#c7bd9e');

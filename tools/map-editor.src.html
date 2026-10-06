@@ -214,7 +214,7 @@ function draw() {
   for (let x = Math.ceil(B.minX / 10) * 10; x <= B.maxX; x += 10) el('line', { x1: x, x2: x, y1: B.minZ, y2: B.maxZ }, grid);
   for (let z = Math.ceil(B.minZ / 10) * 10; z <= B.maxZ; z += 10) el('line', { y1: z, y2: z, x1: B.minX, x2: B.maxX }, grid);
   rect([RIVER.x, 0, RIVER.w - 2.5, B.maxZ - B.minZ + 8], { fill: token('--river') }, svg);
-  for (const b of BRIDGES) rect([b.x, b.z, b.w, b.d], { fill: token('--dirt'), stroke: token('--ink'), 'stroke-opacity': .3, 'stroke-width': px }, svg);
+  for (const b of town.bridges) rect([b.x, b.z, b.w, b.d], { fill: token('--dirt'), stroke: token('--ink'), 'stroke-opacity': .3, 'stroke-width': px }, svg);
   // Raised floors and plazas under everything else.
   for (const u of town.units) for (const f of u.floors) if (f[2] * f[3] > 30) rect(f, { fill: token('--floor'), opacity: .85 }, svg);
   // Roads: tap to select, drag to move; end handles change the length.
@@ -281,7 +281,7 @@ function renderPanel() {
   const box = $('selection'); box.textContent = '';
   const add = html => box.insertAdjacentHTML('beforeend', html);
   if (!selected) {
-    add(`<p class="eyebrow">Move the town</p><h2>Tap a building, car or road</h2><p>Drag to move it. Turn buildings with ↺ ↻ or the R key. Arrow keys nudge by half a metre (Shift: 5 m). The river, bridges and town edge stay fixed.</p>`);
+    add(`<p class="eyebrow">Move the town</p><h2>Tap a building, car or road</h2><p>Drag to move it. Turn buildings with ↺ ↻ or the R key. Arrow keys nudge by half a metre (Shift: 5 m). The river and town edge stay fixed; a road that crosses the river from bank to bank gets its own bridge.</p>`);
   } else if (selected.type === 'unit') {
     const u = unitById(selected.id), gap = gapTo(u);
     add(`<p class="eyebrow">${KINDS[u.kind].label}</p><h2></h2>`); box.querySelector('h2').textContent = nameOf(u);

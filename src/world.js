@@ -249,7 +249,7 @@ export async function makeWorld(canvas) {
   for(const road of ROADS)box(road.w,.08,road.d,textured(0xffffff,road.kind),road.x,.015,road.z);
   box(8,.1,155,0x71958a,RIVER.x,-.02,0);
   box(1,.1,155,0x799365,RIVER.x-5,.015,0);box(1,.1,155,0x799365,RIVER.x+5,.015,0);
-  for(const {x,z} of BRIDGES) {box(13,.2,8,0xbcac8b,x,.13,z);for(const s of [-1,1]){collider(x,z+s*3.7,13,.15,'bridge-rail');box(13,.13,.15,0xe4d0a6,x,1.1,z+s*3.7);for(let px=x-6;px<=x+6;px+=2)box(.15,1.15,.15,0xe4d0a6,px,.6,z+s*3.7);}}
+  for(const {x,z,d} of BRIDGES) {box(13,.2,d,0xbcac8b,x,.13,z);for(const s of [-1,1]){collider(x,z+s*(d/2-.3),13,.15,'bridge-rail');box(13,.13,.15,0xe4d0a6,x,1.1,z+s*(d/2-.3));for(let px=x-6;px<=x+6;px+=2)box(.15,1.15,.15,0xe4d0a6,px,.6,z+s*(d/2-.3));}}
   const inRoad=(x,z,pad=0,except=null)=>ROADS.some(r=>r!==except&&Math.abs(x-r.x)<r.w/2+pad&&Math.abs(z-r.z)<r.d/2+pad);
   const onBridge=(x,z,pad=1)=>BRIDGES.some(b=>Math.abs(x-b.x)<b.w/2+pad&&Math.abs(z-b.z)<b.d/2+pad);
   const inRiver=(x,pad=0)=>Math.abs(x-RIVER.x)<RIVER.w/2+pad;

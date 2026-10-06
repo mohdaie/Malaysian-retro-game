@@ -4,9 +4,15 @@ import { TOWN_PLAN } from './town-plan.js?v=0.9.0';
 // editable positions live in town-plan.js; everything here is derived from
 // them. Rects are [x, z, w, d] in metres, centred, in a unit's own frame.
 export const TOWN_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
-// The river and its two bridges stay fixed: they are terrain, not buildings.
+// The river is fixed terrain. Every road that crosses it gets a bridge as
+// wide as the road; the old footbridge stays where no road crosses nearby.
 export const RIVER = { x: -65, w: 10.5 };
-export const BRIDGES = [{ x: -65, z: 4, w: 13, d: 8 }, { x: -65, z: 37, w: 13, d: 8 }];
+const FOOTBRIDGES = [{ x: -65, z: 37, w: 13, d: 8 }];
+const BANKS = [RIVER.x - 5, RIVER.x + 5];
+function bridgesFor(roads) {
+  const decks = roads.filter(r => r.w >= r.d && r.x - r.w / 2 <= BANKS[0] && r.x + r.w / 2 >= BANKS[1]).map(r => ({ x: RIVER.x, z: r.z, w: 13, d: r.d, road: r.id }));
+  return [...decks, ...FOOTBRIDGES.filter(f => !decks.some(b => Math.abs(b.z - f.z) < (b.d + f.d) / 2 + 2))];
+}
 export const DISTRICT_INFO = [
   { id: 'kampung', name: 'Kampung Melati', short: 'KAMPUNG', color: '#c87537' },
   { id: 'terrace', name: 'Taman Kenangan', short: 'TERES', color: '#9271b4' },
@@ -136,7 +142,7 @@ export function derive(plan) {
     const [x, z] = toWorld(u, s[0], s[1]); return { x, z, heading: headingToWorld(u, s[2]) };
   };
   return {
-    units, buildings, districts, roads: plan.roads.map(r => ({ ...r })),
+    units, buildings, districts, roads: plan.roads.map(r => ({ ...r })), bridges: bridgesFor(plan.roads),
     floors: units.flatMap(u => u.floors),
     spots: { spawn: spot('home', 'spawn'), nur: spot('home', 'nur'), pak: spot('warung', 'pak') },
     passersby: units.filter(u => u.kind === 'passerby').map(u => ({ x: u.x, z: u.z, heading: headingToWorld(u, 0), who: u.who || 'nur' }))
@@ -164,6 +170,10 @@ export function planProblems(plan) {
     if (u.def.vehicle || u.def.open) continue;
     for (const r of town.roads) if (r.kind === 'asphalt' && u.places.some(p => overlap(p.rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
   }
+  for (const r of town.roads) {
+    const inRiver = r.x - r.w / 2 < BANKS[1] && r.x + r.w / 2 > BANKS[0];
+    if (inRiver && !town.bridges.some(b => b.road === r.id)) problems.push({ level: 'warning', units: [], roads: [r.id], text: `The ${r.id.replace(/-/g, ' ')} runs into the river. Roads get a bridge only when they cross it from bank to bank, east–west.` });
+  }
   const spawn = town.spots.spawn;
   if (!spawn || !town.spots.nur || !town.spots.pak) problems.push({ level: 'error', units: [], text: 'Rumah Amir and Warung Pak Mat must both be on the map.' });
   if (new Set(town.buildings.map(b => b.id)).size !== Object.keys(PLACES).length) problems.push({ level: 'error', units: [], text: 'All 38 numbered places must be on the map exactly once.' });
@@ -188,6 +198,7 @@ export const UNITS = TOWN.units;
 export const BUILDINGS = TOWN.buildings;
 export const DISTRICTS = TOWN.districts;
 export const ROADS = TOWN.roads;
+export const BRIDGES = TOWN.bridges;
 export const FLOORS = TOWN.floors;
 export const SPOTS = TOWN.spots;
 export const PASSERSBY = TOWN.passersby;

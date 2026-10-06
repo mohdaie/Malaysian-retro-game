@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TOWN_PLAN } from '../src/town-plan.js';
-import { KINDS, PLACES, TOWN_BOUNDS, derive, planProblems, planFromHash, toWorld, rectToWorld, districtAt } from '../src/town-layout.js';
+import { KINDS, PLACES, TOWN_BOUNDS, BUILDINGS, BRIDGES, ROADS, derive, planProblems, planFromHash, toWorld, rectToWorld, districtAt } from '../src/town-layout.js';
 
 const copy = () => structuredClone(TOWN_PLAN);
 const unit = (plan, id) => plan.units.find(u => u.id === id);
@@ -26,35 +26,45 @@ test('quarter turns follow Three.js rotation.y and swap rect sides', () => {
   }
 });
 test('turning a unit carries its floors, places and people with it', () => {
-  const plan = copy(); unit(plan, 'home').rot = 2;
-  const town = derive(plan), home = town.units.find(u => u.id === 'home');
-  const verandah = home.floors.find(f => f[4] === 1.525);
-  assert.ok(Math.abs(verandah[1] - (27 - 5.125)) < 1e-9, 'verandah now faces -z');
-  assert.ok(Math.abs(town.spots.spawn.z - (27 - 11)) < 1e-9);
-  assert.ok(Math.abs(town.spots.spawn.heading - Math.PI) < 1e-9);
+  const plan = copy(), home = unit(plan, 'home');
+  for (const rot of [0, 2]) {
+    home.rot = rot;
+    const town = derive(plan), verandah = town.units.find(u => u.id === 'home').floors.find(f => f[4] === 1.525), dir = rot ? -1 : 1;
+    assert.ok(Math.abs(verandah[1] - (home.z + dir * 5.125)) < 1e-9, 'verandah follows the front');
+    assert.ok(Math.abs(town.spots.spawn.z - (home.z + dir * 11)) < 1e-9);
+    assert.ok(Math.abs(town.spots.spawn.heading - rot * Math.PI / 2) < 1e-9);
+  }
 });
 test('the checker reports overlaps, the river, the town edge and buildings on roads', () => {
-  let plan = copy(); Object.assign(unit(plan, 'mosque'), { x: 20, z: -22 });
+  let plan = copy(); const shops = unit(plan, 'shops'); Object.assign(unit(plan, 'mosque'), { x: shops.x, z: shops.z });
   assert.ok(planProblems(plan).some(p => p.level === 'error' && p.units.includes('mosque') && p.units.includes('shops')));
   plan = copy(); unit(plan, 'wakaf').x = -65;
   assert.ok(planProblems(plan).some(p => p.level === 'error' && /river/.test(p.text)));
   plan = copy(); unit(plan, 'pondok').x = -80;
   assert.ok(planProblems(plan).some(p => p.level === 'error' && /outside/.test(p.text)));
-  plan = copy(); Object.assign(unit(plan, 'hall'), { x: 0, z: 4 });
+  const main = ROADS.find(r => r.id === 'main-road');
+  plan = copy(); Object.assign(unit(plan, 'hall'), { x: main.x, z: main.z });
   assert.ok(planProblems(plan).some(p => p.level === 'warning' && p.roads?.includes('main-road')));
-  plan = copy(); Object.assign(unit(plan, 'car-red'), { x: -40, z: 4 });
+  plan = copy(); Object.assign(unit(plan, 'car-red'), { x: -40, z: main.z });
   assert.ok(!planProblems(plan).some(p => p.units.includes('car-red')), 'vehicles may park on roads');
 });
 test('canteen and court may stand inside the school yard but not on its buildings', () => {
-  const plan = copy(); Object.assign(unit(plan, 'court'), { x: 4, z: -36 });
-  assert.ok(!planProblems(plan).some(p => p.units.includes('court')));
-  Object.assign(unit(plan, 'court'), { x: 0, z: -48 });
+  const plan = copy(), school = unit(plan, 'school');
+  const [yx, yz] = toWorld(school, 6.5, 10), [bx, bz] = toWorld(school, -5.5, -4);
+  Object.assign(unit(plan, 'court'), { x: yx, z: yz, rot: school.rot });
+  assert.ok(!planProblems(plan).some(p => p.units.includes('court') && p.units.includes('school')));
+  Object.assign(unit(plan, 'court'), { x: bx, z: bz });
   assert.ok(planProblems(plan).some(p => p.level === 'error' && p.units.includes('court') && p.units.includes('school')));
 });
+test('every road crossing the river gets a bridge, and a road ending in it is flagged', () => {
+  for (const r of ROADS.filter(r => r.w >= r.d && r.x - r.w / 2 <= -70 && r.x + r.w / 2 >= -60)) assert.ok(BRIDGES.some(b => b.road === r.id && b.z === r.z && b.d === r.d), r.id);
+  const plan = copy(); plan.roads.push({ id: 'river-stub', kind: 'dirt', x: -60, z: 20, w: 8, d: 3 });
+  assert.ok(planProblems(plan).some(p => p.level === 'warning' && p.roads?.includes('river-stub')));
+  const moved = copy(); moved.roads.find(r => r.id === 'main-road').z = -20;
+  assert.ok(derive(moved).bridges.some(b => b.road === 'main-road' && b.z === -20));
+});
 test('district names follow the nearest numbered place', () => {
-  assert.equal(districtAt(-43, 38).id, 'kampung');
-  assert.equal(districtAt(12, -3).id, 'pekan');
-  assert.equal(districtAt(48, 20).id, 'terrace');
+  for (const b of BUILDINGS) assert.equal(districtAt(b.x, b.z).id, b.zone, b.name);
 });
 test('preview links accept valid plans only', () => {
   const plan = copy(); unit(plan, 'mosque').rot = 1;
