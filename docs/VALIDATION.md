@@ -56,3 +56,13 @@ The visual pass replaces character blocks with original shaped and jointed meshe
 No page or renderer errors and no missing assets occurred in the successful root-hosted chapter check. Screenshots are `landscape-gameplay-v030.png`, `title-v030.png`, `warung-v030.png`, `pekan-v030.png`, `mosque-v030.png` and `congkak-v030.png`. Physical Android/iPhone GPU performance and native orientation locking remain unmeasured here.
 
 The final camera check restored a position behind the warung and confirmed a blocking roof faded while Amir remained visible. The updated view submitted 120,022 triangles. The complete landscape/multi-touch checks then passed again without errors; the observed starting view submitted 114,890 triangles. Camera diagnostics are read-only.
+
+## v0.4.0 — reference characters and illustrated rendering
+
+`npm test`: **18 tests passed**; the publishing asset check includes the new horizon. `npm run build`: passed. Actual front/side/back renders of Amir and Nur use the same module and materials as the game: `character-turnaround-v040.png`. Six character views submit 83,529 triangles including their separate ink hulls, or about 6,961 surface triangles per character before the hull pass. The initial mobile gameplay view submits 101,456 triangles and 449 calls. These workload counts include shadows/ink where applicable and are not physical-phone FPS results.
+
+Direct repository-root browser checks passed for startup, the illustrated shader compilation, the new panorama, reaching Nur, dialogue advancement, sound toggling, a complete congkak game (13 player moves), chapter completion, save/reload, pekan and mosque views, and built-folder startup. No page or renderer errors or missing assets occurred. An intentionally missing texture still produces the retry screen instead of hanging.
+
+Landscape regression passed for portrait gating, start, 14-unit camera distance, swipe orbit and tilt independent of movement, portrait freezing/resume, 144/60 px joystick dimensions, actual multi-touch pinch, simultaneous movement/viewing and the 128 px short-screen control. The new taller characters' interaction markers sit above their heads.
+
+Building occlusion is checked with the new ink lines: blocking surfaces fade and their lines soften/hide with them. The lower camera view demonstrates the painted scenery around the 3D streets (`illustrated-street-v040.png`). Current screenshots also include `landscape-gameplay-v040.png`, `title-v040.png`, `warung-v040.png`, `pekan-v040.png`, `mosque-v040.png` and `congkak-v040.png`. Physical-phone performance remains unmeasured.
