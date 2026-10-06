@@ -1,10 +1,10 @@
 import * as T from 'three';
-import { makeWorld, places } from './world.js?v=0.3.0';
+import { makeWorld, places } from './world.js?v=0.4.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.3.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.3.0';
-import { createSoundscape } from './soundscape.js?v=0.3.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.4.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.4.0';
+import { createSoundscape } from './soundscape.js?v=0.4.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -249,7 +249,7 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
   } else player.animate(dt,0);
   for(const character of world.characters)if(character!==player){character.group.visible=mode==='title'||character.group.position.distanceTo(player.group.position)<55;if(character.group.visible)character.animate(dt,0);}
-  for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=3.2+Math.sin(elapsed*2)*.12;}
+  for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=3.7+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
   else{look.set(p.x,1,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*cameraTilt,p.z+Math.cos(yaw)*distance);}
@@ -264,4 +264,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'illustrated-low-poly',occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

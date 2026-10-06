@@ -1,5 +1,6 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.3.0';
+import { createCharacter } from './characters.js?v=0.4.0';
+import { toon } from './illustration.js?v=0.4.0';
 export const places = [
   { name: "Amir's house", x: -43, z: 27, type: 'home' },
   { name: 'Kampung Melati', x: -45, z: -20, type: 'kampung' },
@@ -18,14 +19,14 @@ export async function makeWorld(canvas) {
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.setClearColor(0xc8dce0);
   renderer.outputColorSpace = T.SRGBColorSpace;
-  renderer.toneMapping = T.ACESFilmicToneMapping;
+  renderer.toneMapping = T.NoToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new T.Scene();
   scene.background = new T.Color(0xc8dce0);
   scene.fog = new T.Fog(0xc8dce0, 95, 230);
   const camera = new T.PerspectiveCamera(43, 1, .1, 350);
-  scene.add(new T.HemisphereLight(0xe5f3ff, 0x638054, 1.8));
-  const sun = new T.DirectionalLight(0xffeed4, 2.0);
+  scene.add(new T.HemisphereLight(0xe5f3ff, 0x9bb7a5, 1.65));
+  const sun = new T.DirectionalLight(0xffedda, 1.30);
   sun.position.set(-35, 70, 30);
   sun.castShadow = true;
   const shadowSize = matchMedia('(pointer:coarse)').matches ? 1024 : 2048;
@@ -40,12 +41,12 @@ export async function makeWorld(canvas) {
   const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   function surface(kind) {
     const c = document.createElement('canvas'); c.width = c.height = 256;
-    const ctx = c.getContext('2d'); ctx.fillStyle = kind === 'grass' ? '#afbd88' : kind === 'dirt' ? '#e7ded0' : kind==='asphalt' ? '#bfc5c6' : '#f4efe4'; ctx.fillRect(0,0,256,256);
-    for(let i=0;i<9000;i++) { const a=rand()*.12; ctx.fillStyle=rand()>.5?`rgba(55,67,38,${a})`:`rgba(255,252,222,${a})`; ctx.fillRect(rand()*256,rand()*256,kind==='wood'?rand()*30+4:rand()*5+1,kind==='wood'?.7:rand()*3+1); }
+    const ctx = c.getContext('2d'); ctx.fillStyle = kind === 'grass' ? '#becf88' : kind === 'dirt' ? '#efd6ac' : kind==='asphalt' ? '#8eaaaa' : '#f4efe4'; ctx.fillRect(0,0,256,256);
+    for(let i=0;i<1000;i++) { const a=rand()*.035; ctx.fillStyle=rand()>.5?`rgba(55,67,38,${a})`:`rgba(255,252,222,${a})`; ctx.fillRect(rand()*256,rand()*256,kind==='wood'?rand()*30+4:rand()*5+1,kind==='wood'?.7:rand()*3+1); }
     if(kind==='wood') for(let y=0;y<256;y+=32){ctx.fillStyle='#67533935';ctx.fillRect(0,y,256,1);ctx.fillStyle='#ffffff35';ctx.fillRect(0,y+2,256,1);}
-    if(kind==='grass') for(let i=0;i<320;i++){ctx.strokeStyle=rand()>.5?'#9bac7270':'#c7ce9870';const x=rand()*256,y=rand()*256;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand()*5-2,y-3-rand()*3);ctx.stroke();}
+    if(kind==='grass') for(let i=0;i<180;i++){ctx.strokeStyle=rand()>.5?'#77946365':'#e0e9b675';const x=rand()*256,y=rand()*256;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand()*5-2,y-3-rand()*3);ctx.stroke();}
     if(kind==='asphalt')for(let i=0;i<900;i++){ctx.fillStyle=i%2?'#ffffff25':'#253b3925';ctx.fillRect(rand()*256,rand()*256,1,1);}
-    if(kind==='tile'){ctx.fillStyle='#e9d8c3';ctx.fillRect(0,0,256,256);for(let row=0;row<12;row++)for(let col=0;col<20;col++){const x=col*14-(row%2)*7,y=row*23;const g=ctx.createLinearGradient(x,y,x+14,y);g.addColorStop(0,'#ae9078');g.addColorStop(.35,'#f3e7d6');g.addColorStop(1,'#c3aa8c');ctx.fillStyle=g;ctx.fillRect(x,y,13,22);ctx.strokeStyle='#80736155';ctx.strokeRect(x,y,13,22);}}
+    if(kind==='tile'){ctx.fillStyle='#e9d8c3';ctx.fillRect(0,0,256,256);for(let row=0;row<12;row++)for(let col=0;col<20;col++){const x=col*14-(row%2)*7,y=row*23;ctx.fillStyle=(row+col)%3?'#e8c5a1':'#d4a480';ctx.fillRect(x,y,13,22);ctx.strokeStyle='#71544d80';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+2,y);ctx.quadraticCurveTo(x+6,y+11,x+2,y+22);ctx.stroke();ctx.strokeRect(x,y,13,22);}}
     if(kind==='plaster')for(let i=0;i<3000;i++){ctx.fillStyle=i%2?'#ffffff30':'#afa99a20';ctx.fillRect(rand()*256,rand()*256,1+rand()*3,1);}
     const texture = new T.CanvasTexture(c); texture.colorSpace = T.SRGBColorSpace; texture.wrapS = texture.wrapT = T.RepeatWrapping; texture.anisotropy = Math.min(8,renderer.capabilities.getMaxAnisotropy());
     texture.repeat.set(kind==='wood'?1:24,kind==='wood'?1:24); return texture;
@@ -54,19 +55,21 @@ export async function makeWorld(canvas) {
   const [grass,wood]=await Promise.all(['kampung-grass.webp','kampung-timber.webp'].map(name=>loader.loadAsync(new URL('../assets/textures/'+name,import.meta.url).href)));
   for(const texture of [grass,wood]){texture.colorSpace=T.SRGBColorSpace;texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
   wood.repeat.set(2,2);
-  const textures = {grass, dirt:surface('dirt'), wood, asphalt:surface('asphalt'), plaster:surface('plaster'), tile:surface('tile')};
+  const textures = {grass:surface('grass'), dirt:surface('dirt'), wood, asphalt:surface('asphalt'), plaster:surface('plaster'), tile:surface('tile')};
   textures.dirt.repeat.set(1,1);textures.asphalt.repeat.set(1,1);textures.plaster.repeat.set(2,2);textures.tile.repeat.set(1,1);
-  // A painted sky gradient lifts the horizon while preserving a warm afternoon.
-  const sky=document.createElement('canvas');sky.width=512;sky.height=256;
-  const sk=sky.getContext('2d'),sg=sk.createLinearGradient(0,0,0,256);
-  sg.addColorStop(0,'#74a5c6');sg.addColorStop(.47,'#c8dce0');sg.addColorStop(.7,'#edf0d8');sg.addColorStop(1,'#c8dce0');sk.fillStyle=sg;sk.fillRect(0,0,512,256);
-  const skyMap=new T.CanvasTexture(sky);skyMap.colorSpace=T.SRGBColorSpace;skyMap.mapping=T.EquirectangularReflectionMapping;scene.background=skyMap;
+  // Illustrated distant scenery wraps the playable 3D streets: flat painted
+  // houses/trees/hills carry the horizon instead of additional modeled town.
+  const panorama=await loader.loadAsync(new URL('../assets/textures/illustrated-horizon.webp',import.meta.url).href);
+  panorama.colorSpace=T.SRGBColorSpace;panorama.wrapS=T.RepeatWrapping;panorama.repeat.x=3;
+  scene.background=new T.Color(0x8ab8d1);
+  const horizon=new T.Mesh(new T.CylinderGeometry(210,210,160,64,1,true),new T.MeshBasicMaterial({map:panorama,side:T.BackSide,fog:false}));
+  horizon.position.y=54;scene.add(horizon);
   const mats = new Map();
   function textured(color,kind) {
     const key=kind+color;
     if(!mats.has(key)){
-      const material=new T.MeshStandardMaterial({color:kind==='wood'?new T.Color(color).lerp(new T.Color(0xffffff),.55):color,map:textures[kind],roughness:kind==='tile'?.85:1});
-      if(kind==='grass')material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(vec3(dot(diffuseColor.rgb,vec3(.2126,.7152,.0722))),diffuseColor.rgb,.52);');};
+      const material=toon(kind==='wood'?new T.Color(color).lerp(new T.Color(0xffffff),.40):color,{map:textures[kind]});
+
       mats.set(key,material);
     }
     return mats.get(key);
@@ -76,7 +79,7 @@ export async function makeWorld(canvas) {
     if (color?.isMaterial) return color;
     const rgb=new T.Color(color);let closest=color,best=Infinity;
     for(const candidate of scenePalette){const c=new T.Color(candidate),distance=(rgb.r-c.r)**2+(rgb.g-c.g)**2+(rgb.b-c.b)**2;if(distance<best){best=distance;closest=candidate;}}color=closest;
-    if (!mats.has(color)) mats.set(color, new T.MeshStandardMaterial({ color, roughness: .95, flatShading: false }));
+    if (!mats.has(color)) mats.set(color, toon(color));
     return mats.get(color);
   };
   const colliders = [];
@@ -115,7 +118,7 @@ export async function makeWorld(canvas) {
     } });
     const m = new T.Mesh(new T.PlaneGeometry(width, width / 4), new T.MeshBasicMaterial({ map: texture })); m.position.set(x, y, z); parent.add(m); return m;
   }
-  const glass=new T.MeshStandardMaterial({color:0x5d8790,roughness:.27,metalness:.18});mats.set('window-glass',glass);
+  const glass=toon(0x75a6aa);mats.set('window-glass',glass);
   function windowDetail(x,y,z,w=1.6,h=1.5){
     box(w,h,.05,glass,x,y,z);
     for(const side of [-1,1])box(.085,h+.18,.12,0xece1c4,x+side*(w/2+.03),y,z+.04);
@@ -127,7 +130,7 @@ export async function makeWorld(canvas) {
     const c=document.createElement('canvas');c.width=280;c.height=140;const ctx=c.getContext('2d');
     for(let i=0;i<14;i++){ctx.fillStyle=i%2?'#f4eee0':'#b9443d';ctx.fillRect(0,i*10,280,10);}
     ctx.fillStyle='#28446a';ctx.fillRect(0,0,140,80);ctx.fillStyle='#f0c85b';ctx.beginPath();ctx.arc(45,40,25,0,Math.PI*2);ctx.fill();ctx.fillStyle='#28446a';ctx.beginPath();ctx.arc(53,36,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f0c85b';ctx.beginPath();for(let i=0;i<28;i++){const a=i*Math.PI/14-Math.PI/2,r=i%2?11:22;const px=100+Math.cos(a)*r,py=40+Math.sin(a)*r;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.fill();
-    const texture=new T.CanvasTexture(c);texture.colorSpace=T.SRGBColorSpace;const cloth=new T.MeshStandardMaterial({map:texture,roughness:1,side:T.DoubleSide});mats.set('flag'+x+z,cloth);
+    const texture=new T.CanvasTexture(c);texture.colorSpace=T.SRGBColorSpace;const cloth=toon(0xffffff,{map:texture,side:T.DoubleSide});mats.set('flag'+x+z,cloth);
     const g=new T.PlaneGeometry(width,width/2,12,2),pos=g.attributes.position;for(let i=0;i<pos.count;i++)pos.setZ(i,Math.sin((pos.getX(i)+width/2)*5)*.055);g.computeVertexNormals();return mesh(g,cloth,x,y,z);
   }
   function roof(w, d, x, y, z, color, parent = scene) {
@@ -193,7 +196,7 @@ export async function makeWorld(canvas) {
     cylinder(.18*size,.34*size,7*size,0x88734f,x,3.5*size,z);
     for(let i=1;i<7;i++)cylinder(.22*size,.22*size,.06,0x6d6044,x,i*size,z);
     const leafMaterialKey='palm-leaf';
-    if(!mats.has(leafMaterialKey))mats.set(leafMaterialKey,new T.MeshStandardMaterial({color:0x4e7946,roughness:1,side:T.DoubleSide}));
+    if(!mats.has(leafMaterialKey))mats.set(leafMaterialKey,toon(0x4e7946,{side:T.DoubleSide}));
     for(let a=0;a<8;a++) {
       const vertices=[],indices=[];
       function point(t){return [t*4.7*size,(Math.sin(t*Math.PI)*.8-t*t*1.5)*size,0];}
@@ -220,12 +223,12 @@ export async function makeWorld(canvas) {
     for(const y of [.35,.95]) box(axis==='x'?length:.1,.12,axis==='z'?length:.1,0xd4c6a0,x+(axis==='x'?length/2:0),y,z+(axis==='z'?length/2:0));
   }
   // Ground, roads and a narrow river divide the older kampung from the pekan.
-  box(180,.6,160,textured(0xdbedc6,'grass'),0,-.35,0);
-  box(150,.08,8,textured(0x777d73,'asphalt'),0,.015,4);
-  box(7,.08,132,textured(0x7c8073,'asphalt'),-25,.02,0);
-  box(5,.06,62,textured(0xc8b994,'dirt'),-42,.04,24);
-  box(90,.06,4,textured(0xcbbd99,'dirt'),4,.035,37);
-  box(7,.08,100,textured(0x7b8176,'asphalt'),62,.02,0);
+  box(180,.6,160,textured(0xffffff,'grass'),0,-.35,0);
+  box(150,.08,8,textured(0xffffff,'asphalt'),0,.015,4);
+  box(7,.08,132,textured(0xffffff,'asphalt'),-25,.02,0);
+  box(5,.06,62,textured(0xffffff,'dirt'),-42,.04,24);
+  box(90,.06,4,textured(0xffffff,'dirt'),4,.035,37);
+  box(7,.08,100,textured(0xffffff,'asphalt'),62,.02,0);
   for(let x=-72;x<74;x+=8)box(3,.02,.16,0xd6d1a9,x,.07,4);
   for(let z=-62;z<68;z+=8)box(.16,.02,3,0xd6d1a9,-25,.075,z);
   box(8,.1,155,0x71958a,-65,-.02,0);
@@ -378,6 +381,8 @@ export async function makeWorld(canvas) {
   const cameraOccluders=[];
   const staticMaterials = new Set(mats.values());
   const staticMeshes = [];
+  const townInk=new T.LineBasicMaterial({color:0x35353b,transparent:true,opacity:.62,depthWrite:false});
+  const inkCells=new Map();
   scene.traverse(object => {
     if (object.isMesh && staticMaterials.has(object.material)) {
       const pos=new T.Vector3().setFromMatrixPosition(object.matrixWorld),key=object.material.uuid+':'+Math.floor(pos.x/24)+':'+Math.floor(pos.z/24)+':'+(object.userData.cameraOccluder?'solid':'detail');
@@ -405,8 +410,18 @@ export async function makeWorld(canvas) {
     merged.setAttribute('normal', new T.BufferAttribute(normals, 3));
     merged.setAttribute('uv', new T.BufferAttribute(uvs, 2));
     merged.computeBoundingSphere();
-    const object = new T.Mesh(merged, occluder?material.clone():material);if(occluder){object.material.transparent=true;cameraOccluders.push(object);}
+    const object = new T.Mesh(merged, occluder?material.clone():material);if(occluder){object.material.onBeforeCompile=material.onBeforeCompile;object.material.customProgramCacheKey=material.customProgramCacheKey;}if(occluder){object.material.transparent=true;cameraOccluders.push(object);}
     object.castShadow = true; object.receiveShadow = true; scene.add(object);
+    if(![textures.grass,textures.dirt,textures.asphalt].includes(material.map)){
+      const edges=new T.EdgesGeometry(merged,38);
+      if(occluder){const lines=new T.LineSegments(edges,townInk.clone());scene.add(lines);object.userData.ink=lines;}
+      else{const center=merged.boundingSphere.center,key=Math.floor(center.x/24)+':'+Math.floor(center.z/24);if(!inkCells.has(key))inkCells.set(key,[]);inkCells.get(key).push(edges);}
+    }
+  }
+  for(const geometries of inkCells.values()){
+    const size=geometries.reduce((n,g)=>n+g.attributes.position.array.length,0),positions=new Float32Array(size);let offset=0;
+    for(const g of geometries){positions.set(g.attributes.position.array,offset);offset+=g.attributes.position.array.length;g.dispose();}
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.computeBoundingSphere();scene.add(new T.LineSegments(g,townInk));
   }
   const characters=[];
   function character(x,z,kind='amir'){const model=createCharacter(scene,x,z,kind);characters.push(model);return model;}
@@ -416,7 +431,7 @@ export async function makeWorld(canvas) {
   const npcs=[{id:'nur',x:-35,z:36,character:nur},{id:'pak',x:12,z:-.5,character:pak}];
   character(37,19,'pak');character(1,-14,'nur');
   // Small overhead diamonds remain legible at the elevated gameplay angle.
-  for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.3,0),0xe4bc68,npc.x,3.1,npc.z);animated.push(marker);npc.marker=marker;}
+  for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.3,0),0xe4bc68,npc.x,3.65,npc.z);animated.push(marker);npc.marker=marker;}
   const ray=new T.Raycaster(),blocked=new Set();let occlusionTime=0;
   function updateOcclusion(camera,look,dt,active){
     occlusionTime+=dt;
@@ -424,7 +439,7 @@ export async function makeWorld(canvas) {
       occlusionTime=0;blocked.clear();
       if(active){scene.updateMatrixWorld();const direction=camera.position.clone().sub(look);ray.set(look,direction.clone().normalize());ray.near=.2;ray.far=Math.max(.2,direction.length()-.5);for(const hit of ray.intersectObjects(cameraOccluders,false))blocked.add(hit.object);}
     }
-    for(const object of cameraOccluders){object.material.opacity=T.MathUtils.lerp(object.material.opacity,blocked.has(object)?.17:1,1-Math.exp(-dt*9));object.material.depthWrite=object.material.opacity>.98;}
+    for(const object of cameraOccluders){object.material.opacity=T.MathUtils.lerp(object.material.opacity,blocked.has(object)?.17:1,1-Math.exp(-dt*9));object.material.depthWrite=object.material.opacity>.98;if(object.userData.ink){object.userData.ink.material.opacity=.62*object.material.opacity;object.userData.ink.visible=object.material.opacity>.3;}}
   }
   function canWalk(x,z){
     if(x < -78 || x > 76 || z < -66 || z > 66)return false;

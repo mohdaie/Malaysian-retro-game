@@ -1,36 +1,27 @@
-# Prototype design — v0.3.0
+# Illustrated prototype design — v0.4.0
 
-The current first chapter is the deliverable: Amir's home → Nur → Warung Pak Mat → congkak → free exploration. The design is implemented directly in the playable game. It keeps the accepted landscape control layout, close camera, swipe viewing and pinch zoom.
+Amir and Nur now follow the supplied Jaguh Kampung character sheet through simplified low-poly models with illustrated faces and clothes. The world keeps 3D movement, collision, animation and a freely orbiting camera, while the art uses colour blocks, ink and a painted horizon. This is a comic-inspired rendering direction rather than a claim to reproduce a feature film's production quality.
 
-## Direction
+## Characters
 
-A warm stylized Malaysian town around 2001: rounded child proportions, recognizable kampung and pekan architecture, aged timber, terracotta and painted roofs, cream plaster, muted vegetation, soft afternoon light and a cream-and-green interface. Details are designed to read at the actual phone gameplay camera.
-
-## Implemented design
-
-| Area | Implementation |
+| Character | Implemented reference details |
 |---|---|
-| Characters | Original Amir, Nur and Pak Mat meshes with shaped clothing, collars, faces, hair/hijab/kopiah, shoes and an Amir canvas satchel. Jointed hips, knees, shoulders and elbows; blended idle/walk/run poses. Geometry sharing a joint and material is merged. |
-| Kampung | Generated timber and grass materials, side windows, shutters, carved eaves, roof tile material and ridge caps, patterned stair tiles, slippers, flags, flowering porch plants and laundry. |
-| Pekan | Textured plaster, framed glazing, shopfront grilles, striped awnings, cornices and tiled five-foot walkways. |
-| Warung | Tables/chairs, counter and tins, tea glasses, plates and a modeled congkak board with houses/stores. |
-| Landmarks | School flag, mosque trim/windows, terrace-house details, period bus and market stalls. |
-| Street life | Original tubular bicycles with spokes, rounded car/bus bodies, glazing, lights, bumpers and wheel hubs; roadside curbs and drains. |
-| Vegetation/light | Clustered tree canopies, feathered palm leaflets and central frond ribs, a painted sky gradient, focused sun shadows and soft character contact shadows. |
-| Interface | Accepted landscape layout with a 144 px joystick/60 px grip; 128 px base on very short screens. Readable board houses against real wood-grain material. |
-| Camera | Default distance 14, swipe orbit/tilt, pinch zoom; solid buildings and foliage soften when they occlude the player. |
-| Sound | Optional original synthesized breeze, bird calls, footfalls and shell clicks. No sound downloads or third-party recordings. |
+| Amir | Large expressive drawn eyes, angular black hair, cream/white navy-trimmed T-shirt with a pixel alien, full blue cargo trousers with side pockets, cream striped shell-toe sneakers, red/black backpack with badge and green charm, wristwatch. |
+| Nur | Drawn eyes and lashes, pink hijab with an open face and scarf folds, pink hoodie with hibiscus and drawstrings, light blue cargo trousers, cream/pink striped shoes, black backpack with pink flower and dangling flower charm. |
+| Pak Mat | Matching low-poly/toon treatment, kopiah and moustache so the NPC fits the same visual world. |
 
-The grass and timber images are generated assets integrated into the actual 3D materials. Buildings, props and characters are original authored procedural geometry. Concept illustrations are not substituted for the playable scene.
+Faces are transparent original canvas drawings projected onto a curved head surface. Clothes, hair, shoes and bags remain lightweight code-authored geometry; no flat character cutout replaces the articulated models. Hips, knees, shoulders and elbows animate independently. Opaque surfaces merge by joint and material; all ink hulls on a joint share one draw pass. The static six-view turnaround is rendered from the same models used in gameplay.
 
-## Movement and performance
+## Environment
 
-Walking increases from 4.8 to 7.2 world metres/second; running increases from 8 to 11. Analog travel scales against the rendered joystick. Movement uses elapsed time with small collision steps, retaining the same speed at 60, 10 and 5 frames per second in the movement tests. Long stalls are capped at 250 ms and blur/orientation changes clear held input.
+Three-step cel lighting replaces smooth plastic shading. Batched ink lines describe building edges and props, faint halftone dots shade surfaces, and road/earth/grass/roof materials use flatter illustrated marks. Warung, kampung homes, terrace homes, school, mosque, Ipoh-inspired shoplots, bus station and market retain their recognizable layout and interactions.
 
-The town is batched by material in 24-metre cells so off-screen areas can be culled. Distant trees have less geometry and distant characters are hidden. Pixel ratio is capped at 2. The renderer pauses behind map, pause and congkak panels. Art remains self-contained in both repository-root and built-folder publishing.
+`assets/textures/illustrated-horizon.webp` is a generated painted panorama integrated around the real playable streets. Its distant houses, trees, hills and clouds are an illustrated backdrop, not extra modeled buildings. The playable town uses simple geometry for perspective and collision. There is no fullscreen postprocessing pass or additional render target.
 
-## Scope and validation
+## Controls and scope
 
-This is the visual design for the current playable prototype, not a release of additional chapters, interiors or traditional games. Saves remain local to the browser and an unfinished congkak round does not persist.
+Landscape-only gameplay, the 144 px joystick (128 px on short screens), walking at 7.2 units/second, running at 11, default camera distance 14, swipe orbit/tilt, pinch zoom and camera occlusion remain. Ink fades along with blocking buildings to keep the player visible. Optional original sound and existing local save data remain supported.
 
-See [VALIDATION.md](VALIDATION.md) for automated and browser evidence. Physical phone performance and native fullscreen/orientation support require real-device checks; emulation cannot establish those results. Visual quality is reviewable in the live game and screenshots rather than inferred from a production schedule.
+The chapter remains Amir's home → Nur → Warung Pak Mat → congkak → free exploration. This visual update does not add interiors or new chapters. Drawings represent the reference's main features; expression changes, talking-face animation and film-quality effects are outside this implementation.
+
+See [VALIDATION.md](VALIDATION.md) and the actual model/gameplay screenshots. Browser emulation cannot establish physical-phone frame rate or native orientation-lock behavior.

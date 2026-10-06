@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.3.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.4.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -66,14 +66,15 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 0.3.0 implements the current prototype's warm stylized design through original procedural meshes, generated surface textures, articulated animation and local synthesized sound. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 0.4.0 follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
 Save data is stored in the browser on this device and origin; it does not sync across devices. Only completed chapter progress is saved, not a partly played congkak round. Leaving an unfinished round starts a fresh practice round on return.
 
 ## Code layout
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
-- `src/characters.js`: original character meshes, jointed animation and per-joint batching.
+- `src/characters.js`: reference-based low-poly characters, illustrated face/clothing drawings, jointed animation and batching.
+- `src/illustration.js`: shared cel-light ramp, halftone shading and character ink hull.
 - `src/movement.js`: analog input and small collision steps independent of frame rate.
 - `src/soundscape.js`: original local ambience and foley.
 - `assets/`: generated game materials and provenance.
@@ -87,4 +88,6 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 ## Preview
 
-![Version 0.3.0 landscape gameplay](docs/landscape-gameplay-v030.png)
+![Version 0.4.0 landscape gameplay](docs/landscape-gameplay-v040.png)
+
+![Actual in-game Amir and Nur models, front/side/back](docs/character-turnaround-v040.png)
