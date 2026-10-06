@@ -42,3 +42,17 @@ Mobile-emulated browser checks passed for the portrait gate, landscape start, th
 The visual pass adds original procedural grass/timber/dirt textures, shutter and porch details, foliage and curved palm fronds. Lighting is less washed out, roof face normals are corrected, texture UVs survive static batching, and a smaller following shadow region improves local shadow definition. This remains simplified procedural artwork rather than final character/environment assets.
 
 Changed styles and scene modules use versioned URLs so an earlier cached scene cannot be mixed with the new camera code.
+
+## v0.3.0 — prototype design and comfortable movement
+
+`npm test`: **18 tests passed**. New movement checks cover analog input across different joystick radii, diagonal clamping, equal travel at 60/10/5 FPS, and a thin-wall collision/sliding case during a long running frame. Publishing checks now verify that HTML, CSS, bootstrap and main-module cache keys advance together, and generated texture assets exist in root publishing.
+
+Walking is 7.2 world metres/second (previously 4.8), running is 11 (previously 8). The joystick base is 144 px with a 60 px grip, or 128 px on very short landscape screens. Input radius derives from rendered dimensions. Blur, portrait and menu transitions release held controls.
+
+Browser checks under direct `/Malaysian-retro-game/` hosting covered landscape controls, independent swipe/tilt, actual two-touch pinch, simultaneous movement/viewing, portrait pause/resume and the short-screen control. Full chapter checks reached Nur using faster movement, advanced her dialogue, enabled/disabled local sound, played a complete congkak round in 13 player moves, returned to exploration and restored completed progress after reload. Root and built-folder hosting loaded all generated textures. An intentionally missing grass asset showed the retry error rather than leaving the loader stuck.
+
+The visual pass replaces character blocks with original shaped and jointed meshes, integrates generated ground/timber assets, adds roof/architecture/vehicle/warung detail, finishes the wooden board presentation and supplies original synthesized ambience/foley. Static scenery uses spatial batching; character details merge per joint/material. View samples before the final occlusion adjustment submitted 123,154 triangles in the pekan and 82,100 by the mosque, compared with 239,420 in the earlier unpartitioned view. These are renderer workload observations, not physical-device FPS claims.
+
+No page or renderer errors and no missing assets occurred in the successful root-hosted chapter check. Screenshots are `landscape-gameplay-v030.png`, `title-v030.png`, `warung-v030.png`, `pekan-v030.png`, `mosque-v030.png` and `congkak-v030.png`. Physical Android/iPhone GPU performance and native orientation locking remain unmeasured here.
+
+The final camera check restored a position behind the warung and confirmed a blocking roof faded while Amir remained visible. The updated view submitted 120,022 triangles. The complete landscape/multi-touch checks then passed again without errors; the observed starting view submitted 114,890 triangles. Camera diagnostics are read-only.

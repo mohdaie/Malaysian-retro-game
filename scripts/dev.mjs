@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 const root = resolve(process.argv.includes('--dist') ? 'dist' : '.');
 const port = Number(process.env.PORT || 4173);
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webp': 'image/webp' };
 http.createServer(async (req, res) => {
   try {
     let path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);

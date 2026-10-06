@@ -1,13 +1,15 @@
 import * as T from 'three';
-import { makeWorld, places } from './world.js?v=0.2.0';
+import { makeWorld, places } from './world.js?v=0.3.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js';
 import { readSave, writeSave } from './save.js';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.2.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, needsLandscape, enterLandscape } from './display.js?v=0.3.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.3.0';
+import { createSoundscape } from './soundscape.js?v=0.3.0';
 const $ = id => document.getElementById(id);
 let world;
-try { world = makeWorld($('world')); } catch (error) {
+try { world = await makeWorld($('world')); } catch (error) {
   $('loading').hidden = true; $('start-screen').hidden = true; $('error-panel').hidden = false;
-  $('error-text').textContent = 'This game needs WebGL graphics support. Try an up-to-date Chrome, Safari or Firefox browser with hardware acceleration enabled.';
+  $('error-text').textContent = 'The game could not load its graphics. Check your connection and retry. Your browser needs WebGL with hardware acceleration enabled.';
   throw error;
 }
 const { player, camera, renderer, scene } = world;
@@ -38,7 +40,7 @@ function refreshQuest() {
   world.npcs[0].marker.visible = state.quest === 0;
   world.npcs[1].marker.visible = state.quest > 0;
 }
-function clearControls() { viewPointers.clear(); pinchDistance = null; keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
+function clearControls() { if(stickPointer!==null){const stick=$('joystick');if(stick.hasPointerCapture(stickPointer))stick.releasePointerCapture(stickPointer);stickPointer=null;} viewPointers.clear(); pinchDistance = null; keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
 function syncOrientation() {
   orientationBlocked = needsLandscape(innerWidth, innerHeight);
   $('orientation-panel').hidden = !orientationBlocked;
@@ -127,7 +129,13 @@ document.addEventListener('fullscreenchange',syncOrientation);
 $('world').addEventListener('wheel',event=>{if(mode==='explore'&&!orientationBlocked){distance=T.MathUtils.clamp(distance+event.deltaY*.02,CAMERA_NEAR,CAMERA_FAR);$('zoom').value=distance;}},{passive:true});
 let stickPointer=null;
 $('joystick').addEventListener('pointerdown',event=>{if(mode!=='explore'||orientationBlocked||stickPointer!==null)return;stickPointer=event.pointerId;event.currentTarget.setPointerCapture(event.pointerId);moveStick(event);});
-function moveStick(event){if(event.pointerId!==stickPointer)return;const r=$('joystick').getBoundingClientRect();let x=event.clientX-r.left-r.width/2,y=event.clientY-r.top-r.height/2;const l=Math.hypot(x,y);if(l>34){x=x/l*34;y=y/l*34;}joystick={x:x/34,y:y/34};$('joystick-knob').style.transform=`translate(${x}px,${y}px)`;}
+function moveStick(event){
+  if(event.pointerId!==stickPointer)return;
+  const r=$('joystick').getBoundingClientRect(),knob=$('joystick-knob');
+  const radius=Math.max(1,(r.width-knob.offsetWidth)/2-2);
+  joystick=stickInput(event.clientX-r.left-r.width/2,event.clientY-r.top-r.height/2,radius);
+  knob.style.transform=`translate(${joystick.x*radius}px,${joystick.y*radius}px)`;
+}
 $('joystick').addEventListener('pointermove',moveStick);
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('joystick').addEventListener(type,event=>{if(event.pointerId===stickPointer){stickPointer=null;joystick={x:0,y:0};$('joystick-knob').style.transform='';}});
 $('run-button').onpointerdown=event=>{running=true;event.currentTarget.setPointerCapture(event.pointerId);};
@@ -157,17 +165,16 @@ $('world').addEventListener('pointermove', event => {
 for (const type of ['pointerup','pointercancel','lostpointercapture']) $('world').addEventListener(type, event => {
   viewPointers.delete(event.pointerId); pinchDistance = null;
 });
-// Optional, user-enabled ambience is synthesized locally with Web Audio.
-let audioCtx=null, ambienceGain=null;
+// Sound starts only after the player enables it; it has no network dependency.
+let audio=null;
 $('sound').onchange=async()=>{
   try {
-    if($('sound').checked){
-      if(!audioCtx){audioCtx=new AudioContext();ambienceGain=audioCtx.createGain();ambienceGain.gain.value=.006;ambienceGain.connect(audioCtx.destination);
-        for(const freq of [293.66,440,587.33]){const osc=audioCtx.createOscillator();osc.type='sine';osc.frequency.value=freq;osc.connect(ambienceGain);osc.start();}
-      }await audioCtx.resume();
-    }else await audioCtx?.suspend();
+    if($('sound').checked){audio??=createSoundscape(()=>!document.hidden&&!orientationBlocked&&mode==='explore');await audio.resume();}
+    else await audio?.suspend();
   }catch{$('sound').checked=false;toast('Sound is unavailable on this device.');}
 };
+document.addEventListener('visibilitychange',()=>{if(document.hidden)audio?.suspend();else if($('sound').checked&&!orientationBlocked)audio?.resume();});
+
 function openBoard(){setMode('board');board=newRound();boardBusy=false;boardToken++;$('board-panel').hidden=false;$('board-return').hidden=true;$('board-player-name').textContent=state.name;renderBoard();$('sowing-status').textContent='Choose any non-empty house on your bottom row.';}
 function closeBoard(){boardToken++;boardBusy=false;$('board-panel').hidden=true;setMode('explore');persist();if(!board?.over)toast('Practice paused. Talk to Pak Mat to start a fresh round.');}
 $('board-close').onclick=closeBoard;$('board-return').onclick=closeBoard;
@@ -194,7 +201,7 @@ async function runMove(index){
   boardBusy=true;const result=playMove(board,index);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stride=Math.max(1,Math.ceil(result.frames.length/45));
-  for(let i=0;i<result.frames.length;i+=stride){while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);$('sowing-status').textContent=f.hand?`${mover===0?state.name:'Pak Mat'} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
+  for(let i=0;i<result.frames.length;i+=stride){while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);audio?.shell();$('sowing-status').textContent=f.hand?`${mover===0?state.name:'Pak Mat'} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
   if(token!==boardToken)return;
   board=result.state;boardBusy=false;renderBoard();
   $('sowing-status').textContent=result.capture?`Captured ${result.capture} shells!`:result.extraTurn?'Last shell in the store — another turn.':'Turn complete.';
@@ -220,33 +227,35 @@ function drawMap(canvas,full=false){
 const clock=new T.Clock();
 const cameraTarget=new T.Vector3(),look=new T.Vector3();
 function tick(){
-  const dt=Math.min(clock.getDelta(),.04);elapsed+=dt;
+  const dt=Math.min(clock.getDelta(),.25);elapsed+=dt;
   if(mode==='explore'&&!orientationBlocked){
     if(keys.has('q'))yaw-=dt*1.3;if(keys.has('r'))yaw+=dt*1.3;
     let sx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+joystick.x;
     let sy=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)-joystick.y;
     const length=Math.hypot(sx,sy);if(length>1){sx/=length;sy/=length;}
     const dx=sx*Math.cos(yaw)-sy*Math.sin(yaw),dz=-sx*Math.sin(yaw)-sy*Math.cos(yaw);
-    const speed=(running||keys.has('shift')?8:4.8)*dt;
+    const isRunning=running||keys.has('shift');
     const p=player.group.position;
-    // Axis separation slides along walls rather than trapping the character.
-    if(world.canWalk(p.x+dx*speed,p.z))p.x+=dx*speed;
-    if(world.canWalk(p.x,p.z+dz*speed))p.z+=dz*speed;
+    const previousX=p.x,previousZ=p.z;
+    moveWithCollision(p,dx,dz,isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
+    audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
     if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
-    for(let i=0;i<2;i++){const swing=length>.08?Math.sin(elapsed*(running||keys.has('shift')?15:10)+i*Math.PI)*.55:0;player.legs[i].rotation.x=swing;player.arms[i].rotation.x=-swing*.7;}
+    player.animate(dt,length>.08?Math.min(length,1):0,isRunning);
     nearby=world.npcs.find(n=>Math.hypot(p.x-n.x,p.z-n.z)<3.6)||null;
     $('interaction').hidden=!nearby;
     if(nearby)$('interact-label').textContent=`Talk to ${nearby.id==='nur'?state.friend:'Pak Mat'}`;
     $('location-name').textContent=zoneAt(p.x,p.z);
     $('quest-distance').textContent=state.quest<3?`${Math.round(Math.hypot(p.x-quests[state.quest].x,p.z-quests[state.quest].z))} m away`:'';
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
-  } else for(const leg of player.legs)leg.rotation.x*=.8;
+  } else player.animate(dt,0);
+  for(const character of world.characters)if(character!==player){character.group.visible=mode==='title'||character.group.position.distanceTo(player.group.position)<55;if(character.group.visible)character.animate(dt,0);}
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=3.2+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
   else{look.set(p.x,1,p.z);cameraTarget.set(p.x+Math.sin(yaw)*distance,p.y+distance*cameraTilt,p.z+Math.cos(yaw)*distance);}
   world.updateSun(look.x,look.z);
   camera.position.lerp(cameraTarget,1-Math.exp(-dt*4));camera.lookAt(look);
+  world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
   if (!orientationBlocked && !['board','map','pause'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
@@ -255,4 +264,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null})};
+window.retroMalaysia={snapshot:()=>({mode,orientationBlocked,cameraDistance:distance,cameraHeightRatio:cameraTilt,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
