@@ -1,6 +1,6 @@
 # Map editor
 
-The town is built from one plan, `src/town-plan.js`. Every building, vehicle, passer-by and road has an entry there, with a position in metres and a turn in quarter steps. Nothing else in the game hard-codes where things stand: walls, raised floors, colliders, the numbered map, district labels, quest markers, Amir's start point, Nur and Pak Mat all follow the plan.
+The town is built from one plan, `src/town-plan.js`. Every building, vehicle, passer-by and road has an entry there, with a position in metres and a turn in quarter steps. Nothing else in the game hard-codes where things stand: walls, raised floors, colliders, the numbered map, district labels, quest markers, Amir's and Nur's start points, Kak Ita's stall and where each of the 14 townsfolk stands all follow the plan.
 
 ## Editing the layout
 
@@ -12,7 +12,7 @@ Open the map editor (the Claude artifact "Seri Kenangan Map Editor", or `tools/m
 - Roads: drag the round end handles to change the length, set length, width and surface in the panel, turn them 90°, delete them, or add new paths.
 - The river and the town edge stay fixed. A road that crosses the river from bank to bank, east–west, gets its own bridge as wide as the road; the old footbridge stays where no road crosses nearby. A road that runs into the river without crossing it is flagged.
 
-The **Layout checks** list updates as you edit. Errors are overlapping buildings, anything in the river or past the town edge, or a missing Rumah Amir or Warung Pak Mat; warnings are buildings standing on an asphalt road. The school's fenced yard may hold the canteen and court. Cars and passers-by may stand on roads.
+The **Layout checks** list updates as you edit. Errors are overlapping buildings, anything in the river or past the town edge, or a missing Rumah Amir, Rumah Nur or Warung Kak Ita; warnings are buildings standing on an asphalt road. The school's fenced yard may hold the canteen and court. Cars and passer-by spots may stand on roads. Passer-by spots keep trees clear for future walkers; v1.0.0 does not draw anyone there.
 
 **Save layout** stores the plan in the artifact so Claude can read it and apply it to `src/town-plan.js`. Outside Claude, **Copy layout** copies the same JSON to paste into a chat.
 

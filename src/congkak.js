@@ -54,7 +54,7 @@ export function playMove(state, pit) {
   return { state: next, frames, capture, extraTurn };
 }
 export function opponentMove(state) {
-  // Pak Mat chooses a simple one-move lookahead; no external AI calls.
+  // The opponent chooses a simple one-move lookahead; no external AI calls.
   return legalMoves(state).map(pit => {
     const { state: next, extraTurn } = playMove(state, pit);
     return { pit, score: next.pits[15] - state.pits[15] + (extraTurn ? 4 : 0) };

@@ -14,7 +14,7 @@ test('every numbered place appears once and each unit fills its kind\'s slots', 
   const town = derive(TOWN_PLAN);
   assert.deepEqual(town.buildings.map(b => b.id), Object.keys(PLACES).map(Number));
   for (const u of TOWN_PLAN.units) assert.equal(u.places.length, KINDS[u.kind].places.length, u.id);
-  assert.ok(town.spots.spawn && town.spots.nur && town.spots.pak);
+  assert.ok(town.spots.spawn && town.spots.spawnNur && town.spots.stall);
 });
 test('quarter turns follow Three.js rotation.y and swap rect sides', () => {
   for (let rot = 0; rot < 4; rot++) {

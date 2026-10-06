@@ -1,4 +1,4 @@
-import { TOWN_PLAN } from './town-plan.js?v=0.11.0';
+import { TOWN_PLAN } from './town-plan.js?v=1.0.0';
 
 // Town plan geometry shared by the game, the tests and the map editor. The
 // editable positions live in town-plan.js; everything here is derived from
@@ -24,11 +24,11 @@ export const DISTRICT_INFO = [
 export const PLACES = {
   1: ['Rumah Amir', 'kampung', 'home'], 2: ['Rumah Tok', 'kampung', 'house'], 3: ['Rumah Pak Mail', 'kampung', 'house'],
   4: ['Rumah Mak Cik Salmah', 'kampung', 'house'], 5: ['Rumah Jiran A', 'kampung', 'house'], 6: ['Rumah Jiran B', 'kampung', 'house'],
-  7: ['Rumah Jiran C', 'kampung', 'house'], 8: ['Rumah Warisan Kosong', 'kampung', 'house'], 9: ['Wakaf Kebun', 'kampung', 'pavilion'],
+  7: ['Rumah Jiran C', 'kampung', 'house'], 8: ['Rumah Atuk', 'kampung', 'house'], 9: ['Wakaf Kebun', 'kampung', 'pavilion'],
   10: ['Pondok Tepi Sungai', 'kampung', 'pavilion'], 11: ['Rumah Nur', 'terrace', 'terrace'], 12: ['Rumah Kak Lina', 'terrace', 'terrace'],
-  13: ['Rumah Pak Abu', 'terrace', 'terrace'], 14: ['Rumah Jiran D', 'terrace', 'terrace'], 15: ['Rumah Jiran E', 'terrace', 'terrace'],
+  13: ['Rumah Pak Abu', 'terrace', 'terrace'], 14: ['Rumah Mei Ling', 'terrace', 'terrace'], 15: ['Rumah Faiz', 'terrace', 'terrace'],
   16: ['Rumah Jiran F', 'terrace', 'terrace'], 17: ['Rumah Jiran G', 'terrace', 'terrace'], 18: ['Rumah Jiran H', 'terrace', 'terrace'],
-  19: ['Kedai Sudut Mini', 'terrace', 'mini-shop'], 20: ['Tadika Kenangan', 'terrace', 'nursery'], 21: ['Warung Pak Mat', 'pekan', 'warung'],
+  19: ['Kedai Sudut Mini', 'terrace', 'mini-shop'], 20: ['Tadika Kenangan', 'terrace', 'nursery'], 21: ['Warung Kak Ita', 'pekan', 'warung'],
   22: ['Kedai Runcit 99', 'pekan', 'shop'], 23: ['Kedai Gunting', 'pekan', 'shop'], 24: ['Kedai Basikal', 'pekan', 'shop'],
   25: ['Alat Tulis & Game', 'pekan', 'shop'], 26: ['Kedai Jahit', 'pekan', 'shop'], 27: ['Klinik & Farmasi', 'pekan', 'shop'],
   28: ['Kedai Roti & Kuih', 'pekan', 'shop'], 29: ['SK Seri Kenangan', 'community', 'school'], 30: ['Kantin Sekolah', 'community', 'canteen'],
@@ -56,7 +56,7 @@ export const KINDS = {
   home: stiltHouse(10, 8, {
     label: 'Rumah Amir and yard',
     solids: [[0, 1.725, 11, 11.45], [0, -7, 20, .12], [-10, 3.5, .12, 21], [-6.5, 14, 7, .12], [7.5, 14, 5, .12], [-7.5, -9, 7.5, .4], [9, 6, 2.4, .55]],
-    spots: { spawn: [0, 11, 0], nur: [8, 9, -.7] },
+    spots: { spawn: [0, 11, 0] },
     decor: [['kelapa', -14, 4, 1.1], ['kelapa', 11.5, -4.5, .95], ['rambutan', -7.2, 10.5, .8], ['pisang', 7.8, -4.6, .95], ['pisang', -14, 11.5, .9], ['mangga', -13.5, 19, .9], ['serai', -8.6, -5.2], ['pandan', -6.6, -5.6], ['cili', -8.7, -2.6]],
     patches: [[-6, 8, 6], [-5, 12, 5], [6, 3, 4], [8, 13, 5], [-7, -4, 5]]
   }),
@@ -75,7 +75,7 @@ export const KINDS = {
   hall: civic('Village hall', 13, 8, { decor: [['kelapa', -8.2, -2, .95]] }),
   library: civic('Library', 12, 8, { decor: [['ketapang', 8, -2, .8]] }),
   petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]], decor: [['kelapa', 6.6, 2.5, .95], ['kelapa', -6.4, 2, .9], ['pisang', 6.4, -4.5, .85]] }),
-  warung: { label: 'Warung Pak Mat', places: [[0, 0, 11, 6.5]], doors: [[0, 6]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { pak: [0, 6, .2] }, decor: [['kelapa', -7.8, -3, 1.05], ['pisang', 7.8, -3.2, .95], ['pisang', -8.2, 1.8, .85], ['serai', 7.6, 1.6]] },
+  warung: { label: 'Warung Kak Ita', places: [[0, 0, 11, 6.5]], doors: [[0, 6]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { stall: [0, 6, .2] }, decor: [['kelapa', -7.8, -3, 1.05], ['pisang', 7.8, -3.2, .95], ['pisang', -8.2, 1.8, .85], ['serai', 7.6, 1.6]] },
   shophouses: {
     label: 'Shophouse terrace (7 shops)',
     places: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 0, 8.8, 10]),
@@ -153,10 +153,13 @@ export function derive(plan) {
     if (!s) return null;
     const [x, z] = toWorld(u, s[0], s[1]); return { x, z, heading: headingToWorld(u, s[2]) };
   };
+  // Nur starts just outside her terrace gate, facing the street.
+  const nurHome = units.find(u => (u.places || []).some(p => p.id === 11));
+  const spawnNur = nurHome && (() => { const i = nurHome.places.findIndex(p => p.id === 11), [lx, , , ] = nurHome.def.places[i], [x, z] = toWorld(nurHome, lx + .9, -8.2); return { x, z, heading: headingToWorld(nurHome, Math.PI) }; })();
   return {
     units, buildings, districts, roads: plan.roads.map(r => ({ ...r })), bridges: bridgesFor(plan.roads),
     floors: units.flatMap(u => u.floors),
-    spots: { spawn: spot('home', 'spawn'), nur: spot('home', 'nur'), pak: spot('warung', 'pak') },
+    spots: { spawn: spot('home', 'spawn'), spawnNur, stall: spot('warung', 'stall') },
     passersby: units.filter(u => u.kind === 'passerby').map(u => ({ x: u.x, z: u.z, heading: headingToWorld(u, 0), who: u.who || 'nur' }))
   };
 }
@@ -187,7 +190,7 @@ export function planProblems(plan) {
     if (inRiver && !town.bridges.some(b => b.road === r.id)) problems.push({ level: 'warning', units: [], roads: [r.id], text: `The ${r.id.replace(/-/g, ' ')} runs into the river. Roads get a bridge only when they cross it from bank to bank, east–west.` });
   }
   const spawn = town.spots.spawn;
-  if (!spawn || !town.spots.nur || !town.spots.pak) problems.push({ level: 'error', units: [], text: 'Rumah Amir and Warung Pak Mat must both be on the map.' });
+  if (!spawn || !town.spots.spawnNur || !town.spots.stall) problems.push({ level: 'error', units: [], text: 'Rumah Amir, Rumah Nur and Warung Kak Ita must be on the map.' });
   if (new Set(town.buildings.map(b => b.id)).size !== Object.keys(PLACES).length) problems.push({ level: 'error', units: [], text: 'All 38 numbered places must be on the map exactly once.' });
   return problems;
 }

@@ -1,13 +1,14 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=0.11.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=0.11.0';
-import { readSave, writeSave } from './save.js?v=0.11.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=0.11.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=0.11.0';
-import { createSoundscape } from './soundscape.js?v=0.11.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=0.11.0';
-import { newEconomy, cleanEconomy, offerAt, accept, collect, deliver, buy, jobsAt, ITEMS, STOCK, rm, itemLabel } from './economy.js?v=0.11.0';
-import { CONTACTS, hello } from './registry.js?v=0.11.0';
+import { makeWorld } from './world.js?v=1.0.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.0.0';
+import { readSave, writeSave } from './save.js?v=1.0.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.0.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.0.0';
+import { createSoundscape } from './soundscape.js?v=1.0.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.0.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.0.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.0.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.0.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -15,10 +16,12 @@ try { world = await makeWorld($('world')); } catch (error) {
   $('error-text').textContent = 'The game could not load its graphics. Check your connection and retry. Your browser needs WebGL with hardware acceleration enabled.';
   throw error;
 }
-const { player, camera, renderer, scene } = world;
-const state = { name: 'Amir', friend: 'Nur', quest: 0, completed: false };
-// Duit Poket, the bag and delivery jobs (economy.js); saved with the story.
-let eco = newEconomy(), target = null, counterPlace = null;
+const { camera, renderer, scene } = world;
+let player = world.player;
+// Who you play, your name and the chapter step; the economy (Duit Poket, bag,
+// collection, jobs, friendship) lives in `eco` and saves with them.
+const state = { who: 'amir', name: 'Amir', story: 0 };
+let eco = newEconomy(), counter = null, storySpot = null, opponent = 'Nenek';
 let mode = 'title', yaw = .55, distance = CAMERA_DEFAULT, elapsed = 0, lastSave = 0, nearby = null;
 let dialogue = [], dialogueDone = null, joystick = { x: 0, y: 0 }, running = false, board = null, boardBusy = false, boardToken = 0;
 // Pitch above the shoulders; a recent swipe pauses the automatic follow.
@@ -31,24 +34,58 @@ let storage;
 try { storage = localStorage; } catch { storage = null; }
 let saved = readSave(storage);
 $('continue-button').hidden = !saved;
-if (saved) { $('player-name').value = saved.name; $('friend-name').value = saved.friend; }
-const quests = [
-  { title: 'A familiar face', text: () => `Find ${state.friend} outside your kampung house.`, x: world.npcs[0].x, z: world.npcs[0].z },
-  { title: 'Down to the pekan', text: () => 'Follow the lane to Warung Pak Mat. He has a congkak board waiting.', x: world.npcs[1].x, z: world.npcs[1].z },
-  { title: 'Seven little houses', text: () => 'Talk to Pak Mat and finish your first congkak practice round.', x: world.npcs[1].x, z: world.npcs[1].z },
-  { title: 'An afternoon well spent', text: () => 'First chapter complete. Explore the town, or ask Pak Mat for a rematch.', x: world.npcs[1].x, z: world.npcs[1].z }
-];
-function refreshQuest() {
-  const q = quests[state.quest];
-  $('quest-title').textContent = q.title; $('quest-description').textContent = q.text();
-  $('quest-step').textContent = state.quest === 3 ? 'CHAPTER COMPLETE' : `0${state.quest + 1} / 03`;
-  $('quest-progress').style.width = `${(state.quest+1)/4*100}%`;
-  world.npcs[0].marker.visible = state.quest === 0;
-  world.npcs[1].marker.visible = state.quest > 0;
-  const home=document.querySelector('[data-building="1"]'),friendHome=document.querySelector('[data-building="11"]');
-  if(home)home.textContent=`Rumah ${state.name}`;
-  if(friendHome)friendHome.textContent=`Rumah ${state.friend}`;
+// Play as Amir or Nur. The name field follows the choice until it is edited.
+let chosen = 'amir';
+function choose(who) {
+  chosen = who;
+  for (const b of document.querySelectorAll('[data-who]')) b.setAttribute('aria-pressed', String(b.dataset.who === who));
+  if (!$('player-name').dataset.edited) $('player-name').value = PLAYERS[who].name;
 }
+for (const b of document.querySelectorAll('[data-who]')) b.onclick = () => choose(b.dataset.who);
+$('player-name').addEventListener('input', () => { $('player-name').dataset.edited = '1'; });
+if (saved) { choose(saved.who); $('player-name').value = saved.name; $('player-name').dataset.edited = '1'; }
+
+const today = () => new Date().toISOString().slice(0, 10);
+const placeOf = id => BUILDINGS.find(b => b.id === id);
+const npcBody = key => world.npcs.find(n => n.id === key);
+const myHome = () => PLAYERS[state.who].home;
+const placeName = id => id === 1 ? `Rumah ${state.who === 'amir' ? state.name : 'Amir'}` : id === 11 ? `Rumah ${state.who === 'nur' ? state.name : 'Nur'}` : placeOf(id).name;
+const doorGap = (a, b) => Math.hypot(placeOf(a).door.x - placeOf(b).door.x, placeOf(a).door.z - placeOf(b).door.z);
+// The person who answers at a place: its NPC if they are posted there, the
+// player's own parent at home, else the resident. Null while its NPC is away.
+function personAt(place) {
+  const key = npcAt(place);
+  if (key) return npcBody(key)?.post === place ? { key, name: NPCS[key].name } : null;
+  if (place === myHome()) return { key: null, name: PLAYERS[state.who].parent };
+  const c = contactAt(place); return c ? { key: null, name: c.name } : null;
+}
+const sayLine = text => line(text, state.name);
+
+// ---- Story ----
+function storyTarget() {
+  const step = STEPS[state.story];
+  if (!step?.target) return null;
+  if (step.target === 'job') { const job = eco.jobs.find(j => j.story); if (!job) return null; const p = placeOf(job.status === 'accepted' ? job.from : nextStop(job)); return { x: p.door.x, z: p.door.z, job: true }; }
+  const n = npcBody(step.target); return n ? { x: n.x, z: n.z, height: n.character.height } : null;
+}
+function refreshQuest() {
+  const step = STEPS[state.story];
+  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = step.title; $('quest-description').textContent = step.text;
+  $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `0${state.story + 1} / 0${DONE}`;
+  $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;
+  storySpot = storyTarget(); world.setStoryMarker(storySpot && !storySpot.job ? storySpot : null);
+  const home = document.querySelector('[data-building="1"]'), other = document.querySelector('[data-building="11"]');
+  if (home) home.textContent = placeName(1);
+  if (other) other.textContent = placeName(11);
+}
+function storyEvent(event) {
+  const next = advance(state.story, event); if (next === state.story) return false;
+  for (const key of MILESTONES[event] || []) befriend(eco, key, 'story', today());
+  state.story = next; refreshQuest(); refreshEconomy(); persist();
+  toast(next === DONE ? 'Chapter 1 complete · The pekan is yours to explore.' : `New step · ${STEPS[next].title}`);
+  return true;
+}
+
 function clearControls() { if(stickPointer!==null){const stick=$('joystick');if(stick.hasPointerCapture(stickPointer))stick.releasePointerCapture(stickPointer);stickPointer=null;} viewPointers.clear(); pinchDistance = null; keys.clear(); joystick = { x: 0, y: 0 }; running = false; $('joystick-knob').style.transform = ''; }
 function syncOrientation() {
   orientationBlocked = needsLandscape(innerWidth, innerHeight);
@@ -62,31 +99,34 @@ function setMode(next) {
   $('touch-controls').style.visibility = next === 'explore' ? '' : 'hidden';
 }
 function persist() {
-  const ok = writeSave(storage, { version: 2, ...state, ...eco, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 3, ...state, ...eco, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saved = readSave(storage); $('continue-button').hidden = false; }
   return ok;
 }
 function begin(value = null) {
-  if(value) Object.assign(state, { name: value.name, friend: value.friend, quest: value.quest, completed: value.completed });
-  else Object.assign(state, { name: $('player-name').value.trim().slice(0,20) || 'Amir', friend: $('friend-name').value.trim().slice(0,20) || 'Nur', quest: 0, completed: false });
+  if (value) Object.assign(state, { who: value.who, name: value.name, story: value.story });
+  else Object.assign(state, { who: chosen, name: $('player-name').value.trim().slice(0, 20) || PLAYERS[chosen].name, story: 0 });
   eco = value ? cleanEconomy(value) : newEconomy();
+  player = world.choosePlayer(state.who);
   // A save from an older layout may stand inside a moved building.
-  let x = value?.x ?? world.spawn.x, z = value?.z ?? world.spawn.z;
-  if(!world.canWalk(x,z)) { x=world.spawn.x; z=world.spawn.z; }
-  player.group.position.set(x,world.groundHeight(x,z)-.065,z);
+  const home = world.spawns[state.who];
+  let x = value?.x ?? home.x, z = value?.z ?? home.z;
+  if (!world.canWalk(x, z) || value?.upgraded) { x = home.x; z = home.z; }
+  player.group.position.set(x, world.groundHeight(x, z) - .065, z);
+  if (!value) player.group.rotation.y = home.heading;
   yaw = player.group.rotation.y + Math.PI; cameraPitch = CAMERA_PITCH; cameraSettle = 0;
-  world.renameHomes(state.name, state.friend);
+  world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
-  toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value ? `Selamat kembali, ${state.name}.` : `Welcome home, ${state.name}. Find ${state.friend} by the lane.`);
+  toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value?.upgraded ? `Selamat kembali, ${state.name}. The story has been rewritten: chapter 1 starts fresh, and your Duit Poket is kept.` : value ? `Selamat kembali, ${state.name}.` : `Cuti sekolah! Faiz and Mei Ling are at the padang.`);
   if(PREVIEW)$('day-label').textContent='Map preview';
 }
 $('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
   showDialogue('A new afternoon', ['Starting a new story replaces the saved journey on this device.'], () => begin());
   $('dialogue-next').textContent = 'Start new story →';
-  const cancel=document.createElement('button');cancel.textContent='Keep my saved journey';cancel.className='secondary';cancel.id='cancel-new';
-  cancel.onclick=()=>{cancel.remove();$('dialogue-panel').hidden=true;setMode('title');};$('dialogue-panel').append(cancel);
+  const cancelButton=document.createElement('button');cancelButton.textContent='Keep my saved journey';cancelButton.className='secondary';cancelButton.id='cancel-new';
+  cancelButton.onclick=()=>{cancelButton.remove();$('dialogue-panel').hidden=true;setMode('title');};$('dialogue-panel').append(cancelButton);
 } else begin(); });
 $('continue-button').onclick = () => { if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); begin(saved); };
 function toast(text) { $('toast').textContent=text; $('toast').hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4200); }
@@ -103,109 +143,172 @@ function interact() {
   if(mode==='dialogue'){advanceDialogue();return;}
   if(mode!=='explore'||!nearby)return;
   if(nearby.kind==='place'){openCounter(nearby.id);return;}
+  // Face each other; the camera swings to an over-the-shoulder two-shot.
   const p=player.group.position;
   player.group.rotation.y=Math.atan2(nearby.x-p.x,nearby.z-p.z);
-  // Face each other; the camera swings to an over-the-shoulder two-shot.
   nearby.character.group.rotation.y=Math.atan2(p.x-nearby.x,p.z-nearby.z);talkingTo=nearby;
-  if(nearby.id==='nur') {
-    if(state.quest===0) showDialogue(state.friend,[`${state.name}! You're back! It feels like we haven't played in ages.`,"Pak Mat has put the congkak board out at his warung. Walk up the lane, turn right at the road, and look for the green roof.","I'll see you in the pekan. Don't let him take all your shells!"],()=>{state.quest=1;refreshQuest();persist();toast('New destination: Warung Pak Mat. Open the map to see the way.');});
-    else showDialogue(state.friend,[state.quest===3?'One more round? Pak Mat never gets tired of congkak.':"The warung is just past the road. There's no hurry — enjoy the afternoon."]);
-  } else {
-    if(state.quest===0) showDialogue('Pak Mat',[`Ah, ${state.name}! ${state.friend} was looking for you near your house. Go say hello first.`]);
-    else if(state.quest===1) showDialogue('Pak Mat',[`${state.name}, lama tak jumpa! Sit down. A good afternoon needs a good game.`,"Seven houses, seven shells each. Bring more shells home than me. I'll show you as we go."],()=>{state.quest=2;refreshQuest();persist();openBoard();});
-    else openCounter(21);
+  const key=nearby.id;
+  // Chapter 1 opens with the two friends at the padang.
+  if(state.story===0&&(key==='faiz'||key==='meiling')){
+    showDialogue(`${NPCS.faiz.name} & ${NPCS.meiling.name}`,[
+      `${state.name}! Cuti sekolah dah mula! Two whole weeks, no homework.`,
+      'Mei Ling: We are saving up. Faiz wants the new Tamiya in Uncle Lim’s window, and I want the full card set.',
+      'Faiz: Pak Rahman at Kedai Runcit 99 needs someone to hand-deliver orders. He pays upah. Duit poket, bro!',
+      'Mei Ling: Go and ask him. We will be here at the padang till Maghrib.'
+    ],()=>storyEvent('met-friends'));
+    return;
   }
+  openCounter(NPCS[key].place,key);
 }
 $('interact-button').onclick=interact;
-// ---- Places, contacts and deliveries ----
-const placeOf=id=>BUILDINGS.find(b=>b.id===id);
-const placeName=id=>id===1?`Rumah ${state.name}`:id===11?`Rumah ${state.friend}`:placeOf(id).name;
-const doorGap=(a,b)=>Math.round(Math.hypot(placeOf(a).door.x-placeOf(b).door.x,placeOf(a).door.z-placeOf(b).door.z));
-// What the job marker points at: the active job's next stop, else a place
-// with delivery work (once the story has sent the player into town).
-function jobTarget(){
-  const job=eco.jobs[0];
-  if(job){const p=placeOf(job.status==='accepted'?job.from:job.to);return {x:p.door.x,z:p.door.z,job};}
-  if(state.quest<1)return null;
-  const p=BUILDINGS.find(b=>offerAt(eco,b.id));return p?{x:p.door.x,z:p.door.z,id:p.id}:null;
+
+// ---- Counters: Buy / Delivery work / Talk / Leave at merchants; Requests /
+// Deliver parcel / Talk / Leave at houses and public services. ----
+function jobStops(){return eco.jobs.map(job=>{const p=placeOf(job.status==='accepted'?job.from:nextStop(job));return {x:p.door.x,z:p.door.z,job};});}
+function jobText(job){
+  const where=job.status==='accepted'?job.from:nextStop(job),person=personAt(where)?.name||NPCS[npcAt(where)]?.name||'';
+  if(job.status==='accepted')return job.kind==='purchase'?`Buy ${itemLabel(job.item,job.qty)} at ${placeName(where)}`:`Collect ${itemLabel(job.item,job.qty)} at ${placeName(where)}`;
+  return job.stops.length>1?`Deliver ${ITEMS[job.item].name} to ${placeName(where)} (${job.stops.length-job.left+1} of ${job.stops.length})`:`Bring ${itemLabel(job.item,job.qty)} to ${person?person+' at ':''}${placeName(where)}`;
 }
 function refreshEconomy(){
   $('wallet-amount').textContent=rm(eco.wallet);
   const count=Object.values(eco.bag).reduce((a,b)=>a+b,0);$('bag-count').textContent=count?String(count):'';
-  target=jobTarget();world.setJobMarker(target);$('job-line').hidden=!target;
-  const job=target?.job;
-  $('job-eyebrow').textContent=job?`UPAH ${rm(job.upah)}`:'KERJA HANTAR BARANG';
-  if(job)$('job-text').textContent=job.status==='accepted'?`Collect ${itemLabel(job.item,job.qty)} from ${CONTACTS[job.from].name} at ${placeName(job.from)}`:`Bring ${itemLabel(job.item,job.qty)} to ${CONTACTS[job.to].name} at ${placeName(job.to)}`;
-  else if(target)$('job-text').textContent=`${CONTACTS[target.id].name} at ${placeName(target.id)} needs a delivery helper`;
+  world.setJobMarkers(jobStops());
+  const job=eco.jobs[0];$('job-line').hidden=!job;
+  if(job){$('job-eyebrow').textContent=`UPAH ${rm(job.upah)} · ${eco.jobs.length}/${MAX_JOBS} JOBS`;$('job-text').textContent=jobText(job);}
+  storySpot=storyTarget();
 }
 function counterButton(parent,label,onclick,cls='primary',disabled=false){const b=document.createElement('button');b.className=cls;b.textContent=label;b.disabled=disabled;b.onclick=onclick;parent.append(b);return b;}
-// Talking to a place's contact: Buy / Delivery work / Leave, plus hand-overs.
-function openCounter(id,view='menu',note=''){
-  counterPlace=id;setMode('counter');talkingTo=null;
-  $('counter-panel').hidden=false;$('counter-place').textContent=placeName(id).toUpperCase();$('counter-name').textContent=CONTACTS[id].name;
-  $('counter-text').textContent=note||hello(id,state.name);
+function offerCard(offer,place){
+  const card=document.createElement('dl');card.className='job-offer';
+  const row=(term,value,cls='')=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=term;dd.textContent=value;dd.className=cls;card.append(dt,dd);};
+  const requester=personAt(offer.requester)?.name||NPCS[npcAt(offer.requester)]?.name||placeName(offer.requester);
+  row('Requester',`${requester} · ${placeName(offer.requester)}`);
+  row(offer.kind==='purchase'?'Buy at':'Pick up',`${placeName(offer.from)}${offer.from===place?' (here)':''}`);
+  row(offer.stops.length>1?'Destinations':'Destination',offer.stops.map(placeName).join(', ')+` · about ${Math.round(offer.route)} m`);
+  row('Item',ITEMS[offer.item].name);row('Quantity',String(offer.qty));
+  if(offer.kind==='purchase')row('Purchase cost',`${rm(offer.cost)}, repaid on delivery`);
+  row('Upah',rm(offer.upah),'upah');
+  row('Carrying space',`${ITEMS[offer.item].size*offer.qty} of ${Math.max(0,freeSpace(eco))} free`);
+  row('Deadline','None');
+  return card;
+}
+function openCounter(place,npcKey=null,view='menu',note=''){
+  counter={place,npc:npcKey};setMode('counter');
+  const away=npcKey&&npcBody(npcKey)?.post!==place,person=npcKey?{key:npcKey,name:NPCS[npcKey].name}:personAt(place);
+  const npc=person?.key?NPCS[person.key]:null,asker=npcKey||npcAt(place);
+  $('counter-panel').hidden=false;$('counter-place').textContent=(away?`${NPCS[npcKey].role} · at the padang`:placeName(place)).toUpperCase();
+  $('counter-name').textContent=person?.name||placeName(place);
+  const reception=!person;
+  $('counter-text').textContent=note||(reception?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
   const body=$('counter-body');body.replaceChildren();
   const add=(label,onclick,cls,disabled)=>counterButton(body,label,onclick,cls,disabled);
+  const here=away?{collect:[],deliver:[]}:jobsAt(eco,place),merchant=!away&&(npc?.menu==='merchant'||(!npc&&STOCK[place]));
   if(view==='menu'){
-    const here=jobsAt(eco,id);
-    for(const job of here.deliver)add(`Hand over ${itemLabel(job.item,job.qty)}`,()=>handOver(job));
-    for(const job of here.collect)add(job.kind==='purchase'?`Buy ${itemLabel(job.item,job.qty)} · ${rm(job.cost)}`:`Collect ${itemLabel(job.item,job.qty)}`,()=>pickUp(job));
-    if(STOCK[id])add('Buy',()=>openCounter(id,'buy',`Duit Poket: ${rm(eco.wallet)}. Pick something.`));
-    add('Delivery work',()=>openCounter(id,'work'));
-    if(id===21&&state.quest>=2)add('Main congkak',()=>{closeCounter();openBoard();});
+    for(const job of here.deliver)add(`Deliver parcel · ${itemLabel(job.item,job.stops.length>1?1:job.qty)}`,()=>handOver(job));
+    for(const job of here.collect)add(job.kind==='purchase'?`Buy for ${placeName(job.requester)} · ${itemLabel(job.item,job.qty)} · ${rm(job.cost)}`:`Collect ${itemLabel(job.item,job.qty)}`,()=>pickUp(job));
+    for(const job of eco.jobs.filter(j=>j.status==='carrying'&&j.from===place&&j.left===j.stops.length))add(`Return ${itemLabel(job.item,job.qty)}${job.kind==='purchase'?` · refund ${rm(job.cost)}`:''}`,()=>giveBack(job),'secondary');
+    if(!reception){
+      if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
+      if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
+      if(npc)add('Talk',()=>talk(person.key,place,npcKey));
+      if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
+    }
     add('Leave',closeCounter,'secondary');
   }else if(view==='buy'){
-    for(const item of STOCK[id]){
-      const row=document.createElement('div');row.className='shop-row';
-      const name=document.createElement('b');name.textContent=ITEMS[item].name;const price=document.createElement('span');price.textContent=rm(ITEMS[item].price);
-      row.append(name,price);counterButton(row,'Beli',()=>{if(buy(eco,id,item).ok){persist();refreshEconomy();audio?.shell();openCounter(id,'buy',`${ITEMS[item].name} is in your bag. Duit Poket: ${rm(eco.wallet)}.`);}},'',eco.wallet<ITEMS[item].price);
+    for(const item of STOCK[place]){
+      const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
+      const name=document.createElement('b');name.textContent=it.name+(eco.collection[item]?` · owned ${eco.collection[item]}`:'');const price=document.createElement('span');price.textContent=rm(it.price);
+      row.append(name,price);counterButton(row,'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price);
       body.append(row);
     }
-    add('Back',()=>openCounter(id),'secondary');
+    add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='work'){
-    const offer=offerAt(eco,id);
-    if(offer){
-      $('counter-text').textContent=offer.note;
-      const card=document.createElement('dl');card.className='job-offer';
-      const row=(term,value,cls='')=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=term;dd.textContent=value;dd.className=cls;card.append(dt,dd);};
-      row('Item',ITEMS[offer.item].name);row('Quantity',String(offer.qty));
-      row('Destination',`${placeName(offer.to)} · ${CONTACTS[offer.to].name} · about ${doorGap(id,offer.to)} m`);
-      row('Type',offer.kind==='purchase'?`Buy the goods first (${rm(offer.cost)}, repaid on delivery)`:'Prepaid parcel');
-      row('Upah',rm(offer.upah),'upah');body.append(card);
-      add('Accept',()=>{const result=accept(eco,offer);if(!result.ok)return openCounter(id,'menu','Finish your current delivery first.');persist();refreshEconomy();openCounter(id,'menu',offer.kind==='purchase'?'Okay. Pay for the goods here, then off you go.':`Okay, ${state.name}. It is packed and ready for you.`);});
-    }else $('counter-text').textContent=eco.jobs.length?'Finish the delivery you are carrying first, then come back.':'Nothing to send today. Maybe another time.';
-    add('Back',()=>openCounter(id),'secondary');
+    const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,storyOffers(state.story,eco));
+    if(offers.length){
+      $('counter-text').textContent=offers[0].note||(eco.jobs.length>=MAX_JOBS?`You are carrying ${MAX_JOBS} jobs already. Finish one first.`:'Here is what needs doing. The upah is fixed once you accept.');
+      for(const offer of offers){
+        const card=offerCard(offer,place),actions=document.createElement('div');actions.className='offer-actions';
+        counterButton(actions,`Accept · ${rm(offer.upah)}`,()=>takeJob(offer,place,npcKey),'primary',eco.jobs.length>=MAX_JOBS||freeSpace(eco)<ITEMS[offer.item].size*offer.qty);
+        card.append(actions);body.append(card);
+      }
+    }else $('counter-text').textContent='Nothing needs doing right now. Come back another time.';
+    add('Back',()=>openCounter(place,npcKey),'secondary');
   }
 }
-function pickUp(job){
-  const result=collect(eco,job.id,counterPlace);
-  if(!result.ok)return openCounter(counterPlace,'menu',result.reason==='funds'?`Not enough Duit Poket. You need ${rm(job.cost)}.`:'That is not ready here.');
+function takeJob(offer,place,npcKey){
+  const result=accept(eco,offer);
+  if(!result.ok)return openCounter(place,npcKey,'menu',result.reason==='full'?`You already have ${MAX_JOBS} jobs. Finish one first.`:result.reason==='space'?'Your bag is too full for this one. Deliver something first.':'Someone has already taken that.');
   persist();refreshEconomy();
-  openCounter(counterPlace,'menu',`${itemLabel(job.item,job.qty)} is in your bag. Bring it to ${CONTACTS[job.to].name} at ${placeName(job.to)}.`);
+  if(offer.story==='first-parcel')storyEvent('accepted-first-parcel');
+  const pickupHere=offer.from===place&&npcBody(npcKey||'')?.post!==undefined?true:offer.from===place;
+  openCounter(place,npcKey,'menu',offer.kind==='purchase'?`Buy the goods at ${placeName(offer.from)}. I will pay you back with your upah.`:pickupHere?`Okay, ${state.name}. It is packed and ready for you.`:`The parcel is waiting at ${placeName(offer.from)}.`);
+}
+function pickUp(job){
+  const place=counter.place,result=collect(eco,job.id,place);
+  if(!result.ok)return openCounter(place,counter.npc,'menu',result.reason==='funds'?`Not enough Duit Poket. You need ${rm(job.cost)}.`:'That is not ready here.');
+  persist();refreshEconomy();
+  openCounter(place,counter.npc,'menu',`${itemLabel(job.item,job.qty)} ${job.kind==='purchase'?'bought and ':''}in your bag. ${jobText(job)}.`);
 }
 function handOver(job){
-  const result=deliver(eco,job.id,counterPlace);
-  if(!result.ok)return openCounter(counterPlace,'menu','Hmm, that does not seem right.');
-  persist();refreshEconomy();audio?.shell();toast(`Delivered · +${rm(result.paid)} upah`);
-  openCounter(counterPlace,'menu',`Terima kasih, ${state.name}! Here is your upah, ${rm(result.paid)}.`);
+  const place=counter.place,result=deliver(eco,job.id,place);
+  if(!result.ok)return openCounter(place,counter.npc,'menu','Hmm, that does not seem right.');
+  if(result.more){persist();refreshEconomy();return openCounter(place,counter.npc,'menu',`Terima kasih! ${result.more} more stop${result.more>1?'s':''} to go.`);}
+  const requester=npcAt(job.requester);if(requester)befriend(eco,requester,'errand',today());
+  audio?.shell();toast(`Delivered · +${rm(result.paid)}`);
+  persist();refreshEconomy();
+  let note=`Terima kasih, ${state.name}! ${job.kind==='purchase'?`Here is ${rm(job.cost)} back and your upah, ${rm(job.upah)}.`:`Here is your upah, ${rm(job.upah)}.`}`;
+  if(job.story==='first-parcel')note=`Gula from Pak Rahman? Terima kasih, ${state.name}. Here is your upah, RM 1.00. Alamak, Nenek’s tea tin is empty too. Could you buy a packet for Nenek? Look under Requests.`;
+  if(job.story==='tea')note='Ah, teh! Now we can sit properly. Here is the money back and your upah. Duduklah dulu. Main congkak satu pusingan?';
+  if(job.story)storyEvent(STORY_EVENTS[job.story]);
+  openCounter(place,counter.npc,'menu',note);
 }
-function closeCounter(){$('counter-panel').hidden=true;counterPlace=null;setMode('explore');}
+function giveBack(job){
+  const place=counter.place,result=cancel(eco,job.id,place);
+  if(!result.ok)return openCounter(place,counter.npc,'menu','That cannot be returned now.');
+  persist();refreshEconomy();openCounter(place,counter.npc,'menu',result.refund?`Returned. Here is your ${rm(result.refund)} back.`:'Returned. No harm done.');
+}
+function shop(place,npcKey,item){
+  const result=buy(eco,place,item);
+  if(!result.ok)return openCounter(place,npcKey,'buy',result.reason==='space'?'Your bag is full.':'Not enough Duit Poket for that.');
+  persist();refreshEconomy();audio?.shell();
+  const it=ITEMS[item],note=result.kind==='snack'?`${it.name}. Sedap! Duit Poket: ${rm(eco.wallet)}.`:result.kind==='collect'?`${it.name} added to your collection. Duit Poket: ${rm(eco.wallet)}.`:`${it.name} is in your bag. Duit Poket: ${rm(eco.wallet)}.`;
+  if(result.kind==='collect'&&place===25)storyEvent('bought-collectible');
+  openCounter(place,npcKey,'buy',note);
+}
+function talk(key,place,npcKey){
+  const npc=NPCS[key],gained=befriend(eco,key,'talk',today()),lines=npc.talk,points=eco.friends[key]||0;
+  persist();
+  openCounter(place,npcKey,'menu',`${sayLine(lines[(points+new Date().getDate())%lines.length])}${gained?`  (+${gained} friendship · ${level(points)})`:''}`);
+}
+function closeCounter(){$('counter-panel').hidden=true;counter=null;setMode('explore');}
 $('counter-close').onclick=closeCounter;
+function listItem(list,left,right,action){const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=left;b.textContent=right;if(action)b.append(action);li.append(a,b);list.append(li);}
 function openBag(){
-  if(mode!=='explore')return;setMode('bag');$('bag-panel').hidden=false;$('bag-wallet').textContent=`Duit Poket: ${rm(eco.wallet)}`;
+  if(mode!=='explore')return;setMode('bag');$('bag-panel').hidden=false;
+  $('bag-wallet').textContent=`Duit Poket: ${rm(eco.wallet)} · Space ${usedSpace(eco)}/${BAG_SPACE}`;
   const list=$('bag-list');list.replaceChildren();
   const entries=Object.entries(eco.bag);
-  if(!entries.length){const li=document.createElement('li');li.textContent='Your bag is empty.';list.append(li);}
-  for(const [item,qty] of entries){const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=ITEMS[item].name;const job=eco.jobs.find(j=>j.item===item&&j.status==='carrying');b.textContent=`× ${qty}${job?` · for ${CONTACTS[job.to].name}`:''}`;li.append(a,b);list.append(li);}
+  if(!entries.length)listItem(list,'Your bag is empty.','');
+  for(const [item,qty] of entries){const job=eco.jobs.find(j=>j.item===item&&j.status==='carrying');listItem(list,ITEMS[item].name,`× ${qty}${job?` · for ${placeName(nextStop(job))}`:''}`);}
+  const album=$('bag-collection');album.replaceChildren();
+  const owned=Object.entries(eco.collection);
+  if(!owned.length)listItem(album,'Nothing yet. Uncle Lim sells cards, comics, gasing, wau, guli and Tamiya.','');
+  for(const [item,qty] of owned)listItem(album,ITEMS[item].name,`× ${qty}`);
 }
 function openBook(){
   if(mode!=='explore')return;setMode('book');$('book-panel').hidden=false;
-  const item=(list,left,right)=>{const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=left;b.textContent=right;li.append(a,b);list.append(li);};
-  const story=$('book-story');story.replaceChildren();item(story,quests[state.quest].title,state.quest===3?'Chapter complete':quests[state.quest].text());
+  const story=$('book-story');story.replaceChildren();listItem(story,STEPS[state.story].title,STEPS[state.story].text);
   const jobs=$('book-jobs');jobs.replaceChildren();
-  for(const job of eco.jobs)item(jobs,`${itemLabel(job.item,job.qty)} → ${placeName(job.to)}`,`${job.status==='accepted'?`Collect at ${placeName(job.from)}`:`Deliver to ${CONTACTS[job.to].name}`} · ${rm(job.upah)}`);
-  if(!eco.jobs.length)item(jobs,target&&!target.job?`${CONTACTS[target.id].name} has work at ${placeName(target.id)}`:'No delivery in progress.','');
-  $('book-summary').textContent=`Deliveries completed: ${eco.done.length} · Duit Poket: ${rm(eco.wallet)}`;
+  for(const job of eco.jobs){
+    let action=null;
+    if(job.status==='accepted'){action=document.createElement('button');action.textContent='Cancel';action.onclick=()=>{cancel(eco,job.id);persist();refreshEconomy();closePanel('book-panel');openBook();};}
+    listItem(jobs,`${jobText(job)}`,`${job.status==='carrying'?`Return at ${placeName(job.from)} to cancel · `:''}${rm(job.upah)}`,action);
+  }
+  if(!eco.jobs.length)listItem(jobs,'No delivery in progress. Ask at any shop (Delivery work) or house (Requests).','');
+  $('book-summary').textContent=`Deliveries completed: ${eco.done.length} · Jobs ${eco.jobs.length}/${MAX_JOBS} · Duit Poket: ${rm(eco.wallet)} · Congkak: ${eco.congkak.won} won of ${eco.congkak.played}`;
+  const friends=$('book-friends');friends.replaceChildren();
+  for(const key of NPC_KEYS){const pts=eco.friends[key]||0;listItem(friends,`${NPCS[key].name} · ${NPCS[key].role}`,`${level(pts)} · ${pts}`);}
 }
 function closePanel(id){$(id).hidden=true;setMode('explore');}
 $('bag-button').onclick=openBag;$('book-button').onclick=openBook;$('wallet-button').onclick=openBook;
@@ -286,8 +389,8 @@ $('sound').onchange=async()=>{
 };
 document.addEventListener('visibilitychange',()=>{if(document.hidden)audio?.suspend();else if($('sound').checked&&!orientationBlocked)audio?.resume();});
 
-function openBoard(){setMode('board');board=newRound();boardBusy=false;boardToken++;$('board-panel').hidden=false;$('board-return').hidden=true;$('board-player-name').textContent=state.name;renderBoard();$('sowing-status').textContent='Choose any non-empty house on your bottom row.';}
-function closeBoard(){boardToken++;boardBusy=false;$('board-panel').hidden=true;setMode('explore');persist();if(!board?.over)toast('Practice paused. Talk to Pak Mat to start a fresh round.');}
+function openBoard(name='Nenek',place=2){opponent=name;setMode('board');board=newRound();boardBusy=false;boardToken++;$('board-panel').hidden=false;$('board-return').hidden=true;$('board-player-name').textContent=state.name;$('opponent-name').textContent=name;$('board-eyebrow').textContent=`${placeName(place).toUpperCase()} · CONGKAK`;renderBoard();$('sowing-status').textContent='Choose any non-empty house on your bottom row.';}
+function closeBoard(){boardToken++;boardBusy=false;$('board-panel').hidden=true;setMode('explore');persist();if(!board?.over)toast(`Round paused. Talk to ${opponent} to start a fresh one.`);}
 $('board-close').onclick=closeBoard;$('board-return').onclick=closeBoard;
 function renderBoard(pits=board.pits,active=-1){
   const target=$('congkak-board');target.replaceChildren();
@@ -295,15 +398,15 @@ function renderBoard(pits=board.pits,active=-1){
     const button=document.createElement('button');button.className=`pit${store?' store':''}${index<7?' own':''}${index===active?' active':''}`;
     button.style.gridColumn=column;button.style.gridRow=store?'1 / 3':String(row);
     button.disabled=store||index>7||board.turn!==0||boardBusy||board.over||pits[index]===0;
-    const label=store?(index===7?'Your store':"Pak Mat's store"):`${index<7?'Your':"Pak Mat's"} house ${(index%8)+1}`;
+    const label=store?(index===7?'Your store':`${opponent}'s store`):`${index<7?'Your':`${opponent}'s`} house ${(index%8)+1}`;
     button.setAttribute('aria-label',`${label}, ${pits[index]} shells`);
     const count=document.createElement('span');count.textContent=pits[index];button.append(count);
-    const caption=document.createElement('small');caption.textContent=store?(index===7?'YOU':'PAK MAT'):Array.from({length:Math.min(3,pits[index])},()=> '•').join('');button.append(caption);
+    const caption=document.createElement('small');caption.textContent=store?(index===7?'YOU':opponent.toUpperCase()):Array.from({length:Math.min(3,pits[index])},()=> '•').join('');button.append(caption);
     button.onclick=()=>runMove(index);target.append(button);
   };
   add(15,'1',1,true);add(7,'9',1,true);
   for(let j=0;j<7;j++){add(14-j,String(j+2),1);add(j,String(j+2),2);}
-  $('board-status').textContent=board.over?(board.winner===0?'You won!':board.winner===1?'Pak Mat wins this time.':'A friendly draw.')+` ${board.pits[7]} – ${board.pits[15]} shells.`:board.turn===0?`${state.name}'s turn · Choose a house below.`:'Pak Mat is thinking…';
+  $('board-status').textContent=board.over?(board.winner===0?'You won!':board.winner===1?`${opponent} wins this time.`:'A friendly draw.')+` ${board.pits[7]} – ${board.pits[15]} shells.`:board.turn===0?`${state.name}'s turn · Choose a house below.`:`${opponent} is thinking…`;
 }
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function runMove(index){
@@ -312,13 +415,14 @@ async function runMove(index){
   boardBusy=true;const result=playMove(board,index);
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stride=Math.max(1,Math.ceil(result.frames.length/45));
-  for(let i=0;i<result.frames.length;i+=stride){while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);audio?.shell();$('sowing-status').textContent=f.hand?`${mover===0?state.name:'Pak Mat'} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
+  for(let i=0;i<result.frames.length;i+=stride){while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;const f=result.frames[i];renderBoard(f.pits,f.active);audio?.shell();$('sowing-status').textContent=f.hand?`${mover===0?state.name:opponent} is sowing · ${f.hand} shells in hand`:'Last shell…';if(!reduced)await delay(55);}
   if(token!==boardToken)return;
   board=result.state;boardBusy=false;renderBoard();
   $('sowing-status').textContent=result.capture?`Captured ${result.capture} shells!`:result.extraTurn?'Last shell in the store — another turn.':'Turn complete.';
   if(board.over){
     $('board-return').hidden=false;
-    if(state.quest===2){state.quest=3;state.completed=true;refreshQuest();persist();toast('Chapter complete · Your first kampung memory collected.');}
+    eco.congkak.played+=1;if(board.winner===0)eco.congkak.won+=1;persist();
+    if(opponent==='Nenek')storyEvent('played-congkak-nenek');
   }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
 function zoneAt(x,z){return districtAt(x,z).name;}
@@ -372,8 +476,8 @@ function drawMap(canvas,full=false){
     }
     ctx.font='bold 11px system-ui';ctx.textAlign='center';for(const [x,z,label]of mapLabels){ctx.strokeStyle='#fff8e6';ctx.lineWidth=4;ctx.strokeText(label,px(x),pz(z));ctx.fillStyle='#272630';ctx.fillText(label,px(x),pz(z));}
   }
-  const q=quests[state.quest];if(state.quest<3){ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
-  if(target){const x=px(target.x),y=pz(target.z),r=full?6:4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
+  if(storySpot&&!storySpot.job){const q=storySpot;ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
+  for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=full?6:4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
   world.npcs.forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});
   const p=player.group.position;ctx.fillStyle='#b15c33';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),full?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#b15c33';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
@@ -405,16 +509,18 @@ function tick(){
       yaw+=delta*(1-Math.exp(-dt*2.6*weight));
     }
     player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel);
-    nearby=world.npcs.find(n=>Math.hypot(p.x-n.x,p.z-n.z)<3.6)||null;
-    if(!nearby){let best=2.4;for(const b of BUILDINGS){if(b.id===21)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
+    nearby=null;let best=2.6;
+    for(const n of world.npcs){const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
+    if(!nearby){best=2.4;for(const b of BUILDINGS){if(npcBody(npcAt(b.id))?.post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
     $('interaction').hidden=!nearby;
-    if(nearby)$('interact-label').textContent=`Talk to ${nearby.kind==='place'?CONTACTS[nearby.id].name:nearby.id==='nur'?state.friend:'Pak Mat'}`;
-    $('job-distance').textContent=target?`${Math.round(Math.hypot(p.x-target.x,p.z-target.z))} m away`:'';
+    if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
+    const firstStop=jobStops()[0];$('job-distance').textContent=firstStop?`${Math.round(Math.hypot(p.x-firstStop.x,p.z-firstStop.z))} m away`:'';
     $('location-name').textContent=zoneAt(p.x,p.z);
-    $('quest-distance').textContent=state.quest<3?`${Math.round(Math.hypot(p.x-quests[state.quest].x,p.z-quests[state.quest].z))} m away`:'';
+    $('quest-distance').textContent=storySpot?`${Math.round(Math.hypot(p.x-storySpot.x,p.z-storySpot.z))} m away`:'';
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
   } else player.animate(dt,0);
-  for(const character of world.characters)if(character!==player){character.group.visible=mode==='title'||character.group.position.distanceTo(player.group.position)<55;if(character.group.visible)character.animate(dt,0);}
+  // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
+  for(const {character} of world.npcs){const gap=character.group.position.distanceTo(player.group.position),near=gap<20;character.group.visible=mode==='title'||gap<42;if(character.figure.castShadow!==near)character.figure.castShadow=near;if(character.group.visible)character.animate(dt,0);}
   world.wind.value=elapsed;
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
@@ -446,4 +552,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),counter:counterPlace,nearbyPlace:nearby?.kind==='place'?nearby.id:null,parcel:world.jobMarker.visible?world.jobMarker.position.toArray().map(v=>+v.toFixed(2)):null,mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

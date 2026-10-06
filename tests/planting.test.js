@@ -7,6 +7,7 @@ import { plantTown, TRUNK, GROUND } from '../src/planting.js';
 import { createTrees } from '../src/trees.js';
 import { toon } from '../src/illustration.js';
 import { createWalkability } from '../src/collision.js';
+import { npcPosts } from '../src/cast.js';
 
 const town = derive(TOWN_PLAN), plants = plantTown(town);
 const inTown = plants.filter(p => p.ring === 'in'), past = plants.filter(p => p.ring !== 'in');
@@ -27,7 +28,7 @@ test('every species builds finite low-poly geometry, lighter in the far rows', (
   }
 });
 test('trees in town stay off roads, bridges, the river, buildings and people', () => {
-  const people = [town.spots.spawn, town.spots.nur, town.spots.pak, ...town.passersby];
+  const people = [town.spots.spawn, town.spots.spawnNur, town.spots.stall, ...Object.values(npcPosts(town.buildings)).map(p => p.spots[0]), ...town.passersby];
   for (const p of inTown) {
     const r = TRUNK[p.kind] * p.size, where = `${p.kind} at ${p.x},${p.z}`;
     assert.ok(p.x - r > B.minX && p.x + r < B.maxX && p.z - r > B.minZ && p.z + r < B.maxZ, where);
@@ -50,8 +51,8 @@ test('a dense orchard and rubber edge rings the town, with the roads left open',
   const main = town.roads.find(r => r.id === 'main-road');
   assert.ok(!past.some(p => Math.abs(p.z - main.z) < main.d / 2 + 1.5));
 });
-test('the old beringin stands by Pak Mat\'s warung and moves with it', () => {
-  const near = plan => { const t = derive(plan), b = plantTown(t).filter(p => p.kind === 'beringin'); return [b, t.spots.pak]; };
+test('the old beringin stands by the warung and moves with it', () => {
+  const near = plan => { const t = derive(plan), b = plantTown(t).filter(p => p.kind === 'beringin'); return [b, t.spots.stall]; };
   let [b, pak] = near(TOWN_PLAN);
   assert.equal(b.length, 1); assert.ok(Math.hypot(b[0].x - pak.x, b[0].z - pak.z) <= 24);
   const moved = structuredClone(TOWN_PLAN); Object.assign(moved.units.find(u => u.id === 'warung'), { x: 40, z: 47 });
@@ -74,5 +75,5 @@ test('with the trees planted, every numbered place can still be reached on foot'
     return true;
   }).map(b => b.name);
   assert.deepEqual(unreached, []);
-  for (const s of [town.spots.nur, town.spots.pak]) assert.ok([[0, 1.2], [1.2, 0], [0, -1.2], [-1.2, 0]].some(([dx, dz]) => reach(s.x + dx, s.z + dz)));
+  for (const s of [town.spots.spawnNur, town.spots.stall, ...Object.values(npcPosts(town.buildings)).map(p => p.spots[0])]) assert.ok([[0, 1.2], [1.2, 0], [0, -1.2], [-1.2, 0]].some(([dx, dz]) => reach(s.x + dx, s.z + dz)));
 });

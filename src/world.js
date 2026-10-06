@@ -1,11 +1,12 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.11.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=0.11.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=0.11.0';
-import { createWalkability } from './collision.js?v=0.11.0';
-import { createLandmarks } from './landmarks.js?v=0.11.0';
-import { createTrees } from './trees.js?v=0.11.0';
-import { plantTown, TRUNK } from './planting.js?v=0.11.0';
+import { createCharacter } from './characters.js?v=1.0.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.0.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=1.0.0';
+import { createWalkability } from './collision.js?v=1.0.0';
+import { createLandmarks } from './landmarks.js?v=1.0.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.0.0';
+import { createTrees } from './trees.js?v=1.0.0';
+import { plantTown, TRUNK } from './planting.js?v=1.0.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -326,7 +327,7 @@ export async function makeWorld(canvas) {
       // Warung has an open social space facing the lane.
       box(11,.25,6.5,0xcbbb96,0,.14,0);box(11,2.8,.3,0xd4c597,0,1.5,-3.15);
       for(const x of [-5.3,5.3])for(const z of [-2.5,3]){cylinder(.13,.13,3.3,0x766746,x,1.7,z);roundCollider(x,z,.13,'post');}
-      roof(12.5,8.4,0,3.4,0,0x657d6d);sign('WARUNG PAK MAT',0,2.8,4.4,8);
+      roof(12.5,8.4,0,3.4,0,0x657d6d);sign(placeName(21).toUpperCase(),0,2.8,4.4,8);
       box(6,.75,1,0x776548,0,.6,-2.2);box(6,.08,1.2,0xb0a285,0,1.02,-2.2);collider(0,-2.2,6,1.2,'counter');
       for(const x of [-3.5,3.5]){cylinder(1.1,1.1,.15,0x8f7350,x,.95,.7);cylinder(.1,.2,.8,0x6e6247,x,.5,.7);for(const a of [-1,1]){collider(x+a*1.5,.7,1,.65,'seat');box(1,.16,.65,0xd0b98a,x+a*1.5,.55,.7);box(.15,.5,.15,0x665a42,x+a*1.5,.25,.7);}}
       box(1.5,.12,.5,0x845634,3.5,1.08,.7);collider(0,-3.15,11,.5);collider(-3.5,.7,2,2);collider(3.5,.7,2,2);
@@ -531,17 +532,25 @@ export async function makeWorld(canvas) {
   }
   const characters=[];
   function character(x,z,kind='amir'){const model=createCharacter(scene,x,z,kind);model.group.position.y=groundHeight(x,z)-.065;characters.push(model);return model;}
-  const player=character(SPOTS.spawn.x,SPOTS.spawn.z);player.group.rotation.y=SPOTS.spawn.heading;
-  const nur=character(SPOTS.nur.x,SPOTS.nur.z,'nur');nur.group.rotation.y=SPOTS.nur.heading;
-  const pak=character(SPOTS.pak.x,SPOTS.pak.z,'pak');pak.group.rotation.y=SPOTS.pak.heading;
-  const npcs=[{id:'nur',x:SPOTS.nur.x,z:SPOTS.nur.z,character:nur},{id:'pak',x:SPOTS.pak.x,z:SPOTS.pak.z,character:pak}];
-  for(const p of PASSERSBY){const walker=character(p.x,p.z,p.who);walker.group.rotation.y=p.heading;}
-  // Small overhead diamonds remain legible at the elevated gameplay angle.
-  for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.17,0),0xe4bc68,npc.x,npc.character.group.position.y+npc.character.height+.44,npc.z,scene);marker.userData.height=npc.character.group.position.y+npc.character.height+.44;animated.push(marker);npc.marker=marker;}
-  // A floating parcel marks the next stop of a delivery job.
-  const jobMarker=mesh(new T.BoxGeometry(.34,.26,.34),0xb5986a,0,0,0,scene);jobMarker.visible=false;jobMarker.userData.height=0;animated.push(jobMarker);
-  mesh(new T.BoxGeometry(.36,.04,.08),0xe8dbb8,0,.08,0,jobMarker);
-  function setJobMarker(spot){jobMarker.visible=Boolean(spot);if(spot){const y=groundHeight(spot.x,spot.z)+2.3;jobMarker.position.set(spot.x,y,spot.z);jobMarker.userData.height=y;}}
+  // Amir and Nur are both playable; each waits at home until chosen.
+  const spawns={amir:SPOTS.spawn,nur:SPOTS.spawnNur},bodies={};
+  for(const who of ['amir','nur']){const s=spawns[who];bodies[who]=character(s.x,s.z,who);bodies[who].group.rotation.y=s.heading;}
+  let player=bodies.amir;bodies.nur.group.visible=false;
+  function choosePlayer(who){player=bodies[who]||bodies.amir;for(const [k,b] of Object.entries(bodies))b.group.visible=b===player;return player;}
+  // The 14 NPCs stand at their posts, on the first clear spot beside it.
+  const clear=createWalkability(colliders),posts=npcPosts(BUILDINGS),npcs=[];
+  for(const key of NPC_KEYS){
+    const post=posts[key];if(!post)continue;
+    const spot=post.spots.find(p=>clear(p.x,p.z)&&clear(p.x+.35,p.z)&&clear(p.x-.35,p.z)&&clear(p.x,p.z+.35)&&clear(p.x,p.z-.35))||post.spots[0];
+    const body=character(spot.x,spot.z,key);body.group.rotation.y=post.heading;
+    npcs.push({id:key,place:NPCS[key].place,post:post.place,x:spot.x,z:spot.z,heading:post.heading,character:body});
+  }
+  // A gold diamond marks the story's next person; parcels mark job stops.
+  const marker=(geometry,color)=>{const m=mesh(geometry,color,0,0,0,scene);m.visible=false;m.userData.height=0;animated.push(m);return m;};
+  const storyMarker=marker(new T.OctahedronGeometry(.19,0),0xe4bc68);
+  function setStoryMarker(spot){storyMarker.visible=Boolean(spot);if(spot){const y=groundHeight(spot.x,spot.z)+(spot.height||1.8)+.5;storyMarker.position.set(spot.x,y,spot.z);storyMarker.userData.height=y;}}
+  const jobMarkers=[0,1,2].map(()=>{const m=marker(new T.BoxGeometry(.34,.26,.34),0xb5986a);mesh(new T.BoxGeometry(.36,.04,.08),0xe8dbb8,0,.08,0,m);return m;});
+  function setJobMarkers(spots){jobMarkers.forEach((m,i)=>{const spot=spots[i];m.visible=Boolean(spot);if(spot){const y=groundHeight(spot.x,spot.z)+2.3+i*.15;m.position.set(spot.x,y,spot.z);m.userData.height=y;}});}
   const ray=new T.Raycaster(),blocked=new Set();let occlusionTime=0;
   function updateOcclusion(camera,look,dt,active){
     occlusionTime+=dt;
@@ -564,9 +573,9 @@ export async function makeWorld(canvas) {
     const hit=lensRay.intersectObjects(cameraOccluders,false)[0];return hit?hit.distance:Infinity;
   }
   // Physical NPC bodies, including passers-by, occupy the same space as their meshes.
-  for(const model of characters)if(model!==player)roundCollider(model.group.position.x,model.group.position.z,.27,'npc');
+  for(const npc of npcs)roundCollider(npc.x,npc.z,.27,'npc');
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,wind:trees.wind,setJobMarker,jobMarker,renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
