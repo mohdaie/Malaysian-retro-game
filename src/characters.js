@@ -1,5 +1,6 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=0.4.0';
+import { toon, outline } from './illustration.js?v=0.5.0';
+import { gaitPose, solveLeg } from './locomotion.js?v=0.5.0';
 
 const palette = new Map(), decals = new Map();
 function material(color) { if (!palette.has(color)) palette.set(color, toon(color)); return palette.get(color); }
@@ -106,6 +107,7 @@ export function createCharacter(scene,x,z,kind='amir') {
       decal(.29,.3,motif('alien'),0,1.62,.281);
     }
   }
+  const beforePack=new Set(body.children);
   // Both reference backpacks, straps, zip pocket and dangling charms.
   if(!adult){
     const bag=material(girl?0x303039:0xb93247),trim=material(girl?0x4b4050:0x392d38);
@@ -117,7 +119,9 @@ export function createCharacter(scene,x,z,kind='amir') {
     line([[.24,1.50,-.56],[.3,1.26,-.59]],cream,.009);
     if(girl){const charm=decal(.16,.17,motif('flower'),.30,1.20,-.6);charm.rotation.y=Math.PI;}else{ball(.066,.083,.025,material(0x709f67),.30,1.16,-.60);for(const a of [-1,1])ball(.025,.025,.02,cream,.30+a*.03,1.19,-.63);}
   }
-  const legs=[],knees=[],arms=[],elbows=[];
+  const backpack=new T.Group();
+  for(const object of [...body.children])if(!beforePack.has(object)){object.removeFromParent();backpack.add(object);}body.add(backpack);
+  const legs=[],knees=[],feet=[],arms=[],elbows=[];
   for(const a of [-1,1]){
     const leg=new T.Group();leg.position.set(a*.22,1.18,0);body.add(leg);legs.push(leg);
     tailored([[.18,-.52],[.22,-.40],[.20,-.10],[.19,.03]],.94,pants,0,0,0,leg);
@@ -125,22 +129,30 @@ export function createCharacter(scene,x,z,kind='amir') {
     block(.12,.09,.28,seam,a*.20,-.13,.06,leg);ball(.021,.023,.018,cream,a*.243,-.13,.18,leg);
     line([[a*.12,-.02,.175],[a*.13,-.4,.176]],seam,.008,leg);
     const knee=new T.Group();knee.position.y=-.51;leg.add(knee);knees.push(knee);
+    ball(.19,.18,.175,pants,0,0,0,knee);
     tailored([[.16,-.45],[.19,-.36],[.20,-.08],[.18,.03]],.91,pants,0,0,0,knee);
     line([[-.14,-.38,.14],[0,-.41,.185],[.16,-.37,.13]],seam,.010,knee);
+    const ankle=new T.Group();ankle.position.y=-.50;knee.add(ankle);feet.push(ankle);
+    const beforeShoe=new Set(knee.children);
     block(.33,.18,.57,cream,0,-.50,.09,knee);block(.34,.066,.59,material(0xd5c3b3),0,-.585,.09,knee);
     const toe=ball(.16,.095,.14,cream,0,-.49,.30,knee);
     for(let j=0;j<3;j++){block(.20,.012,.02,cream,0,-.405,.02+j*.066,knee);for(const side of [-1,1]){const stripe=block(.008,.09,.045,girl?pinkShadow:ink,side*.167,-.48,-.02+j*.064,knee);stripe.rotation.x=-.40;}}
     for(const side of [-1,1])line([[side*.045,-.45,.38],[side*.045,-.43,.35],[side*.045,-.405,.29]],material(0xc6b8ad),.006,knee);
+    for(const object of [...knee.children])if(object!==ankle&&!beforeShoe.has(object)){object.position.y+=.50;object.removeFromParent();ankle.add(object);}
     const arm=new T.Group();arm.position.set(a*.38,1.87,0);body.add(arm);arms.push(arm);
     tube(.13,.18,shirt,a*.04,-.13,0,arm);
     if(!girl&&!adult){tube(.133,.015,material(0x2d3a50),a*.044,-.28,0,arm);tube(.085,.12,skin,a*.05,-.32,0,arm);}
     const elbow=new T.Group();elbow.position.set(a*.05,-.43,0);arm.add(elbow);elbows.push(elbow);
+    ball(.084,.087,.083,girl||adult?shirt:skin,0,0,0,elbow);
     tube(.08,.20,girl||adult?shirt:skin,0,-.12,0,elbow);
     if(girl)tube(.087,.03,pinkShadow,0,-.26,0,elbow);
     ball(.082,.103,.075,skin,0,-.32,.018,elbow);ball(.039,.06,.04,skin,-a*.063,-.29,.060,elbow);
     if(!girl&&!adult&&a===1){tube(.088,.035,ink,0,-.235,0,elbow);block(.12,.085,.04,ink,0,-.23,.083,elbow);block(.075,.045,.011,material(0x91a7ae),0,-.23,.11,elbow);}
     arm.rotation.z=-a*.13;
   }
+  // A chest pivot lets shoulders counter-rotate against the pelvis.
+  const torso=new T.Group();torso.position.y=1.18;body.add(torso);
+  for(const object of [...body.children])if(object!==torso&&!legs.includes(object)){object.position.y-=1.18;object.removeFromParent();torso.add(object);}
   // Merge each joint's opaque details before adding hull ink. The face and
   // clothing drawings stay transparent and are never included in the hull.
   const buckets=new Map();root.traverse(o=>{if(!o.isMesh||o.material.transparent)return;if(!buckets.has(o.parent))buckets.set(o.parent,new Map());const b=buckets.get(o.parent);if(!b.has(o.material))b.set(o.material,[]);b.get(o.material).push(o);});
@@ -155,8 +167,39 @@ export function createCharacter(scene,x,z,kind='amir') {
   for(const [parent,gs] of hulls){const count=gs.reduce((n,g)=>n+g.attributes.position.count,0),p=new Float32Array(count*3),normals=new Float32Array(count*3);let offset=0;for(const g of gs){p.set(g.attributes.position.array,offset);normals.set(g.attributes.normal.array,offset);offset+=g.attributes.position.array.length;}const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p,3));g.setAttribute('normal',new T.BufferAttribute(normals,3));g.computeBoundingSphere();outline({geometry:g,position:new T.Vector3(),quaternion:new T.Quaternion(),scale:new T.Vector3(1,1,1),parent});}
   const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d'),gradient=ctx.createRadialGradient(32,32,2,32,32,31);gradient.addColorStop(0,'rgba(45,42,56,.28)');gradient.addColorStop(1,'rgba(45,42,56,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
   const shadow=new T.Mesh(new T.PlaneGeometry(1.3,1.3),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),transparent:true,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.075;root.add(shadow);
-  if(adult)root.scale.setScalar(1.08);
-  let blend=0,phase=0;
-  function animate(dt,moving=0,running=false){blend=T.MathUtils.lerp(blend,Math.min(moving,1),1-Math.exp(-dt*12));phase+=dt*(running?18:13);body.position.y=Math.abs(Math.sin(phase))*.035*blend;body.rotation.x=(running?.065:.025)*blend;for(let i=0;i<2;i++){const wave=Math.sin(phase+i*Math.PI);legs[i].rotation.x=wave*(running?.7:.48)*blend;knees[i].rotation.x=Math.max(0,-wave)*.65*blend;arms[i].rotation.x=-wave*(running?.6:.35)*blend;elbows[i].rotation.x=-(running?.8:.18)*blend;}body.rotation.z=Math.sin(phase*.12)*.008*(1-blend);}
-  root.userData.design=kind;return {group:root,legs,arms,head,animate};
+  // World coordinates now represent metres: children are 150/148 cm,
+  // while doorways and floors can retain real architectural dimensions.
+  const bounds=new T.Box3().setFromObject(body),height=adult?1.75:girl?1.48:1.50;
+  const scale=height/(bounds.max.y-bounds.min.y);root.scale.setScalar(scale);
+  const baseY=-bounds.min.y+.065/scale;body.position.y=baseY;
+  shadow.position.y=.075/scale;
+  let blend=0,phase=0,time=0;
+  const target=new T.Vector3(),inverseBody=new T.Quaternion(),chain=new T.Quaternion(),footRotation=new T.Quaternion(),xAxis=new T.Vector3(1,0,0);
+  function animate(dt,moving=0,running=false,travel=0){
+    time+=dt;
+    // Distance comes from successful collision movement, so pushing against
+    // a wall doesn't keep walking, and slow analog input slows the cadence.
+    phase+=travel/(running?3.4:2.65)*Math.PI*2;
+    blend=T.MathUtils.lerp(blend,Math.min(moving,1),1-Math.exp(-dt*10));
+    const pose=gaitPose(phase,time,blend,running);
+    body.position.set(pose.x,baseY+pose.y,0);
+    body.rotation.set(0,pose.hipYaw,pose.hipRoll);
+    torso.rotation.set(pose.lean,pose.chestYaw,pose.chestRoll);
+    inverseBody.copy(body.quaternion).invert();
+    for(let i=0;i<2;i++){
+      const foot=pose.feet[i];
+      target.set(legs[i].position.x,baseY+.17+foot.lift,foot.z).sub(body.position).applyQuaternion(inverseBody).sub(legs[i].position);
+      const angles=solveLeg(target.y,target.z);
+      legs[i].rotation.x=angles.hip;legs[i].rotation.z=0;knees[i].rotation.x=angles.knee;
+      chain.copy(body.quaternion).multiply(legs[i].quaternion).multiply(knees[i].quaternion).invert();
+      footRotation.setFromAxisAngle(xAxis,foot.roll);feet[i].quaternion.copy(chain.multiply(footRotation));
+      arms[i].rotation.x=pose.arms[i].swing;arms[i].rotation.z=(i===0?.13:-.13)+(i===0?1:-1)*Math.abs(Math.sin(phase))*.025*blend;
+      elbows[i].rotation.x=pose.arms[i].bend;
+    }
+    backpack.rotation.x=Math.sin(phase*2)*.025*blend;
+    backpack.rotation.z=-pose.hipRoll*.6;
+    backpack.position.z=-Math.abs(Math.sin(phase))*.012*blend;
+  }
+  root.userData.design=kind;root.userData.height=height;
+  return {group:root,legs,knees,feet,arms,head,torso,backpack,height,animate};
 }

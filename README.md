@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser prototype, **v0.4.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.5.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
@@ -54,7 +54,7 @@ npm run build
 
 GitHub Actions runs tests and builds a downloadable `retro-malaysia-playable` artifact. The repository also contains the pinned browser runtime in `vendor/` and `.nojekyll`, so GitHub Pages can serve `main` directly without an npm build. The manual Pages workflow can alternatively publish `dist/` when Pages is configured to use GitHub Actions.
 
-Playing in portrait pauses movement and congkak animation behind a rotate prompt. The initial camera distance is 14 world units, adjustable from 12 to 28; the previous initial distance was 27.
+Playing in portrait pauses movement and congkak animation behind a rotate prompt. The initial camera distance is 8 world units, adjustable from 6 to 20, keeping the metre-scale characters readable.
 
 ## Congkak practice rules
 
@@ -66,7 +66,7 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 0.4.0 follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 0.5.0 follows the supplied Amir/Nur reference with low-poly characters, illustrated curved faces, the reference outfits/backpacks, cel shading, ink outlines and a painted distant town panorama. Simple geometry retains 3D movement and camera mechanics. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
 Save data is stored in the browser on this device and origin; it does not sync across devices. Only completed chapter progress is saved, not a partly played congkak round. Leaving an unfinished round starts a fresh practice round on return.
 
@@ -88,6 +88,10 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 ## Preview
 
-![Version 0.4.0 landscape gameplay](docs/landscape-gameplay-v040.png)
+![Version 0.5.0 landscape gameplay](docs/landscape-gameplay-v050.png)
 
-![Actual in-game Amir and Nur models, front/side/back](docs/character-turnaround-v040.png)
+![Actual walking poses of Amir and Nur](docs/walking-poses-v050.png)
+
+[Watch the actual walking animation](docs/walking-preview-v050.mp4)
+
+Characters use child/adult metre scale; the school includes a full classroom block and side wing. New illustrated grass decals and distance-driven leg/ankle animation are implemented in v0.5.0.

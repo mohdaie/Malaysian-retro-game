@@ -1,10 +1,10 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=0.4.0';
-import { toon } from './illustration.js?v=0.4.0';
+import { createCharacter } from './characters.js?v=0.5.0';
+import { toon } from './illustration.js?v=0.5.0';
 export const places = [
   { name: "Amir's house", x: -43, z: 27, type: 'home' },
   { name: 'Kampung Melati', x: -45, z: -20, type: 'kampung' },
-  { name: 'SK Seri Kenangan', x: -23, z: -42, type: 'school' },
+  { name: 'SK Seri Kenangan', x: -3, z: -38, type: 'school' },
   { name: 'Pekan lama', x: 5, z: -23, type: 'shop' },
   { name: 'Warung Pak Mat', x: 12, z: -7, type: 'warung' },
   { name: 'Masjid Seri Kenangan', x: 47, z: -39, type: 'mosque' },
@@ -243,13 +243,22 @@ export async function makeWorld(canvas) {
   house(-44,-18,0xa8b4a0,9,7);house(-45,-41,0xe0c39b,10,7);house(-76,24,0xadc0a1,9,8);house(-44,56,0xc9bd92,9,7);
   fence(-53,20,20);fence(-53,20,21,'z');fence(-53,41,7);fence(-38,41,5);
   palm(-53,31,1.2);palm(-34,22,.9);tree(-55,45);tree(-37,-26);palm(-53,-44,1.2);
-  // School: low buildings, open corridors, cream walls, red pitched roofs.
-  box(21,3.6,8,textured(0xe7d8ad,'plaster'),-20,1.8,-49);roof(23,10,-20,3.65,-49,0x9e5544);
-  for(let x=-28;x<=-12;x+=4){box(1.8,1.3,.12,0x789487,x,2,-44.94);box(.18,3.5,.18,0xf1e4bd,x,.1+1.75,-42.7);}
-  box(23,.2,2,0xc8bc94,-20,.1,-43);box(23,.2,3,0xad6650,-20,3.2,-43);
-  box(13,.04,13,0xc4bc8f,-20,.1,-32);sign('SEKOLAH KEBANGSAAN',-20,3,-40.4,9);
-  cylinder(.06,.06,8,0xc7c7b3,-16,4,-34);malaysianFlag(-15.25,7.3,-34);
-  collider(-20,-49,23,9);fence(-33,-58,27);fence(-33,-58,29,'z');
+  // A full old SK classroom block and side wing, with a broad assembly
+  // court. Its western edge clears the main road instead of blocking it.
+  box(38,4.2,10,textured(0xe7d8ad,'plaster'),-3,2.2,-50);roof(40,12,-3,4.35,-50,0x9e5544);
+  box(40,.2,3.5,0xc8bc94,-3,.12,-43.5);box(40,.18,3.8,0xad6650,-3,3.7,-43.4);
+  for(let x=-19;x<=16;x+=5){
+    windowDetail(x,2.35,-44.91,2.25,1.45);box(.18,3.6,.18,0xf1e4bd,x,1.9,-41.75);
+    if(x<16){box(.92,2.35,.08,0x687a62,x+1.65,1.3,-44.86);box(.04,.1,.06,0xd5bd77,x+1.98,1.3,-44.79);}
+  }
+  box(9,4.2,20,textured(0xe7d8ad,'plaster'),22,2.2,-49);roof(10.5,22,22,4.35,-49,0x9e5544);
+  for(let z=-55;z<=-40;z+=5){const window=new T.Group();window.position.set(17.45,2.35,z);window.rotation.y=-Math.PI/2;scene.add(window);box(2.3,1.4,.08,glass,0,0,0,window);for(const a of [-1,1])box(.08,1.6,.12,0xe8dbb8,a*1.19,0,.02,window);}
+  box(31,.04,9,0xc4bc8f,-3,.10,-36);
+  for(const x of [-19,13])box(.3,3.0,.3,0xe8dbb8,x,1.5,-31.7);
+  sign('SEKOLAH KEBANGSAAN',-3,3.15,-31.5,12);
+  cylinder(.06,.06,8,0xc7c7b3,4,4,-35);malaysianFlag(4.75,7.3,-35);
+  collider(-3,-50,38,10);collider(22,-49,9,20);
+  fence(-23,-61,51);fence(-23,-61,30,'z');fence(28,-61,30,'z');
   // Old-town shophouses: five-foot walkways, pastel walls, timber shutters.
   const shopColors=[0xd8b98c,0xb6c7ad,0xdcb995,0xaac0b6,0xe0cda4];
   const shopNames=['KEDAI RUNCIT','KEDAI KOPI','KEDAI BASIKAL','FOTO KENANGAN','KEDAI JAHIT'];
@@ -354,6 +363,7 @@ export async function makeWorld(canvas) {
 
   for(let i=0;i<42;i++){
     const x=-76+((i*37)%152),z=-66+((i*29)%130);
+    if(x>-24&&x<29&&z<-30)continue;
     if((Math.abs(x+25)<8)||(Math.abs(z-4)<10)||(Math.abs(x-62)<8)||colliders.some(c=>Math.abs(x-c.x)<c.w/2+4&&Math.abs(z-c.z)<c.d/2+4))continue;
     if(i%3===0)palm(x,z,.75+(i%4)*.15);else tree(x,z,.65+(i%3)*.2,1);
   }
@@ -367,9 +377,24 @@ export async function makeWorld(canvas) {
   pot(-47,32.7,1.55);pot(-39,32.7,1.55);pot(6,-3);pot(18,-3);pot(-12,-16);pot(5,-16);
   for(let i=0;i<450;i++) {
     const x=-78+rand()*155,z=-65+rand()*130;
+    if(x>-24&&x<29&&z<-30)continue;
     if(Math.abs(z-4)<6||Math.abs(x+25)<5||Math.abs(x-62)<5||Math.abs(x+42)<3&&z>-9||Math.abs(z-37)<3||Math.abs(x+65)<7||colliders.some(c=>Math.abs(x-c.x)<c.w/2+2&&Math.abs(z-c.z)<c.d/2+2))continue;
     for(let a=0;a<3;a++){const blade=mesh(new T.ConeGeometry(.09,.35+rand()*.25,3),i%2?0x7f9959:0xa8ae67,x+a*.12,.25,z);blade.rotation.z=(a-1)*.25;}
   }
+  // Transparent painted ground-cover patches layer over the lawn. They sit
+  // below paths/roads, whose depth naturally masks foliage at their edges.
+  const grassPatch=await loader.loadAsync(new URL('../assets/textures/illustrated-grass-patch.webp',import.meta.url).href);
+  grassPatch.colorSpace=T.SRGBColorSpace;grassPatch.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  const patchPositions=[[-49,35,6],[-48,39,5],[-37,30,4],[-35,40,5],[-50,23,5]];
+  for(let i=0;i<270;i++){
+    const x=-78+rand()*154,z=-66+rand()*132;
+    if(Math.abs(z-4)<4||Math.abs(x+25)<3||Math.abs(x-62)<3||Math.abs(x+65)<5||colliders.some(c=>Math.abs(x-c.x)<c.w/2&&Math.abs(z-c.z)<c.d/2))continue;
+    patchPositions.push([x,z,4+rand()*5]);
+  }
+  const patches=new T.InstancedMesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:grassPatch,color:0xe8eecb,transparent:true,opacity:.75,alphaTest:.08,depthWrite:false}),patchPositions.length);
+  const patchTransform=new T.Object3D();
+  for(let i=0;i<patchPositions.length;i++){const [x,z,size]=patchPositions[i];patchTransform.position.set(x,-.038,z);patchTransform.rotation.set(-Math.PI/2,0,rand()*Math.PI*2);patchTransform.scale.set(size,size*(.8+rand()*.3),1);patchTransform.updateMatrix();patches.setMatrixAt(i,patchTransform.matrix);}
+  patches.instanceMatrix.needsUpdate=true;patches.computeBoundingSphere();scene.add(patches);
   // Hanging laundry beside Amir's home, a familiar kampung afternoon detail.
   for(const x of [-54,-47])cylinder(.05,.05,2.5,0x8b7958,x,1.25,18);
   box(7,.025,.025,0xc3bd9d,-50.5,2.4,18);
@@ -423,15 +448,26 @@ export async function makeWorld(canvas) {
     for(const g of geometries){positions.set(g.attributes.position.array,offset);offset+=g.attributes.position.array.length;g.dispose();}
     const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.computeBoundingSphere();scene.add(new T.LineSegments(g,townInk));
   }
+  function groundHeight(x,z){
+    if(x>-71.5&&x<-58.5&&(Math.abs(z-4)<4||Math.abs(z-37)<4))return .24;
+    if(x>-23&&x<17&&z>-45.25&&z<-41.75)return .23;
+    if(x>-18.5&&x<12.5&&z>-40.5&&z<-31.5)return .13;
+    if(x>6.5&&x<17.5&&z>-9.75&&z<-3.25)return .275;
+    if(x>-17.4&&x<17.4&&z>39.3&&z<44.3)return .16;
+    if(Math.abs(z-4)<4||Math.abs(x+25)<3.5||Math.abs(x-62)<3.5)return .065;
+    if(Math.abs(x+42)<2.5&&z>-7&&z<55)return .08;
+    if(Math.abs(z-37)<2&&x>-41&&x<49)return .075;
+    return -.025;
+  }
   const characters=[];
-  function character(x,z,kind='amir'){const model=createCharacter(scene,x,z,kind);characters.push(model);return model;}
+  function character(x,z,kind='amir'){const model=createCharacter(scene,x,z,kind);model.group.position.y=groundHeight(x,z)-.065;characters.push(model);return model;}
   const player=character(-43,38);
   const nur=character(-35,36,'nur');nur.group.rotation.y=-.7;
   const pak=character(12,-.5,'pak');pak.group.rotation.y=.2;
   const npcs=[{id:'nur',x:-35,z:36,character:nur},{id:'pak',x:12,z:-.5,character:pak}];
   character(37,19,'pak');character(1,-14,'nur');
   // Small overhead diamonds remain legible at the elevated gameplay angle.
-  for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.3,0),0xe4bc68,npc.x,3.65,npc.z);animated.push(marker);npc.marker=marker;}
+  for(const npc of npcs){const marker=mesh(new T.OctahedronGeometry(.17,0),0xe4bc68,npc.x,npc.character.group.position.y+npc.character.height+.44,npc.z);marker.userData.height=npc.character.group.position.y+npc.character.height+.44;animated.push(marker);npc.marker=marker;}
   const ray=new T.Raycaster(),blocked=new Set();let occlusionTime=0;
   function updateOcclusion(camera,look,dt,active){
     occlusionTime+=dt;
@@ -448,5 +484,5 @@ export async function makeWorld(canvas) {
   }
   function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {renderer,scene,camera,player,characters,npcs,colliders,updateOcclusion,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {renderer,scene,camera,player,characters,npcs,colliders,groundHeight,updateOcclusion,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
