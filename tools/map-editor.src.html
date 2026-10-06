@@ -147,7 +147,7 @@ const unitById = id => plan.units.find(u => u.id === id);
 const roadById = id => plan.roads.find(r => r.id === id);
 // Plan units list place ids; derived units list {id, rect}. Accept both.
 const placeIds = u => u.places.map(p => typeof p === 'object' ? p.id : p);
-const nameOf = u => { const ids = placeIds(u); return ids.length === 1 ? PLACES[ids[0]][0] : ids.length ? KINDS[u.kind].label : (u.kind === 'passerby' ? (u.who === 'pak' ? 'Pak Mat (walking)' : 'Nur (walking)') : KINDS[u.kind].label); };
+const nameOf = u => { const ids = placeIds(u); return ids.length === 1 ? PLACES[ids[0]][0] : ids.length ? KINDS[u.kind].label : (u.kind === 'passerby' ? 'Passer-by spot' : KINDS[u.kind].label); };
 const colorOf = u => { const ids = placeIds(u); return ids.length ? zoneColor[PLACES[ids[0]][1]] : kindColor[u.kind] || '#888'; };
 const roadName = r => r.id.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase());
 function readLocal() { try { return JSON.parse(localStorage.getItem('pelan-draft') || 'null'); } catch { return null; } }
@@ -251,8 +251,8 @@ function draw() {
     const t = el('text', { x, y: z, 'font-size': Math.max(1.6, (on ? 13 : 11) * px), 'font-weight': on ? 750 : 650, 'text-anchor': 'middle', fill: token('--ink'), stroke: token('--lawn'), 'stroke-width': 4 * px, 'paint-order': 'stroke' }, svg);
     t.textContent = text;
   }
-  // People: Amir's start, Nur and Pak Mat (they move with their buildings).
-  for (const [key, label] of [['spawn', 'Amir'], ['nur', 'Nur'], ['pak', 'Pak Mat']]) {
+  // People: Amir's and Nur's starts and Kak Ita's stall (they move with their buildings).
+  for (const [key, label] of [['spawn', 'Amir'], ['spawnNur', 'Nur'], ['stall', 'Kak Ita']]) {
     const s = town.spots[key]; if (!s) continue;
     el('circle', { cx: s.x, cy: s.z, r: Math.max(.8, 4 * px), fill: key === 'spawn' ? '#b15c33' : token('--green'), stroke: token('--panel'), 'stroke-width': 1.5 * px }, svg);
     if (view.scale > 5) { const t = el('text', { x: s.x + Math.max(1.2, 6 * px), y: s.z, 'font-size': Math.max(1.4, 10 * px), 'dominant-baseline': 'central', fill: token('--ink') }, svg); t.textContent = label; }
@@ -421,7 +421,7 @@ async function save() {
   const errors = problems.filter(p => p.level === 'error').length;
   try {
     const at = new Date().toISOString();
-    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v0.11.0' });
+    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v1.0.0' });
     savedAt = at; dirty = false; writeLocal(); renderPanel();
   } catch (error) {
     $('saveinfo').textContent = error?.code === 'invalid_argument' ? 'Only the owner and editors of this page can save. Use Copy layout instead.' : 'Saving failed. Check your connection and try again.';

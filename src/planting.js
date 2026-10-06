@@ -1,4 +1,5 @@
-import { TOWN_BOUNDS, RIVER } from './town-layout.js?v=0.11.0';
+import { TOWN_BOUNDS, RIVER } from './town-layout.js?v=1.0.0';
+import { npcPosts } from './cast.js?v=1.0.0';
 
 // Where every tree goes, worked out from the town plan alone so the tests can
 // check it and the planting follows the editor when buildings move.
@@ -41,7 +42,8 @@ export function plantTown(town) {
   const onBridge = (x, z, pad) => town.bridges.some(b => Math.abs(x - b.x) < b.w / 2 + pad && Math.abs(z - b.z) < b.d / 2 + pad);
   const inSolid = (x, z, pad, except) => units.some(u => u !== except && u.solids.some(([sx, sz, sw, sd]) => Math.abs(x - sx) < sw / 2 + pad && Math.abs(z - sz) < sd / 2 + pad));
   const nearUnit = (x, z, pad) => units.some(u => { const [ax, az, aw, ad] = u.area; return Math.abs(x - ax) < aw / 2 + pad && Math.abs(z - az) < ad / 2 + pad; });
-  const people = [town.spots.spawn, town.spots.nur, town.spots.pak, ...town.passersby].filter(Boolean);
+  const posts = Object.values(npcPosts(town.buildings)).map(p => p.spots[0]);
+  const people = [town.spots.spawn, town.spots.spawnNur, town.spots.stall, ...posts, ...town.passersby].filter(Boolean);
   const nearPeople = (x, z, pad) => people.some(p => Math.hypot(x - p.x, z - p.z) < pad);
   const crowded = (x, z, gap) => plants.some(p => Math.hypot(x - p.x, z - p.z) < Math.max(gap, p.kind === 'beringin' ? 7 : 0));
   // Roads that meet the edge carry on out of town through a gap in the trees.
@@ -63,9 +65,9 @@ export function plantTown(town) {
   // A walkable spot: clear of roads, the river, bridges, buildings and people.
   const clearIn = (x, z, r, except) => inside(x, z, r + .4) && !inRiver(x, r + 1) && !onBridge(x, z, r + 2) && !onRoad(x, z, r + .5, r + .3) && !inSolid(x, z, r + .5, except) && !nearPeople(x, z, r + 1.6);
 
-  // 0. One old beringin, in the most open lawn near Pak Mat's warung: the
+  // 0. One old beringin, in the most open lawn near the warung: the
   //    tree everyone meets under. It follows the warung when the plan moves.
-  const pak = town.spots.pak;
+  const pak = town.spots.stall;
   if (pak) {
     const rectGap = (x, z, [rx, rz, w, d]) => Math.hypot(Math.max(0, Math.abs(x - rx) - w / 2), Math.max(0, Math.abs(z - rz) - d / 2));
     let best = null;
