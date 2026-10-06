@@ -1,22 +1,25 @@
 # Retro Malaysia — a kampung story
 
-First playable browser prototype, **v0.2.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
+Playable browser prototype, **v0.3.0**. A fictional Malaysian town around **2001**, mixing kampung lanes and budget terrace homes. Default protagonists **Amir** and **Nur** can be renamed.
 
 ## Playable chapter
 
 Leave Amir's timber house → meet Nur → walk through the pekan → talk to Pak Mat at his warung → finish a congkak practice round → return to exploration. Afterward, explore or play a rematch.
 
-The compact town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original, simplified geometry inspired by the agreed references, not exact recreations.
+The compact town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original stylized 3D meshes inspired by the agreed references, not exact recreations.
 
 - Landscape-only gameplay, with fullscreen/orientation locking where the browser supports it and a portrait gate otherwise.
 - Closer following 3D camera with drag/swipe orbit, vertical tilt, pinch and wheel zoom.
-- Textured ground and timber, verandah details, curved palm fronds, foliage, improved lighting and focused shadows.
-- Walking, running, obstacle collision and river crossings.
+- Original rounded characters with jointed walking/running, clothing, facial detail and a canvas satchel.
+- Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts, detailed warung props and rounded vehicles.
+- Feathered palms, fuller tree canopies, afternoon lighting and soft contact shadows. Buildings fade when they hide the player.
+- Faster walking at 7.2 world metres/second and running at 11, with obstacle collision and river crossings.
 - NPC dialogue, quest progression, destination distance and a zoned town map.
-- Phone joystick and action buttons; desktop keyboard support.
+- Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
 - Local progress saves with resume, save validation and graceful storage failure.
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
-- Static world geometry batched by material; lower resolution graphics on touch devices. The world renderer pauses behind modal menus and congkak.
+- Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus and congkak.
+- Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - No server, sign-in, API keys or runtime CDN needed.
 
 ## Controls
@@ -59,15 +62,21 @@ Seven small houses per side, seven shells per house, and one store per player. S
 
 This is an explicitly **turn-based introductory variant**. Congkak has regional variations and simultaneous-start forms; this prototype does not claim to implement every traditional rule set. Pak Mat uses a one-move local heuristic.
 
+See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented visual direction and scope.
+
 ## Scope and next work
 
-This is a functional greybox with a warm low-poly treatment, not the final character or environment artwork. The first chapter and congkak are playable; building interiors, the other traditional games, later quests, full sound design and production character animation are not implemented. Ambience is an optional, locally synthesized placeholder.
+Version 0.3.0 implements the current prototype's warm stylized design through original procedural meshes, generated surface textures, articulated animation and local synthesized sound. The first chapter and congkak are playable. Building interiors, other traditional games and later chapters remain outside this prototype. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
 Save data is stored in the browser on this device and origin; it does not sync across devices. Only completed chapter progress is saved, not a partly played congkak round. Leaving an unfinished round starts a fresh practice round on return.
 
 ## Code layout
 
-- `src/world.js`: procedural scene, town zoning and obstacle geometry.
+- `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
+- `src/characters.js`: original character meshes, jointed animation and per-joint batching.
+- `src/movement.js`: analog input and small collision steps independent of frame rate.
+- `src/soundscape.js`: original local ambience and foley.
+- `assets/`: generated game materials and provenance.
 - `src/main.js`: camera, input, quest/dialogue flow, map and minigame presentation.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
 - `src/save.js`: versioned local save validation and storage.
@@ -78,4 +87,4 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 ## Preview
 
-![First playable town](docs/gameplay-desktop.png)
+![Version 0.3.0 landscape gameplay](docs/landscape-gameplay-v030.png)

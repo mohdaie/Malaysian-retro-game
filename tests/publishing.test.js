@@ -14,6 +14,15 @@ test('direct branch publishing includes the browser runtime and module dependenc
   await access(resolve(root, '.nojekyll'));
   await access(resolve(root, 'vendor/THREE-LICENSE.txt'));
   await access(resolve(root, 'src/boot.js'));
+  for (const file of ['kampung-grass.webp', 'kampung-timber.webp']) await access(resolve(root, 'assets/textures', file));
+});
+test('HTML and bootstrap advance together so cached pages load the current game', async () => {
+  const { version } = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+  const html = await readFile(resolve(root, 'index.html'), 'utf8');
+  const boot = await readFile(resolve(root, 'src/boot.js'), 'utf8');
+  assert.ok(html.includes(`./styles.css?v=${version}`));
+  assert.ok(html.includes(`./src/boot.js?v=${version}`));
+  assert.ok(boot.includes(`./main.js?v=${version}`));
 });
 test('checked-in runtime exactly matches the pinned installed dependency', async () => {
   for (const path of ['three.module.js', 'three.core.js']) {
