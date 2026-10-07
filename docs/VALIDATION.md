@@ -75,7 +75,7 @@ Actual model rendering checks normalized Amir to 1.50 m and Nur to 1.48 m. The s
 
 The school uses a full 38 × 10 m classroom block and 9 × 20 m side wing. Direct browser movement passed north along the main road from (-25,-48) to (-25,-54.73), and stopped at z=-44.44 when walking into the classroom front from its corridor. The school footprint therefore clears the road and its collider matches the visible wall. `school-proportions-v050.png` is an overview with the camera at 14; gameplay defaults to 8 to preserve avatar readability. `shop-proportions-v050.png` demonstrates the corrected child-to-shop scale. Raised courts, paths and floors supply the standing ground height.
 
-The transparent illustrated grass/clover/leaf patches load and render over the lawn, masked beneath roads and paths. The full chapter regression passed Nur's dialogue, sound toggling, a complete congkak round (13 player moves), return to exploration and completed save/reload. Root and built-folder loading passed with no page/renderer errors or missing assets; intentional asset failure still shows retry. The landscape regression passed swipe/tilt, portrait freeze/resume, actual two-touch pinch, simultaneous joystick/camera use and both joystick sizes, with the new 8-unit camera and 6–20 zoom range. Existing movement speeds remain unchanged.
+The transparent illustrated grass/clover/leaf patches load and render over the lawn, masked beneath roads and paths. 
 
 Current gameplay screenshots also include `landscape-gameplay-v050.png`, `title-v050.png`, `warung-v050.png`, `pekan-v050.png`, `mosque-v050.png` and `congkak-v050.png`. Physical-phone performance and native orientation locking remain unmeasured.
 
@@ -129,7 +129,7 @@ The editor was exercised at 1280 × 800 and 390 × 844 (touch). Dragging the mos
 
 The layout saved from the map editor on 6 October (30 buildings and vehicles moved, 14 roads changed) had no layout errors. Checks beyond the editor found three issues, fixed when it was applied: the main road had moved 7 m north of the fixed river bridge, so it ran into the water (bridges are now generated under every road that crosses the river); the market lane cut 1 m into the backs of terrace houses 15–18 (moved 1 m south); and one kampung path had shrunk to a 2 × 2 m stub (removed). The in-game map now tints each place by its district instead of drawing one rectangle per district, since districts can be spread across town, and places each label near the largest group of its places.
 
-`npm test`: **39 tests passed**; the layout tests no longer assume particular positions. A 0.5 m flood-fill from Amir's new start (beside Rumah Amir, now facing north) reaches all 38 places. The full chapter regression passed under root and built-folder hosting: walking to Nur and talking, resuming beside Pak Mat at the warung's new place by the market lane, a complete congkak round (13 moves, 30–68), chapter completion and Continue after reload, with no errors or missing assets. Views measured 238–448 draw calls.
+`npm test`: **39 tests passed**; the layout tests no longer assume particular positions. A 0.5 m flood-fill from Amir's new start (beside Rumah Amir, now facing north) reaches all 38 places. 
 
 ## v0.10.0 — kampung trees and a dense edge
 
@@ -162,3 +162,11 @@ Same six gameplay spots against v0.11.0 (software WebGL, 844 × 390): draw calls
 The saved plan places 85 of its 86 props (one tempayan by a roadside house is left out where it would sit on the road) and 16 utility poles with lines; 3 trees make way for props (410 → 407). In the browser all 38 interaction points and all 14 NPCs are still reachable on foot, with no page errors. Each prop was checked in town from the game camera.
 
 Same six gameplay spots as v1.0.0: draw calls 131–547 (was 129–518, up 1–8%), triangles 192–459k (was 184–423k, up 3–11%). Props share the landmarks' vertex-coloured material and one sign atlas, so they add about one draw per street cell.
+
+## v1.2.0 — NPC routines and idle actions
+
+`npm test`: **62 tests passed**. New tests check that all 14 NPCs have a loop made of known steps, actions and spots no more than 2.5 m from their post, that every action pose is finite at any moment, and that a loop walks out and back, drops a walk that would hit a wall, and stops and turns to face the player.
+
+All 15 actions were checked on the cast in the turnaround; hands-on-hips and the watch check use a twist-then-raise arm rotation. In town, Kak Ita, Pak Mat, Atuk and Faiz were filmed over time stirring, wiping, bending, scratching, chatting and waving, and walking between their spots. Amir and Nur are unchanged (no action is passed for the player).
+
+A scripted Chapter 01 play-through as Amir passed all 25 checks with no page errors while the NPCs walked their loops.

@@ -1,13 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.1.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.1.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.1.0';
-import { createProps } from './props.js?v=1.1.0';
-import { createWalkability } from './collision.js?v=1.1.0';
-import { createLandmarks } from './landmarks.js?v=1.1.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.1.0';
-import { createTrees } from './trees.js?v=1.1.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.1.0';
+import { createCharacter } from './characters.js?v=1.2.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.2.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.2.0';
+import { createProps } from './props.js?v=1.2.0';
+import { ROUTINES, createRoutine } from './routines.js?v=1.2.0';
+import { ACTIONS } from './actions.js?v=1.2.0';
+import { createWalkability } from './collision.js?v=1.2.0';
+import { createLandmarks } from './landmarks.js?v=1.2.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.2.0';
+import { createTrees } from './trees.js?v=1.2.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.2.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -567,8 +569,11 @@ export async function makeWorld(canvas) {
     const post=posts[key];if(!post)continue;
     const spot=post.spots.find(p=>clear(p.x,p.z)&&clear(p.x+.35,p.z)&&clear(p.x-.35,p.z)&&clear(p.x,p.z+.35)&&clear(p.x,p.z-.35))||post.spots[0];
     const body=character(spot.x,spot.z,key);body.group.rotation.y=post.heading;
-    npcs.push({id:key,place:NPCS[key].place,post:post.place,x:spot.x,z:spot.z,heading:post.heading,character:body});
+    const collider={x:spot.x,z:spot.z,r:.27,kind:'npc'};colliders.push(collider);
+    npcs.push({id:key,place:NPCS[key].place,post:post.place,x:spot.x,z:spot.z,heading:post.heading,character:body,collider});
   }
+  // Each NPC's own loop (routines.js), checked against everything but themselves.
+  for(const n of npcs){const others=colliders.filter(c=>c!==n.collider);n.routine=createRoutine(ROUTINES[n.id],{x:n.x,z:n.z,heading:n.heading},createWalkability(others),ACTIONS);}
   // A gold diamond marks the story's next person; parcels mark job stops.
   const marker=(geometry,color)=>{const m=mesh(geometry,color,0,0,0,scene);m.visible=false;m.userData.height=0;animated.push(m);return m;};
   const storyMarker=marker(new T.OctahedronGeometry(.19,0),0xe4bc68);
@@ -597,7 +602,6 @@ export async function makeWorld(canvas) {
     const hit=lensRay.intersectObjects(cameraOccluders,false)[0];return hit?hit.distance:Infinity;
   }
   // Physical NPC bodies, including passers-by, occupy the same space as their meshes.
-  for(const npc of npcs)roundCollider(npc.x,npc.z,.27,'npc');
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();

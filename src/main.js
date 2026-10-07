@@ -1,14 +1,14 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.1.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.1.0';
-import { readSave, writeSave } from './save.js?v=1.1.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.1.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.1.0';
-import { createSoundscape } from './soundscape.js?v=1.1.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.1.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.1.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.1.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.1.0';
+import { makeWorld } from './world.js?v=1.2.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.2.0';
+import { readSave, writeSave } from './save.js?v=1.2.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.2.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.2.0';
+import { createSoundscape } from './soundscape.js?v=1.2.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.2.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.2.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.2.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.2.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -520,7 +520,18 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
   } else player.animate(dt,0);
   // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
-  for(const {character} of world.npcs){const gap=character.group.position.distanceTo(player.group.position),near=gap<20;character.group.visible=mode==='title'||gap<42;if(character.figure.castShadow!==near)character.figure.castShadow=near;if(character.group.visible)character.animate(dt,0);}
+  for(const n of world.npcs){
+    const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20;
+    character.group.visible=mode==='title'||gap<42;if(character.figure.castShadow!==near)character.figure.castShadow=near;
+    if(!character.group.visible)continue;
+    // Their own loop (routines.js): they stop for you when you come close, and wait while you talk.
+    const talking=talkingTo?.id===n.id||counter?.npc===n.id;
+    if(talking)n.routine.state.heading=character.group.rotation.y;
+    const s=n.routine.update(dt,{pause:talking||mode!=='explore'&&mode!=='title',look:mode==='explore'&&gap<2.4?pp:null});
+    n.x=s.x;n.z=s.z;n.collider.x=s.x;n.collider.z=s.z;
+    character.group.position.set(s.x,world.groundHeight(s.x,s.z)-.065,s.z);if(!talking)character.group.rotation.y=s.heading;
+    character.animate(dt,s.moving,false,s.travel,s.action,s.actionTime);
+  }
   world.wind.value=elapsed;
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
