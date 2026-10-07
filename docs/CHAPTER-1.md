@@ -1,6 +1,6 @@
-# Chapter 1: Cuti Sekolah → Pameran Kenangan (v2.7.0)
+# Chapter 1: Cuti Sekolah → Pameran Kenangan (v2.7.1)
 
-The first six errands introduce the town. Buying a collectible now leads to Pak Salleh's invitation, rather than ending the chapter. The school-holiday exhibition supplies a shared purpose for the six keepsake stories.
+The first six steps introduce the town, including two single-job errands with Pak Rahman and Nenek. The first earned keepsake now comes from a short Ujang or KLCC story; the longer album and championship quests unlock afterward. Buying a collectible now leads to Pak Salleh's invitation, rather than ending the chapter. The school-holiday exhibition supplies a shared purpose for the six keepsake stories.
 
 | Part | Player activity | Purpose in the chapter |
 |---|---|---|

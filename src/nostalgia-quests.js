@@ -1,56 +1,53 @@
 // Long-term collectible quests. Progress only starts after accepting a story;
-// victories only count after its ordered trail. Existing rounds settle once.
+// qualifying victories count from acceptance, without skipping the story trail.
 export const LONG_ROUTE = 60;
 const stop = (place, clue) => ({ place, clue });
 export const NOSTALGIA_QUESTS = {
-  nostalgia_M01: { giver: 'Faiz', npc: 'faiz', place: 34, title: 'The Verse Nobody Heard', intro: 'Aku ada buku rima lama, tapi tak pernah berani baca depan orang. Help me trace the friend who wrote the other half. Show me you can finish a long journey first.', grind: { deliveries: 12, destinations: 6, long: 4 }, trail: [
+  nostalgia_M01: { giver: 'Faiz', npc: 'faiz', place: 34, title: 'The Verse Nobody Heard', later: true, intro: "Aku ada buku rima lama, tapi tak pernah berani baca depan orang. Help me trace the friend who wrote the other half. Eight varied errands and one race will earn a special memory.", grind: { deliveries: 8, destinations: 5, long: 3 }, trail: [
     stop(33, 'Cik Azura recognises the handwriting. The rhyme partner used to borrow comics after school. Try the school office.'),
     stop(29, 'An old classroom note points to a boy who always waited at the bus stop. His rhyme ends with a journey home.'),
-    stop(35, 'Pak Karim remembers the two practising lines on the last bus. Their favourite audience was at the warung.'),
-    stop(21, 'Kak Ita remembers their stage fright. They promised to practise at the balai raya one day.'),
-    stop(32, 'Pak Salleh has room for a rehearsal. Faiz needs a friend who can finish a challenge even after losing. Win four Tamiya races, then meet him again.')
-  ], challenges: [{ game: 'tamiya', count: 4, label: 'Win 4 Tamiya races' }], choices: [{ label: 'A private rehearsal', memory: 'Given by Faiz after our quiet first rehearsal.' }, { label: 'The community stage', memory: 'Given by Faiz after he finally faced the community stage.' }] },
-  nostalgia_P02: { giver: 'Cikgu Farid', npc: 'farid', place: 29, title: 'Superhero of the School Bag', intro: 'This Ujang travelled through half a classroom. Rebuild its little lending journey. Reliable helpers finish their errands, even the ones across town.', grind: { deliveries: 10, destinations: 5, long: 3 }, trail: [
-    stop(25, 'Uncle Lim remembers selling this issue to someone who saved their recess money. The next borrower lived at Mei Ling\'s house.'),
-    stop(14, 'Mei Ling remembers a friend borrowing it on a difficult school day. Faiz kept the lending list.'),
-    stop(15, 'A lending list names the library next. Nobody wanted the jokes to disappear in a school bag.'),
+    stop(35, "Pak Karim remembers the two practising lines on the last bus. Their rehearsal plan is with Pak Salleh at the balai raya."),
+    stop(32, "Pak Salleh has room for a rehearsal. Win one Tamiya race, then meet Faiz again. A qualifying win since accepting this story already counts.")
+  ], challenges: [{ game: 'tamiya', count: 1, label: 'Win a Tamiya race' }], choices: [{ label: 'A private rehearsal', memory: 'Given by Faiz after our quiet first rehearsal.' }, { label: 'The community stage', memory: 'Given by Faiz after he finally faced the community stage.' }] },
+  nostalgia_P02: { giver: 'Cikgu Farid', npc: 'farid', place: 29, title: 'Superhero of the School Bag', later: false, intro: "This Ujang travelled through half a classroom. Help with three errands, trace its lending journey and win one congkak match with Nenek.", grind: { deliveries: 3, destinations: 3, long: 1 }, trail: [
+    stop(25, "Uncle Lim remembers a pupil saving recess money. The library kept the comic lending list."),
     stop(33, 'Cik Azura found the old return slip. Its last borrower took it to Nenek\'s veranda.'),
-    stop(2, 'Nenek remembers laughter and a patient reader. Win three congkak matches here, then return to Cikgu Farid for the comic swap.')
-  ], challenges: [{ game: 'congkak', count: 3, label: 'Beat Nenek at congkak 3 times' }], choices: [{ label: 'Read it together', memory: 'Borrowed laughter, finally returned to the school-day circle.' }, { label: 'Keep a lending note', memory: 'A comic-swap keepsake with a promise to return what I borrow.' }] },
-  nostalgia_G01: { giver: 'Kak Lina', npc: null, place: 12, title: 'A Name Saved as Home', intro: 'This old Nokia has a contact called Home. We will keep the family messages safe. Earn my trust on longer errands, then help follow its owner\'s old route.', grind: { deliveries: 18, destinations: 8, long: 6 }, trail: [
-    stop(13, 'Pak Abu remembers the family\'s old address. They collected groceries at Runcit 99 every Friday.'),
-    stop(22, 'Pak Rahman recognises a nickname on the grocery ledger. Someone at the petrol kiosk knew the family too.'),
-    stop(37, 'Pak Din remembers lending the owner his phone during a breakdown. The workshop kept the repair note.'),
+    stop(2, "Nenek remembers laughter and a patient reader. Win one congkak match here, then return to Cikgu Farid. A win since accepting this story already counts.")
+  ], challenges: [{ game: 'congkak', count: 1, label: 'Beat Nenek at congkak' }], choices: [{ label: 'Read it together', memory: 'Borrowed laughter, finally returned to the school-day circle.' }, { label: 'Keep a lending note', memory: 'A comic-swap keepsake with a promise to return what I borrow.' }] },
+  nostalgia_G01: { giver: 'Kak Lina', npc: null, place: 12, title: 'A Name Saved as Home', later: true, intro: "This old Nokia has a contact called Home. Help with six errands and follow its owner’s old route. One Jaguh Dam Haji win will show your patience.", grind: { deliveries: 6, destinations: 4, long: 2 }, trail: [
+    stop(13, "Pak Abu remembers the family address. The workshop kept a repair slip from the journey home."),
     stop(36, 'Pak Man finds a repair slip with a bus journey written on its back.'),
-    stop(35, 'Pak Karim remembers the call that brought a relative home. Kak Lina asks for patience and careful thinking: beat Pak Din at Jaguh three times before returning.')
-  ], challenges: [{ game: 'dam', level: 'jaguh', count: 3, label: 'Beat Pak Din at Jaguh Dam Haji 3 times' }], choices: [{ label: 'Keep the welcome note', memory: 'Passed down by Kak Lina, with a new welcome message.' }, { label: 'Remember the homecoming', memory: 'An old phone that helped somebody find their way home.' }] },
-  nostalgia_G04: { giver: 'Abang Kamal', npc: null, place: 6, title: 'The Tape with No Label', intro: 'There is a family greeting on this cassette. Help me find the voices, then you can keep my spare Walkman. Take the long errands first; the clues go right across the pekan.', grind: { deliveries: 16, destinations: 7, long: 5 }, trail: [
-    stop(35, 'Pak Karim recognises the greeting from a trip home. The speakers brought kuih from Kak Ita.'),
-    stop(21, 'Kak Ita recalls a gathering at the balai raya. Someone there helped make the recording.'),
-    stop(32, 'Pak Salleh remembers an older voice talking about the garden. Ask at the wakaf kebun.'),
-    stop(9, 'Pak Mat recognises the laughter. The youngest speaker used to visit Nenek after school.'),
-    stop(2, 'Nenek can name the voices. The tape stays with the family. Show Atuk your steady hands: beat him at gasing three times, then return to Abang Kamal.')
-  ], challenges: [{ game: 'gasing', opponent: 'atuk', count: 3, label: 'Beat Atuk at gasing 3 times' }], choices: [{ label: 'Remember the greeting', memory: 'Some voices are worth keeping. A thank-you from Abang Kamal.' }, { label: 'Remember the journey', memory: 'The player that carried a family greeting across the pekan.' }] },
-  nostalgia_T01: { giver: 'Uncle Lim', npc: 'lim', place: 25, title: 'The Car Behind the Window', intro: 'Lightning Magnum is the championship keepsake. No price tag can replace the race. Finish the long delivery path, help the racers and earn first place on every track.', grind: { deliveries: 20, destinations: 10, long: 6 }, trail: [
+    stop(35, "Pak Karim remembers the call that brought a relative home. Beat Pak Din at Jaguh once, then return to Kak Lina. A qualifying win since accepting this story already counts.")
+  ], challenges: [{ game: 'dam', level: 'jaguh', count: 1, label: 'Beat Pak Din at Jaguh Dam Haji' }], choices: [{ label: 'Keep the welcome note', memory: 'Passed down by Kak Lina, with a new welcome message.' }, { label: 'Remember the homecoming', memory: 'An old phone that helped somebody find their way home.' }] },
+  nostalgia_G04: { giver: 'Abang Kamal', npc: null, place: 6, title: 'The Tape with No Label', later: true, intro: "There is a family greeting on this cassette. Help with six errands and find the voices, then earn my spare Walkman with one gasing win against Atuk.", grind: { deliveries: 6, destinations: 4, long: 2 }, trail: [
+    stop(35, "Pak Karim recognises the greeting from a trip home. The family recorded it at the balai raya."),
+    stop(32, "Pak Salleh remembers the family recording. Nenek will recognise the voices."),
+    stop(2, "Nenek can name the voices. The tape stays with the family. Beat Atuk at gasing once, then return to Abang Kamal. A qualifying win since accepting this story already counts.")
+  ], challenges: [{ game: 'gasing', opponent: 'atuk', count: 1, label: 'Beat Atuk at gasing' }], choices: [{ label: 'Remember the greeting', memory: 'Some voices are worth keeping. A thank-you from Abang Kamal.' }, { label: 'Remember the journey', memory: 'The player that carried a family greeting across the pekan.' }] },
+  nostalgia_T01: { giver: 'Uncle Lim', npc: 'lim', place: 25, title: 'The Car Behind the Window', later: true, intro: "Lightning Magnum is the playable championship keepsake. Help the racers through twelve varied errands, follow their setup advice and earn first place on every track.", grind: { deliveries: 12, destinations: 6, long: 4 }, trail: [
     stop(15, 'Faiz writes down his failed setup. The parts came from the workshop.'),
     stop(36, 'Pak Man explains why the setup was unstable. Pak Din checked its batteries.'),
     stop(37, 'Pak Din remembers a fresh battery and a rushed launch. Mei Ling kept the lap notes.'),
     stop(14, 'Mei Ling\'s notes favour careful setup over raw speed. The school has room for the event poster.'),
-    stop(29, 'Cikgu Farid approves the poster. Return to the padang: win six races, including all three tracks. Uncle Lim will award the kit.')
-  ], challenges: [{ game: 'tamiya', count: 6, tracks: ['oval', 'eight', 'jaguh'], label: 'Win 6 races, including Oval, Selekoh Lapan and Jaguh' }], choices: [{ label: 'Dedicate it to practice', memory: 'The car I earned through practice, with every track to prove it.' }, { label: 'Dedicate it to my rivals', memory: 'For Faiz and Mei Ling: the rivals who made me a better racer.' }] },
-  nostalgia_I01: { giver: 'Nenek', npc: 'nenek', place: 2, title: 'The Trip We Never Took', intro: 'Our old KL trip plan is still in this envelope. Help turn it into a promise we can remember. This is the longest keepsake path: finish errands across town and prove yourself at all four games.', grind: { deliveries: 24, destinations: 10, long: 8 }, trail: [
-    stop(13, 'Pak Abu finds a postcard with the family\'s old travel plan. The bus driver knew the route.'),
-    stop(35, 'Pak Karim remembers the seats they never used. A picnic order was left at the warung.'),
-    stop(21, 'Kak Ita remembers preparing the food. The family planned to collect a little model at the end.'),
-    stop(25, 'Uncle Lim has a tower model for the display. Ask the teacher about the old class trip photographs.'),
-    stop(29, 'Cikgu Farid lends a photograph with permission. Pak Salleh can host the family display.'),
-    stop(32, 'The display leaves a space for a future photograph. Win twice at congkak, Jaguh dam, Atuk\'s gasing and Tamiya, then return to Nenek.')
-  ], challenges: [{ game: 'congkak', count: 2, label: 'Win 2 congkak matches' }, { game: 'dam', level: 'jaguh', count: 2, label: 'Win 2 Jaguh Dam Haji matches' }, { game: 'gasing', opponent: 'atuk', count: 2, label: 'Beat Atuk at gasing twice' }, { game: 'tamiya', count: 2, label: 'Win 2 Tamiya races' }], choices: [{ label: 'A journey still ahead', memory: 'For the journey we still hope to take, from Nenek.' }, { label: 'A memory shared at home', memory: 'A little tower from the night we shared our family\'s story.' }] }
+    stop(29, "Cikgu Farid approves the poster. Win once on each of the three tracks, then return to Uncle Lim. Qualifying wins since accepting this story already count.")
+  ], challenges: [{ game: 'tamiya', count: 3, tracks: ['oval', 'eight', 'jaguh'], label: 'Win once on Oval, Selekoh Lapan and Jaguh' }], choices: [{ label: 'Dedicate it to practice', memory: 'The car I earned through practice, with every track to prove it.' }, { label: 'Dedicate it to my rivals', memory: 'For Faiz and Mei Ling: the rivals who made me a better racer.' }] },
+  nostalgia_I01: { giver: 'Nenek', npc: 'nenek', place: 2, title: 'The Trip We Never Took', later: false, intro: "Our old KL trip plan is still in this envelope. Help with four errands, find three pieces of its story and win one congkak match with me. We can make a little memory together.", grind: { deliveries: 4, destinations: 3, long: 1 }, trail: [
+    stop(13, "Pak Abu finds the family postcard. Uncle Lim kept a little tower model from the old trip plan."),
+    stop(25, "Uncle Lim has the tower model and an old photograph for the display. Pak Salleh can bring them together at the balai raya."),
+    stop(32, "The display leaves a space for a future photograph. Win one congkak match, then return to Nenek. A win since accepting this story already counts.")
+  ], challenges: [{ game: 'congkak', count: 1, label: 'Beat Nenek at congkak' }], choices: [{ label: 'A journey still ahead', memory: 'For the journey we still hope to take, from Nenek.' }, { label: 'A memory shared at home', memory: 'A little tower from the night we shared our family\'s story.' }] }
 };
 const validPlace = n => Number.isInteger(n) && n >= 1 && n <= 38;
 const count = n => Number.isInteger(n) && n >= 0 && n <= 1e6 ? n : 0;
 const matches = (q, context) => q.npc ? context?.npc === q.npc : context?.place === q.place && !context?.npc;
-const fresh = () => ({ stage: 'grind', deliveries: 0, destinations: [], long: 0, trail: 0, wins: {}, tracks: [] });
+// Indices retained from v2.7.0's longer trails. Old saves keep every discovered
+// clue that survives the shorter route; new saves store the pacing revision.
+const LEGACY_TRAIL_INDICES = {
+  nostalgia_M01: [0, 1, 2, 4], nostalgia_P02: [0, 3, 4],
+  nostalgia_G01: [0, 3, 4], nostalgia_G04: [0, 2, 4],
+  nostalgia_T01: [0, 1, 2, 3, 4], nostalgia_I01: [0, 3, 5]
+};
+const fresh = () => ({ pacing: 2, stage: 'grind', deliveries: 0, destinations: [], long: 0, trail: 0, wins: {}, tracks: [] });
 export const newNostalgia = () => ({ quests: {}, earned: {} });
 function grindDone(q,p) { return p.deliveries >= q.grind.deliveries && p.destinations.length >= q.grind.destinations && p.long >= q.grind.long; }
 function winsDone(q,p) { return q.challenges.every((c,i) => (p.wins[i] || 0) >= c.count && (!c.tracks || c.tracks.every(t => p.tracks.includes(t)))); }
@@ -66,9 +63,11 @@ export function cleanNostalgia(v) {
     if(!raw || typeof raw !== 'object') continue;
     const p=fresh();p.deliveries=Math.min(count(raw.deliveries),q.grind.deliveries);p.long=Math.min(count(raw.long),p.deliveries);
     p.destinations=Array.isArray(raw.destinations)?[...new Set(raw.destinations.filter(validPlace))].slice(0,38):[];
+    q.challenges.forEach((c,i)=>{const n=Math.min(count(raw.wins?.[i]),c.count);if(n)p.wins[i]=n;});
+    p.tracks=Array.isArray(raw.tracks)?[...new Set(raw.tracks.filter(t=>['oval','eight','jaguh'].includes(t)))]:[];
     if(grindDone(q,p)) {
-      p.stage='trail';p.trail=Math.min(count(raw.trail),q.trail.length);
-      if(p.trail===q.trail.length){p.stage='challenge';q.challenges.forEach((c,i)=>p.wins[i]=Math.min(count(raw.wins?.[i]),c.count));p.tracks=Array.isArray(raw.tracks)?[...new Set(raw.tracks.filter(t=>['oval','eight','jaguh'].includes(t)))]:[];update(q,p);}
+      p.stage='trail';p.trail=raw.pacing===2?Math.min(count(raw.trail),q.trail.length):LEGACY_TRAIL_INDICES[id].filter(i=>i<count(raw.trail)).length;
+      if(p.trail===q.trail.length){p.stage='challenge';update(q,p);}
     }
     out.quests[id]=p;
     const e=v.earned?.[id];
@@ -78,10 +77,15 @@ export function cleanNostalgia(v) {
   }
   return out;
 }
+export function canStartNostalgia(eco,id) {
+  const q=NOSTALGIA_QUESTS[id];
+  return !!q && (!q.later || Object.keys(eco.nostalgia.earned).length>0);
+}
 export function startNostalgia(eco,id,context) {
   const q=NOSTALGIA_QUESTS[id];
   if(!q||!matches(q,context))return {ok:false,reason:'not-here'};
   if(eco.nostalgia.quests[id])return {ok:false,reason:'started'};
+  if(!canStartNostalgia(eco,id))return {ok:false,reason:'locked'};
   eco.nostalgia.quests[id]=fresh();return {ok:true};
 }
 export function recordNostalgiaDelivery(eco,job) {
@@ -96,12 +100,12 @@ export function recordNostalgiaDelivery(eco,job) {
 export function followNostalgiaClue(eco,id,place) {
   const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];
   if(!q||p?.stage!=='trail'||q.trail[p.trail]?.place!==place)return {ok:false};
-  const clue=q.trail[p.trail++].clue;if(p.trail===q.trail.length)p.stage='challenge';return {ok:true,clue};
+  const clue=q.trail[p.trail++].clue;if(p.trail===q.trail.length){p.stage='challenge';update(q,p);}return {ok:true,clue};
 }
 export function recordNostalgiaWin(eco,event) {
   if(!eco.nostalgia)return;
   for(const [id,p] of Object.entries(eco.nostalgia.quests)) {
-    const q=NOSTALGIA_QUESTS[id];if(!q||p.stage!=='challenge')continue;
+    const q=NOSTALGIA_QUESTS[id];if(!q||!['grind','trail','challenge'].includes(p.stage))continue;
     q.challenges.forEach((c,i)=>{if(c.game!==event.game||c.level&&c.level!==event.level||c.opponent&&c.opponent!==event.opponent)return;p.wins[i]=Math.min((p.wins[i]||0)+1,c.count);if(c.tracks&&c.tracks.includes(event.track)&&!p.tracks.includes(event.track))p.tracks.push(event.track);});
     update(q,p);
   }
@@ -122,5 +126,5 @@ export function nostalgiaStatus(eco,id) {
   return {stage:'earned',text:`Given by ${q.giver} · Game day ${eco.nostalgia.earned[id].day}`};
 }
 export function nostalgiaAt(eco,context) {
-  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
+  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
 }

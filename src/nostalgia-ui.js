@@ -1,8 +1,8 @@
-import { ITEMS } from './economy.js?v=2.7.0';
-import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.7.0';
-import { itemThumbnail } from './item-ui.js?v=2.7.0';
-import { memoryJournal } from './journal.js?v=2.7.0';
-import { DONE } from './story.js?v=2.7.0';
+import { ITEMS } from './economy.js?v=2.7.1';
+import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.7.1';
+import { itemThumbnail } from './item-ui.js?v=2.7.1';
+import { memoryJournal } from './journal.js?v=2.7.1';
+import { DONE } from './story.js?v=2.7.1';
 export const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 export function taskChecklist(tasks,placeName){
  const list=el('ul','task-checklist');

@@ -1,5 +1,5 @@
 // A record of discoveries. Future quests, clues and prizes stay hidden.
-import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.7.0';
+import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.7.1';
 export const discoveredMemories = eco => Object.keys(NOSTALGIA_QUESTS).filter(id => eco.nostalgia.quests[id]);
 const phases={grind:'Bantu penduduk',trail:'Jejak petunjuk',challenge:'Menang cabaran',ready:'Jumpa semula pemberi',earned:'Kenangan diperoleh'};
 const games={congkak:'Congkak',dam:'Dam Haji',gasing:'Gasing',tamiya:'Tamiya'};
