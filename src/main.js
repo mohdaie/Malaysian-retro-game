@@ -427,13 +427,34 @@ $('catalogue-close').onclick=()=>{$('catalogue-panel').hidden=true;setMode('expl
 function openMap(){if(mode!=='explore')return;setMode('map');$('map-panel').hidden=false;drawMap($('town-map'),true);}
 $('map-button').onclick=openMap;
 $('map-close').onclick=()=>{$('map-panel').hidden=true;setMode('explore');};
-function pause(){if(mode!=='explore')return;persist();setMode('pause');$('pause-panel').hidden=false;}
+function pause(){if(mode!=='explore')return;persist();setMode('pause');$('pause-settings').hidden=false;$('dev-cheats').hidden=true;$('pause-panel').hidden=false;}
 $('pause-button').onclick=pause;
+let versionTaps=0,lastVersionTap=0;
+$('version-trigger').onclick=()=>{
+  if(mode!=='explore'||orientationBlocked){versionTaps=0;return;}
+  const now=performance.now();
+  versionTaps=now-lastVersionTap>10000?1:versionTaps+1;lastVersionTap=now;
+  if(versionTaps<7)return;
+  versionTaps=0;pause();$('pause-settings').hidden=true;$('dev-cheats').hidden=false;
+  $('dev-code').value='';$('dev-feedback').textContent='';$('dev-code').focus();
+};
+$('dev-cheats').onsubmit=event=>{
+  event.preventDefault();
+  if(mode!=='pause'||$('dev-cheats').hidden)return;
+  if($('dev-code').value.trim().toUpperCase()!=='DUIT100'){
+    $('dev-feedback').textContent='Kod tak dikenali. Cuba lagi.';return;
+  }
+  const added=Math.min(10000,1e7-eco.wallet);
+  eco.wallet+=added;refreshEconomy();
+  const ok=persist();
+  $('dev-feedback').textContent=added?`+${rm(added)} · Duit Poket ${rm(eco.wallet)}${ok?' · Tersimpan.':''}`:'Duit Poket sudah maksimum.';
+};
 $('resume-button').onclick=()=>{$('pause-panel').hidden=true;setMode('explore');};
 $('home-button').onclick=()=>{persist();$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
   if(orientationBlocked)return;
+  if(mode==='pause'&&event.key==='Escape'){event.preventDefault();$('resume-button').click();return;}
   if(mode==='item'&&event.key==='Tab'){event.preventDefault();$('item-close').focus();return;}
   if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape'].includes(event.key))return;
   const key=event.key.toLowerCase();
