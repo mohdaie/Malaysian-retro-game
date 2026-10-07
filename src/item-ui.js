@@ -1,6 +1,7 @@
-import { ITEMS, rm } from './economy.js?v=1.7.0';
-import { ITEM_KINDS } from './item-art.js?v=1.7.0';
-import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=1.7.0';
+import { TAMIYA_PARTS, partEffect } from './tamiya-parts.js?v=1.8.0';
+import { ITEMS, rm } from './economy.js?v=1.8.0';
+import { ITEM_KINDS } from './item-art.js?v=1.8.0';
+import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=1.8.0';
 
 // Reused by shops, the bag, jobs and the catalogue. Browsing never buys an item.
 export function itemThumbnail(id, onInspect, large = false) {
@@ -34,5 +35,6 @@ export function catalogueCard(id, onInspect, owned = 0) {
 export function detailContents(id) {
   const item = ITEMS[id];
   const car=TAMIYA_CARS[id];
-  return { title: item.title, memory: item.memory, image: item.image, caption: `${ITEM_KINDS[item.kind]} · ${item.kind === 'cargo' ? 'Diberi oleh pengirim' : rm(item.price)}${item.kind === 'goods' || item.kind === 'cargo' ? ` · Ruang beg: ${item.size}` : ''}${car?` · Power ${carRating(id)} · Speed ${car.speed} · Grip ${car.grip} · Stability ${car.stability}`:''}` };
+  const part=TAMIYA_PARTS[id];
+  return { title: item.title, memory: item.memory, image: item.image, caption: `${ITEM_KINDS[item.kind]} · ${item.kind === 'cargo' ? 'Diberi oleh pengirim' : rm(item.price)}${item.kind === 'goods' || item.kind === 'cargo' ? ` · Ruang beg: ${item.size}` : ''}${car?` · Power ${carRating(id)} · Speed ${car.speed} · Grip ${car.grip} · Stability ${car.stability}`:''}${part?` · ${partEffect(id)}`:''}` };
 }

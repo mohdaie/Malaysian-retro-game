@@ -1,25 +1,26 @@
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.7.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.7.0';
-import { readSave, writeSave } from './save.js?v=1.7.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.7.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.7.0';
-import { createSoundscape } from './soundscape.js?v=1.7.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.7.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.7.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.7.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.7.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.7.0';
-import { ITEM_KINDS } from './item-art.js?v=1.7.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.7.0';
-import { createGasingUI } from './gasing-ui.js?v=1.7.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=1.7.0';
-import { createDamUI } from './dam-ui.js?v=1.7.0';
-import { DAM_QUESTS } from './dam-progress.js?v=1.7.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=1.7.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=1.7.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.7.0';
+import { makeWorld } from './world.js?v=1.8.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.8.0';
+import { readSave, writeSave } from './save.js?v=1.8.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.8.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.8.0';
+import { createSoundscape } from './soundscape.js?v=1.8.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.8.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.8.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.8.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.8.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.8.0';
+import { ITEM_KINDS } from './item-art.js?v=1.8.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.8.0';
+import { createGasingUI } from './gasing-ui.js?v=1.8.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=1.8.0';
+import { createDamUI } from './dam-ui.js?v=1.8.0';
+import { DAM_QUESTS } from './dam-progress.js?v=1.8.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=1.8.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=1.8.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.8.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -256,7 +257,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     for(const job of eco.jobs.filter(j=>j.status==='carrying'&&j.from===place&&j.left===j.stops.length))add(`Return ${itemLabel(job.item,job.qty)}${job.kind==='purchase'?` · refund ${rm(job.cost)}`:''}`,()=>giveBack(job),'secondary');
     if(!reception){
       if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
-      if(merchant&&place===25)add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Harga & rating untuk game ini.`));
+      if(merchant&&place===25)add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Parts, gear & bateri pun ada. Harga & rating untuk game ini.`));
       if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
       if(npc)add('Talk',()=>talk(person.key,place,npcKey));
       if(['atuk','faiz'].includes(person.key))add(atPost(npcBody(person.key))?'Main gasing':`Main gasing · find ${person.name} at the padang tomorrow`,()=>{closeCounter();gasingUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
@@ -270,7 +271,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     for(const item of STOCK[place]){
       const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
       const name=itemIdentity(item,inspectItem,eco.collection[item]?`Dalam koleksi · × ${eco.collection[item]}`:ITEM_KINDS[it.kind]);const price=document.createElement('span');price.textContent=rm(it.price);
-      row.append(name,price);counterButton(row,TAMIYA_CARS[item]&&eco.collection[item]?'Dalam koleksi':'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price||!!(TAMIYA_CARS[item]&&eco.collection[item]));
+      row.append(name,price);counterButton(row,(TAMIYA_CARS[item]||TAMIYA_PARTS[item])&&eco.collection[item]?'Dalam koleksi':'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price||!!((TAMIYA_CARS[item]||TAMIYA_PARTS[item])&&eco.collection[item]));
       body.append(row);
     }
     add('Back',()=>openCounter(place,npcKey),'secondary');

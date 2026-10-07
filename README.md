@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.7.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.8.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -70,7 +70,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
-## Tamiya · Jom Dash! (v1.7)
+## Tamiya · Jom Dash! (v1.8)
 
 Talk to **Faiz or Mei Ling at the padang** and choose **Main Tamiya · Jom Dash!**. Choose **Oval Pekan**, **Selekoh Lapan** (raised figure-eight crossover), or **Litar Jaguh** (lane changer, ramps and tight bends); choose your car and **Laju / Seimbang / Stabil** setup. Enter the grid, start the meter, then tap **Lepas!** at the gold centre. After a three-second countdown, all three cars run automatically for three laps. Your car has a gold overhead marker, Faiz orange, Mei Ling pink. Positions, laps, recovery and finish times appear beside the track.
 
@@ -87,9 +87,28 @@ Uncle Lim has a dedicated **Katalog Tamiya · Dash racers** with original comic 
 
 The Dash names reference classic [Dash! Yonkuro cars](https://www.tamiya.com/english/tag/taglist.html?genre_item=e_dash), including the original [Cannonball](https://www.tamiya.com/japan/products/18022/index.html) and [Dancing Doll](https://www.tamiya.com/japan/products/18023/index.html). Meshes and portraits are original stylized game art. Prices and ratings are **arcade tuning**, rather than retail prices, manufacturer specifications or canonical rankings. Higher-tier cars are faster with the same tuning, but an expensive aggressive setup can lose to a cheaper stable car.
 
-Speed sets straight pace; grip controls corner pace; stability controls ramp pace. Laju increases speed but lowers grip/stability. Stabil adds grip and braking control at a small speed cost. Too little control at a tight corner or ramp gives a visible exit and timed recovery. Start accuracy changes the launch delay. All outcomes are computed locally from the car, setup, track and contact timing. Jaguh changes lanes once per lap with an elevated outside return; all cars cycle through the three lanes. The lanes use normalized lap progress for equal race distance; this is an arcade race, not a rigid-body Mini 4WD simulator. The rivals use fixed, track-specific car/setup profiles. Skip to finish preserves the exact result.
+Speed sets straight pace; grip controls corner pace; stability controls ramp pace. Laju increases speed but lowers grip/stability. Stabil adds grip and braking control at a small speed cost. Too little control at a tight corner or ramp gives a visible exit and timed recovery. Start accuracy changes the launch delay. Outcomes are computed locally from the car, equipped parts, charge, setup, track, contact timing and every pit decision. Jaguh changes lanes once per lap with an elevated outside return; all cars cycle through the three lanes. The lanes use normalized lap progress for equal race distance; this is an arcade race, not a rigid-body Mini 4WD simulator. Both rivals run real parts and charge: Faiz starts aggressive and takes a two-second setup/battery pit, while Mei Ling favours a steady endurance build. Skip to finish preserves the exact result.
 
-Closing saves the car, phase, contact timing and elapsed race time; return to either friend to resume. Portrait orientation, hidden tabs and lost track graphics pause the race. Ending an unfinished race requires confirmation and pays nothing. Space/Enter activate buttons and selects support keyboard navigation; focus remains inside the dialog. Reduced motion removes wheel/recovery animation. The 3D town renderer waits while a reused, small WebGL renderer shows the comic track.
+Closing saves the car, build, phase, contact timing, elapsed race time and pit history (including an open pit and its selected parts); return to either friend to resume. Portrait orientation, hidden tabs and lost track graphics pause the race. Ending an unfinished race requires confirmation and pays nothing. Space/Enter activate buttons and selects support keyboard navigation; focus remains inside the dialog. Reduced motion removes wheel/recovery animation. The 3D town renderer waits while a reused, small WebGL renderer shows the comic track.
+
+### Garage, parts and live pits
+
+Open **Garage · pasang parts** before entering the grid. Six slots (motor, gear, battery, tyres, rollers, brake) start with free Stock equipment. Only bought parts appear in their slot. Builds save separately per car; borrowed Pekan Runner can use your parts too. Uncle Lim’s Dash catalogue includes the parts below with original portraits, prices, effects and trade-offs. Buy once; equipment is reusable and remains in the collection.
+
+| Slot | Part | Price | Trade-off |
+|---|---|---:|---|
+| Motor | Torque / Dash | RM9 / RM12 | Steady pull / high speed and charge use |
+| Gear | Torque / Sprint | RM5 / RM6.50 | Control / faster straights, less grip |
+| Battery | Burst / Endurance | RM7 / RM10 | Initial power / more charge capacity |
+| Tyres | Slick / Sponge | RM4.50 / RM5.50 | Low drag / more grip |
+| Rollers | Aluminium / Bearing | RM8.50 / RM11 | Control and weight / momentum |
+| Brake | Sponge / Heavy | RM4 / RM7.50 | Ramp control / stronger braking and drag |
+
+During a race, **Ambil kereta · pit 2s** removes your car to the visible workbench immediately. Rivals and the race clock continue. Change **Laju / Seimbang / Stabil**, any owned gear/accessory, or a battery pack, then press **Masuk track**. Each removal costs **at least two seconds**; spending longer choosing adds that time too. Recovery and finished cars cannot enter a pit. Skip is disabled while your car is out. The live charge meter and next track section help decide when to stop.
+
+Fast setups, stronger motors and sprint gearing use more charge per metre. Under 35% charge, pace begins to fade; an empty pack still crawls to the finish. All packs start full for a new race. Switching to an unused pack gives fresh charge; returning to an already used pack keeps its remaining charge, including across reloads. Stopped cars use no charge. Gear/tyres/rollers affect corner pace and derail risk; brakes affect ramp control. A costly aggressive build can lose to a cheaper well-tuned one. Changing to Stabil before technical sections can recover a poor start despite pit time.
+
+The distance timeline is deterministic: changing a build preserves the already-run portion, then calculates the remaining race with the new configuration and stored charge. Watching and skipping settle the same final result and one-time rewards.
 
 | One-time milestone | Reward |
 |---|---:|
@@ -98,7 +117,7 @@ Closing saves the car, phase, contact timing and elapsed race time; return to ei
 | Finish ahead of Mei Ling | RM1.60 |
 | Win first place on all three tracks | RM3.00 + Jaguh Tamiya Pekan badge |
 
-The Beg shows owned cars and the badge; Buku lists milestones, wins and the saved race. Rewards and records settle once after reload. Old saves keep items, wallet, jobs, story, clock, Dam Haji and Gasing. Individual parts, RC steering and multiplayer are future work.
+The Beg shows owned cars and the badge; Buku lists milestones, wins and the saved race. Rewards and records settle once after reload. Old saves keep items, wallet, jobs, story, clock, Dam Haji and Gasing. RC steering and multiplayer are future work. In-progress v1.7 races finish under their original rules and timing; new races use parts and live pits.
 
 ## Gasing · Atuk and Faiz at the padang (v1.6)
 
@@ -161,7 +180,7 @@ Change the pace, hours and colours in `src/clock.js`: `MINUTES_PER_SECOND`, `HOU
 
 ## Katalog Kenangan (v1.3)
 
-All 56 items have original comic illustrations: 26 shop goods, five snacks, 12 collectibles and 13 delivery parcels. Art appears at shop counters, in the bag and collection album, on delivery offers and in the quest book. Tap any picture to view it larger with a Malay nostalgia note. Open **Beg → Katalog Kenangan** to browse the complete catalogue, including delivery-only objects, and filter by category. Browsing does not spend Duit Poket; purchases still use the Beli button. Images are bundled locally and require no image API or server. Existing saves keep their item IDs and balances.
+All 68 items have original comic illustrations: 26 shop goods, five snacks, 24 collectibles and 13 delivery parcels. Art appears at shop counters, in the bag and collection album, on delivery offers and in the quest book. Tap any picture to view it larger with a Malay nostalgia note. Open **Beg → Katalog Kenangan** to browse the complete catalogue, including delivery-only objects, and filter by category. Browsing does not spend Duit Poket; purchases still use the Beli button. Images are bundled locally and require no image API or server. Existing saves keep their item IDs and balances.
 
 Rebuild the checked-in SVG art with `npm run art`. The images live in `assets/items/`, item names/notes in `src/item-art.js`, and shared image UI in `src/item-ui.js`.
 
@@ -233,8 +252,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/clock.js`: the town clock: game time, weekday and period, who is on duty when, sleeping to Subuh and the light keyframes.
 - `src/gasing.js`, `src/gasing-progress.js`: pure throw simulation, phase transitions, save validation and one-time milestones.
 - `src/gasing-ui.js`, `src/gasing-arena.js`: pointer/keyboard throw controls and the illustrated dirt arena.
-- `src/tamiya-cars.js`, `src/tamiya-catalogue.js`: six cars, original portraits, arcade ratings and Uncle Lim's garage catalogue.
-- `src/tamiya.js`, `src/tamiya-progress.js`: deterministic three-car races, saved phases and one-time track milestones.
+- `src/tamiya-cars.js`, `src/tamiya-parts.js`, `src/tamiya-catalogue.js`: six cars, original portraits, arcade ratings and Uncle Lim's garage catalogue.
+- `src/tamiya.js`, `src/tamiya-dynamics.js`, `src/tamiya-progress.js`: deterministic three-car races, saved phases and one-time track milestones.
 - `src/tamiya-ui.js`, `src/tamiya-view.js`: accessible race controls and the low-poly 3D circuits.
 - `src/dam-haji.js`, `src/dam-progress.js`: pure Dam Haji rules, bounded opponent search, save validation and one-time milestones.
 - `src/dam-ui.js`, `src/dam-worker.js`: board presentation, match lifecycle and background opponent.
@@ -249,6 +268,10 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![Six-slot garage with owned parts on a phone](docs/tamiya-garage-v180.webp)
+
+![Live two-second pit while rivals continue](docs/tamiya-pit-v180.webp)
 
 ![Uncle Lim’s six-car Dash catalogue](docs/tamiya-catalogue-v170.webp)
 
