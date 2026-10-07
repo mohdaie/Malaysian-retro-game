@@ -1,4 +1,4 @@
-import { spinAt } from './gasing.js?v=1.6.0';
+import { spinAt } from './gasing.js?v=1.6.1';
 // An illustrated close-up of the padang: original canvas shapes with comic ink.
 export function drawGasingArena(canvas, round, name, reduced = false) {
   const c = canvas.getContext('2d'), W = 800, H = 460;
@@ -20,11 +20,49 @@ export function drawGasingArena(canvas, round, name, reduced = false) {
   c.fillStyle = '#f8e7bb'; c.strokeStyle = ink; c.lineWidth = 3; c.beginPath(); c.roundRect(259, 62, 282, 43, 7); c.fill(); c.stroke();
   c.textAlign = 'center'; c.fillStyle = ink; c.font = '800 19px system-ui'; c.fillText('GASING · PADANG KENANGAN', 400, 89);
   const active = ['spin', 'result'].includes(round.phase), seconds = active ? round.elapsed : 0;
+  const preparing = ['ready', 'winding', 'power', 'release'].includes(round.phase);
+  const pull = round.phase === 'spin' ? Math.min(1, seconds / .55) : 0;
+  const smoothPull = pull * pull * (3 - 2 * pull);
+  // One continuous cord follows the cone, from the tip towards the shoulder.
+  // Its back half is covered by the wooden body; only the near half is visible.
+  function cord(wound, front) {
+    const end = wound * Math.PI * 16;
+    let drawing = false;
+    c.beginPath();
+    for (let a = 0; a <= end + .04; a += .04) {
+      a = Math.min(a, end);
+      const u = a / (Math.PI * 16), r = 9 + 43 * u;
+      const px = Math.cos(a) * r, py = 4 - 38 * u + Math.sin(a) * (2 + 7 * u);
+      const visible = !front || Math.sin(a) >= 0;
+      if (visible) { if (drawing) c.lineTo(px, py); else c.moveTo(px, py); }
+      drawing = visible;
+      if (a === end) break;
+    }
+  }
+  function ropeStroke(path) {
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    path(); c.strokeStyle = '#755233'; c.lineWidth = 5.5; c.stroke();
+    c.strokeStyle = '#ead4a6'; c.lineWidth = 3.4; c.stroke();
+    c.strokeStyle = '#fff0ca'; c.lineWidth = 1; c.stroke();
+  }
+  function hand(x, y) {
+    c.save(); c.translate(x, y); c.strokeStyle = ink; c.lineWidth = 2.5;
+    c.fillStyle = '#f4e5c7'; c.beginPath(); c.moveTo(15, -10); c.lineTo(51, -4); c.lineTo(51, 14); c.lineTo(11, 9); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#517ca0'; c.fillRect(14, -10, 9, 21); c.strokeRect(14, -10, 9, 21);
+    c.fillStyle = '#c99164'; c.beginPath(); c.roundRect(-12, -10, 29, 24, 9); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(-4, 4); c.quadraticCurveTo(-13, -7, -5, -12); c.quadraticCurveTo(2, -13, 7, -2); c.stroke();
+    c.beginPath(); c.moveTo(0, 7); c.lineTo(9, 8); c.moveTo(0, 11); c.lineTo(8, 12); c.stroke(); c.restore();
+  }
   function top(x, y, physics, colour, own) {
     const motion = physics && active ? spinAt(physics, seconds) : { angle: 0, wobble: 0, fall: 0, stopped: false };
     const wobble = reduced ? 0 : Math.sin(seconds * 6 + (own ? 0 : 1.1)) * motion.wobble;
     ellipse(x, y + 7, 50 + motion.fall * 20, 13, '#856b4945', false);
-    c.save(); c.translate(x, y); c.rotate(wobble + motion.fall * (own ? -1 : 1) * 1.4);
+    const launching = own && round.phase === 'spin' && pull < 1 && !reduced;
+    const lift = launching ? (1 - smoothPull) : 0;
+    c.save(); c.translate(x - lift * 24, y - lift * 24); c.rotate(wobble + motion.fall * (own ? -1 : 1) * 1.4 - lift * .18);
+    const ropeVisible = own && (preparing || launching);
+    const wound = !ropeVisible || round.phase === 'ready' ? 0 : round.phase === 'winding' ? Math.min(1, round.elapsed / 1.2) : launching ? 1 - smoothPull : 1;
+    if (ropeVisible && wound) ropeStroke(() => cord(wound, false));
     c.strokeStyle = ink; c.lineWidth = 4;
     c.beginPath(); c.moveTo(-55, -39); c.bezierCurveTo(-48, -11, -18, 0, 0, 11); c.bezierCurveTo(18, 0, 48, -11, 55, -39); c.closePath(); c.fillStyle = '#956444'; c.fill(); c.stroke();
     ellipse(0, -39, 56, 25, colour);
@@ -34,11 +72,18 @@ export function drawGasingArena(canvas, round, name, reduced = false) {
     c.restore(); c.strokeStyle = ink; c.lineWidth = 3;
     ellipse(0, -39, 18, 8, '#dfb979');
     c.fillStyle = '#a97b4f'; c.beginPath(); c.roundRect(-9, -72, 18, 30, 6); c.fill(); c.stroke(); ellipse(0, -72, 9, 4, '#edd0a0');
-    if (own && ['ready', 'winding', 'power', 'release'].includes(round.phase)) {
-      const coils = round.phase === 'ready' ? 1 : round.phase === 'winding' ? 1 + Math.floor(round.elapsed * 7) : 9;
-      c.strokeStyle = '#f9e9c8'; c.lineWidth = 3;
-      for (let n = 0; n < coils; n++) { c.beginPath(); c.ellipse(0, -29 + n * 3, 45 - n * 3.5, 10, 0, 0, Math.PI * 2); c.stroke(); }
-      c.beginPath(); c.moveTo(25, -4); c.quadraticCurveTo(78, 0, 82, 35); c.stroke();
+    if (ropeVisible) {
+      // Clip the front turns to the tapered wood so the rope never floats
+      // across the coloured upper face or outside the gasing silhouette.
+      c.save(); c.beginPath(); c.moveTo(-55, -39); c.bezierCurveTo(-48, -11, -18, 0, 0, 11); c.bezierCurveTo(18, 0, 48, -11, 55, -39); c.closePath(); c.clip();
+      if (wound) ropeStroke(() => cord(wound, true));
+      c.restore();
+      const a = wound * Math.PI * 16, r = 9 + wound * 43;
+      const sx = Math.cos(a) * r, sy = 4 - 38 * wound + Math.sin(a) * (2 + 7 * wound);
+      const hx = launching ? 104 + smoothPull * 85 : 104, hy = launching ? -20 - smoothPull * 15 : round.phase === 'ready' ? 25 : -20;
+      c.save(); if (launching) c.globalAlpha = 1 - smoothPull;
+      ropeStroke(() => { c.beginPath(); c.moveTo(sx, sy); c.bezierCurveTo(sx + 25, sy + (round.phase === 'ready' ? 42 : 10) * (1 - smoothPull), hx - 35, hy + (round.phase === 'ready' ? 25 : 8) * (1 - smoothPull), hx, hy); });
+      hand(hx, hy); c.restore();
     }
     c.restore();
     c.fillStyle = ink; c.font = '800 19px system-ui'; c.fillText(own ? name : round.kind === 'faiz' ? 'Faiz' : 'Atuk', x, y + 63);

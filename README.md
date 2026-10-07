@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.6.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.6.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -74,9 +74,9 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 
 Find **Atuk or Faiz at the padang by the gelanggang** during their normal daytime hours, talk, and choose **Main gasing**. Atuk teaches **Belajar**, lends equipment, offers solo **Latihan sendiri**, and hosts **Cabaran Atuk**. Faiz hosts **Lawan Faiz**. Their errands and existing story events still work. A dirt practice circle and a solid wooden box of tops sit in the court corner and follow the map editor.
 
-1. **Lilit tali:** wind the string in a short animation.
+1. **Lilit tali:** wind a continuous rope from the tip around the wooden body. The visible turns follow the tapered wood, with the back turns hidden behind it.
 2. **Power:** hold the Power button, then release near the gold target (78% ideal, 68–88% marked). Maximum power is less effective than a controlled throw.
-3. **Lepas:** tap when the moving release marker reaches the centre.
+3. **Lepas:** tap when the moving release marker reaches the centre. Timing is sampled on contact; the throw starts after the tap completes, keeping the return-to-town button from receiving the same tap. The rope unwinds towards the pulling hand as the gasing lands.
 4. **Endurance:** both tops rotate, lose speed, wobble and fall. The longer spin wins; within 0.05 seconds is a draw. The lesson demonstration is easier than Faiz, and Atuk is the strongest opponent. Solo practice has no rival.
 
 This is an explicitly **arcade endurance model**, not a tournament physics reference. Power accuracy and release accuracy set angular speed, stability and dirt drag. Angular speed decreases linearly to the stopping threshold; wobble grows as the top slows. Results are deterministic from the throw. Opponents use bounded, round-specific timing profiles rather than a paid AI service. The maximum clean spin is about 26 seconds. The Skip spin animation button advances to the exact same result.
@@ -218,6 +218,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ## Preview
 
 ![Gasing endurance round at the padang, landscape phone](docs/gasing-v160.webp)
+
+![Gasing rope winding and release sequence, v1.6.1](docs/gasing-rope-v161.webp)
 
 ![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
 

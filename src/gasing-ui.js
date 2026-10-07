@@ -1,10 +1,10 @@
-import { GASING_MODES, windString, startCharge, lockPower, releaseTop, advanceGasing, roundDuration } from './gasing.js?v=1.6.0';
-import { GASING_QUESTS, startGasing, recordGasing } from './gasing-progress.js?v=1.6.0';
-import { drawGasingArena } from './gasing-arena.js?v=1.6.0';
+import { GASING_MODES, windString, startCharge, lockPower, releaseTop, advanceGasing, roundDuration } from './gasing.js?v=1.6.1';
+import { GASING_QUESTS, startGasing, recordGasing } from './gasing-progress.js?v=1.6.1';
+import { drawGasingArena } from './gasing-arena.js?v=1.6.1';
 
 export function createGasingUI({ getEco, getName, isPaused, onOpen, onClose, onChange }) {
   const $ = id => document.getElementById(id), panel = $('gasing-panel');
-  let visible = false, playing = false, host = 'atuk', raf = 0, last = 0, savedAt = 0, shownPhase = '', suppressClick = 0, inputPointer = null, notice = '';
+  let visible = false, playing = false, host = 'atuk', raf = 0, last = 0, savedAt = 0, shownPhase = '', suppressClick = 0, inputPointer = null, releaseSample = null, notice = '';
   const round = () => getEco().gasing.round;
   function commit() {
     const awards = recordGasing(getEco());
@@ -31,6 +31,7 @@ export function createGasingUI({ getEco, getName, isPaused, onOpen, onClose, onC
     for (const q of GASING_QUESTS) { const li = document.createElement('li'); li.textContent = `${p.claimed.includes(q.id) ? '✓' : '○'} ${q.title} · ${p.claimed.includes(q.id) ? 'Collected' : `RM ${(q.sen / 100).toFixed(2)}`}`; li.title = q.text; list.append(li); }
   }
   function resetInput() {
+    releaseSample = null;
     if (round()) round().charging = false;
     if (inputPointer !== null && $('gasing-power').hasPointerCapture(inputPointer)) $('gasing-power').releasePointerCapture(inputPointer);
     inputPointer = null;
@@ -53,7 +54,7 @@ export function createGasingUI({ getEco, getName, isPaused, onOpen, onClose, onC
     $('gasing-stage').textContent = `${GASING_MODES[s.kind]} · ${steps[phase]}`;
     const tips = {
       ready: 'Atuk: “Lilit tali ketat dulu. Baru tarik.” Tap below to wind the string.',
-      winding: 'Atuk winds the string around your gasing. Get ready to throw.',
+      winding: 'Wind the rope from the tip up around the wooden body. Keep the coils snug.',
       power: 'Hold Power. Release it when the marker is in the gold zone. Aim for 78%, not maximum power.',
       release: 'Tap Lepas! when the marker reaches the centre. A clean release keeps your gasing upright.',
       spin: 'Watch the speed fall and wobble grow. The last gasing spinning wins.',
@@ -105,9 +106,18 @@ export function createGasingUI({ getEco, getName, isPaused, onOpen, onClose, onC
   $('gasing-power').addEventListener('keyup', e => { if ([' ', 'Enter'].includes(e.key)) { e.preventDefault(); releasePower(); } });
   // Assistive activation can tap once to charge and once again to lock.
   $('gasing-power').onclick = e => { if (e.detail === 0 && performance.now() >= suppressClick && round().phase === 'power') round().charging ? releasePower() : charge(); };
-  $('gasing-release').onclick = () => { if (round().phase === 'release') change(releaseTop); };
-  // Sample on contact, so a phone tap's press duration does not move the marker.
-  $('gasing-release').addEventListener('pointerdown', () => { if (round().phase === 'release') change(releaseTop); });
+  // Sample on contact, but keep the button/layout until the click completes.
+  // Hiding it on pointerdown can send the phone's subsequent click to Back to town.
+  panel.addEventListener('pointerdown', () => { releaseSample = null; }, true);
+  $('gasing-release').addEventListener('pointerdown', e => {
+    if (e.isPrimary && e.button === 0 && playing && round().phase === 'release' && !isPaused()) releaseSample = round().release;
+  });
+  $('gasing-release').addEventListener('pointercancel', () => { releaseSample = null; });
+  $('gasing-release').onclick = e => {
+    const sample = e.detail > 0 && releaseSample !== null ? releaseSample : round().release;
+    releaseSample = null;
+    if (round().phase === 'release') change(s => releaseTop({ ...s, release: sample }));
+  };
   $('gasing-skip').onclick = () => { if (round().phase === 'spin') change(s => advanceGasing(s, roundDuration(s))); };
   $('gasing-again').onclick = lobby;
   $('gasing-close').onclick = close;
