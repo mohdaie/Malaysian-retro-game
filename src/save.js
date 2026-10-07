@@ -1,6 +1,6 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.6.0';
-import { PLAYERS, DONE } from './story.js?v=2.6.0';
-import { cleanClock, newClock } from './clock.js?v=2.6.0';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.7.0';
+import { PLAYERS, DONE, cleanExhibition, syncChapter } from './story.js?v=2.7.0';
+import { cleanClock, newClock } from './clock.js?v=2.7.0';
 // One save per character (v2.5): Amir and Nur each keep their own journey.
 // The single save from earlier versions moves into its character's slot the
 // first time that character saves.
@@ -17,7 +17,8 @@ export function validateSave(value) {
   const name = value.name.trim().slice(0, 20);
   if (value.version === 3) {
     if (!PLAYERS[value.who] || !Number.isInteger(value.story) || value.story < 0 || value.story > DONE) return null;
-    return { version: 3, who: value.who, name: name || PLAYERS[value.who].name, story: value.story, x: value.x, z: value.z, ...cleanEconomy(value), clock: cleanClock(value.clock), bike: cleanBike(value.bike) };
+    const eco=cleanEconomy(value),exhibition=value.story>=12?cleanExhibition(value.exhibition,eco):null;
+    return { version: 3, who: value.who, name: name || PLAYERS[value.who].name, story: syncChapter(value.story,eco,exhibition), ...(exhibition?{exhibition}:{}), x: value.x, z: value.z, ...eco, clock: cleanClock(value.clock), bike: cleanBike(value.bike) };
   }
   if (!Number.isInteger(value.quest) || value.quest < 0 || value.quest > 3) return null;
   const eco = newEconomy();

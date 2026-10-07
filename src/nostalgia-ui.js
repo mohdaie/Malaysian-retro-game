@@ -1,9 +1,14 @@
-import { ITEMS } from './economy.js?v=2.6.0';
-import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.6.0';
-import { itemThumbnail } from './item-ui.js?v=2.6.0';
-export function memoryQuestCard(id, eco, { placeName, inspect, context, start, clue, claim, navigate }) {
+import { ITEMS } from './economy.js?v=2.7.0';
+import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.7.0';
+import { itemThumbnail } from './item-ui.js?v=2.7.0';
+import { EXHIBITION_LINKS, DONE } from './story.js?v=2.7.0';
+export function memoryQuestCard(id, eco, { placeName, inspect, context, start, clue, claim, navigate, chapter }) {
   const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id],s=nostalgiaStatus(eco,id);
   const card=document.createElement('article');card.className='memory-quest';card.dataset.nostalgia=id;card.dataset.stage=s.stage;
+  const link=document.createElement('div');link.className='memory-chapter-link';
+  const badge=document.createElement('b');badge.textContent=chapter?.exhibition?.id===id?'CHAPTER 1 · MY EXHIBITION STORY':'CHAPTER 1 · PAMERAN KENANGAN';
+  const connection=document.createElement('p');connection.textContent=EXHIBITION_LINKS[id];link.append(badge,connection);card.append(link);
+  if(chapter?.focus===id&&chapter.step>=7&&chapter.step<DONE){card.classList.add('chapter-focus');card.dataset.chapterFocus='true';const focus=document.createElement('small');focus.textContent='This story is carrying your current chapter progress.';link.append(focus);}
   const heading=document.createElement('div');heading.className='memory-heading';
   const image=itemThumbnail(id,inspect),copy=document.createElement('div'),title=document.createElement('h3'),item=document.createElement('small');
   title.textContent=q.title;item.textContent=ITEMS[id].title;copy.append(title,item);heading.append(image,copy);card.append(heading);
@@ -26,6 +31,6 @@ export function memoryQuestCard(id, eco, { placeName, inspect, context, start, c
     if(giverHere){const label=document.createElement('p');label.textContent='Choose the dedication your keepsake will remember:';card.append(label);q.choices.forEach((choice,i)=>button(choice.label,()=>claim(id,i),true));}
     else button(`Return to ${q.giver}`,()=>navigate(q.npc?`npc:${q.npc}`:`place:${q.place}`));
   }
-  if(s.stage==='earned'){const e=eco.nostalgia.earned[id],memory=document.createElement('p');memory.className='memory-dedication';memory.textContent=`“${e.inscription}” — ${e.giver}, for ${e.player}, game day ${e.day}`;card.append(memory);button('Inspect my keepsake',()=>inspect(id));}
+  if(s.stage==='earned'){const e=eco.nostalgia.earned[id],memory=document.createElement('p');memory.className='memory-dedication';memory.textContent=`“${e.inscription}” — ${e.giver}, for ${e.player}, game day ${e.day}`;card.append(memory);button('Inspect my keepsake',()=>inspect(id));if(chapter?.step>=6&&chapter.step<DONE)button('Bring this story to Pak Salleh',()=>navigate('npc:salleh'),true);}
   card.append(actions);return card;
 }

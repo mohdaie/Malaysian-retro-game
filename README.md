@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.6.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.7.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -13,7 +13,16 @@ The first afternoon of the school holidays, the same for both characters. Amir s
 5. **Congkak di beranda**: play a round of congkak with Nenek on her veranda.
 6. **Simpan sikit-sikit**: spend a little of your upah on your first collectible at Uncle Lim's.
 
-Afterwards the town is open: take delivery work from any shop or house, save up, play congkak with Nenek again and visit your friends. A gold diamond points at the chapter's next person, and boxes mark your job stops.
+These six steps introduce the town. Chapter 1 then continues with **Pameran Kenangan**, Pak Salleh's school-holiday exhibition:
+
+7. Meet Pak Salleh at the balai raya and hear the invitation.
+8. Choose any of the six keepsake stories and accept it from its giver.
+9. Complete its varied deliveries and long-route requirements to earn trust.
+10. Follow its ordered clues to learn the story behind the object.
+11. Win its game challenges, then collect the keepsake and personal dedication.
+12. Return to Pak Salleh and share that story at the exhibition to complete Chapter 1.
+
+The gold chapter marker and quest book follow the next relevant delivery, clue, challenge host or giver. Each keepsake card explains what its story contributes to the exhibition. Only one earned keepsake is required for the ending; all six stories remain available. Sharing keeps the item in the player's collection and saves a personal exhibition display. Existing saves at the former ending (step 6) continue at the invitation, preserving all money, items and quest progress. See [chapter flow and validation](docs/CHAPTER-1.md).
 
 ## Long-term keepsake quests
 
