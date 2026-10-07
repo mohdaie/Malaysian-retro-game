@@ -1,7 +1,11 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.4.0';
-import { PLAYERS, DONE } from './story.js?v=2.4.0';
-import { cleanClock, newClock } from './clock.js?v=2.4.0';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.5.0';
+import { PLAYERS, DONE } from './story.js?v=2.5.0';
+import { cleanClock, newClock } from './clock.js?v=2.5.0';
+// One save per character (v2.5): Amir and Nur each keep their own journey.
+// The single save from earlier versions moves into its character's slot the
+// first time that character saves.
 export const SAVE_KEY = 'retro-malaysia-save-v1';
+export const slotKey = who => `retro-malaysia-save-${who}`;
 // Version 3 (v1.0): who you play (Amir or Nur), your name, the chapter step
 // and the whole economy. Saves from earlier prototypes keep the name and the
 // Duit Poket; the rewritten chapter starts fresh for them. The town clock
@@ -25,9 +29,25 @@ export function cleanBike(bike) {
   if (!bike || ![bike.x, bike.z, bike.heading].every(Number.isFinite) || Math.abs(bike.x) > 78 || Math.abs(bike.z) > 68) return null;
   return { x: bike.x, z: bike.z, heading: bike.heading };
 }
-export function readSave(storage) {
-  try { return validateSave(JSON.parse(storage.getItem(SAVE_KEY))); } catch { return null; }
+const parse = (storage, key) => { try { return validateSave(JSON.parse(storage.getItem(key))); } catch { return null; } };
+const stamp = (storage, key) => { try { return JSON.parse(storage.getItem(key))?.savedAt || 0; } catch { return 0; } };
+// `who` reads that character's save (or the old single save if it was
+// theirs); without it, the most recently saved character's.
+export function readSave(storage, who) {
+  if (!who) return Object.values(readSaves(storage)).filter(Boolean).sort((a, b) => b.savedAt - a.savedAt)[0] || null;
+  const own = parse(storage, slotKey(who));
+  if (own) return { ...own, savedAt: stamp(storage, slotKey(who)) };
+  const legacy = parse(storage, SAVE_KEY);
+  return legacy?.who === who ? { ...legacy, savedAt: 0 } : null;
 }
+export const readSaves = storage => Object.fromEntries(Object.keys(PLAYERS).map(who => [who, readSave(storage, who)]));
+let lastStamp = 0;
 export function writeSave(storage, value) {
-  try { storage.setItem(SAVE_KEY, JSON.stringify(value)); return true; } catch { return false; }
+  try {
+    lastStamp = Math.max(Date.now(), lastStamp + 1);
+    storage.setItem(slotKey(value.who), JSON.stringify({ ...value, savedAt: lastStamp }));
+    // The old single save has now moved into this character's slot.
+    if (parse(storage, SAVE_KEY)?.who === value.who) storage.removeItem?.(SAVE_KEY);
+    return true;
+  } catch { return false; }
 }
