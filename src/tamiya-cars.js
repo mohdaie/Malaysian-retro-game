@@ -1,0 +1,21 @@
+// Arcade tuning and Duit Poket prices, not manufacturer's specifications.
+// Keep `tamiya` as the original RM12 collectible/save ID.
+export const TAMIYA_CARS = {
+  tamiya: { name: 'Pekan Runner', series: 'Starter Mini 4WD', price: 1200, speed: 46, grip: 54, stability: 58, colour: '#df5748', accent: '#6ca8b8', shape: 'runner', number: 'R', memory: 'Kereta pertama dari tingkap Uncle Lim. Simpan duit hantar barang, pasang bateri, terus ke padang.' },
+  tamiya_burning: { name: 'Burning Sun', series: 'Dash-2', price: 1800, speed: 57, grip: 60, stability: 68, colour: '#eaaa37', accent: '#34474b', shape: 'tank', number: '2', memory: 'Badan lebar kuning dan hijau gelap, gaya lasak zaman kartun Dash! Yonkuro. Selangkah naik dari kereta beginner.' },
+  tamiya_cannon: { name: 'Cannonball', series: 'Dash-4', price: 2400, speed: 70, grip: 65, stability: 70, colour: '#db4548', accent: '#edf0ce', shape: 'bullet', number: '4', memory: 'Hidung panjang dan badan merah, nampak macam peluru di atas track. Faiz suka gaya laju begini.' },
+  tamiya_star: { name: 'Shooting Star', series: 'Dash-3', price: 3200, speed: 78, grip: 74, stability: 77, colour: '#f4eee0', accent: '#467ca7', shape: 'star', number: '3', memory: 'Badan putih dan biru, sayap tajam dan rasa perlumbaan anime petang. Pilihan naik taraf yang seimbang.' },
+  tamiya_doll: { name: 'Dancing Doll', series: 'Dash-5', price: 4000, speed: 82, grip: 87, stability: 88, colour: '#e783ac', accent: '#f5ecd9', shape: 'doll', number: '5', memory: 'Badan merah jambu, roller kemas, warna ceria pada litar berliku. Mei Ling lebih suka kereta stabil daripada terkeluar track.' },
+  tamiya_emperor: { name: 'Emperor', series: 'Dash-1', price: 5000, speed: 94, grip: 91, stability: 93, colour: '#f2eee1', accent: '#d74b42', shape: 'emperor', number: '1', memory: 'Hidung putih-merah, kokpit gelap dan sayap besar gaya Dash! Yonkuro. Kereta idaman dalam kabinet Uncle Lim.' }
+};
+export const CAR_IDS = Object.keys(TAMIYA_CARS);
+export const carRating = id => Math.round((TAMIYA_CARS[id].speed + TAMIYA_CARS[id].grip + TAMIYA_CARS[id].stability) / 3);
+export const ownedCars = collection => CAR_IDS.filter(id => collection[id] > 0);
+
+// Standalone original vector portraits, also used in the collection album.
+export function carIllustration(id) {
+  const a = TAMIYA_CARS[id], ink = '#292832';
+  const noses = { runner: 'M94 151L79 94L127 55L171 94L155 151Z', tank: 'M79 147L75 80L107 57L151 57L179 82L175 147Z', bullet: 'M104 151L98 87L126 36L155 88L153 151Z', star: 'M92 151L66 87L113 97L128 43L141 97L186 86L163 151Z', doll: 'M94 151Q61 105 93 71L128 48L162 73Q189 102 161 151Z', emperor: 'M93 151L75 87L112 82L128 40L145 81L181 87L163 151Z' };
+  const spoiler = a.shape === 'tank' ? '<path d="M78 161H177V177H78Z" fill="#34474b"/>' : `<path d="M69 167L76 151H183L190 168Z" fill="${a.accent}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title"><title id="title">${a.series} · ${a.name}</title><ellipse cx="128" cy="220" rx="89" ry="12" fill="#604530" opacity=".12"/><g transform="rotate(-17 128 126)" stroke="${ink}" stroke-width="3.5" stroke-linejoin="round"><path d="M64 82H192L183 187H74Z" fill="#404753"/><rect x="48" y="79" width="28" height="49" rx="8" fill="${ink}"/><rect x="181" y="79" width="28" height="49" rx="8" fill="${ink}"/><rect x="49" y="153" width="28" height="48" rx="8" fill="${ink}"/><rect x="181" y="153" width="28" height="48" rx="8" fill="${ink}"/><path d="M62 91H193M59 184H195" fill="none" stroke="${a.accent}" stroke-width="9"/><path d="${noses[a.shape]}" fill="${a.colour}"/><path d="M112 92L128 73L145 93L140 116H115Z" fill="#314e65"/><path d="M109 130L128 117L149 130L143 153H114Z" fill="${a.accent}"/>${spoiler}<path d="M99 145L89 114M158 145L169 113" fill="none" stroke="${a.accent}" stroke-width="5"/><path d="M58 73H199M54 200H199" fill="none" stroke="${ink}" stroke-width="7"/>${[[53,73],[200,73],[51,200],[201,200]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="10" fill="#dbb55e"/><circle cx="${x}" cy="${y}" r="3" fill="${ink}"/>`).join('')}<text x="129" y="146" text-anchor="middle" font-family="sans-serif" font-size="21" font-weight="900" fill="${a.shape==='emperor'?'#fff3d8':ink}" stroke="none">${a.number}</text></g></svg>\n`;
+}

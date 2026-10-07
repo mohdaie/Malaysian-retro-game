@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.6.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.7.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -47,7 +47,7 @@ Money is in ringgit and sen; you start with RM 2.00.
 - **Invitation rounds**: one bundle of cards dropped at several houses, paid at the last stop.
 - The upah depends on the route, plus 20 sen per extra small item or 40 sen per extra bulky one, and is locked when you accept.
 - Up to three jobs at once and 12 spaces in the bag (small goods take 1, bulky ones 3). Cancel a job before collecting, or return bought goods to the shop for a refund. A job is never paid twice.
-- Uncle Lim sells guli, pelekat, komik, card packs, gasing, a wau and a Tamiya. They go into your Koleksi in the bag; the Tamiya is a saving goal.
+- Uncle Lim sells guli, pelekat, komik, card packs, gasing, a wau and six Mini 4WD cars. They go into your Koleksi in the bag; the Tamiya is a saving goal.
 
 All **38 locations across five districts** fit the original compact map: 10 kampung, 10 terrace, 8 pekan, 6 community and 4 transport/market. The numbered map includes a district directory. The town includes Melaka-inspired timber homes, Ipoh-inspired shophouses, an old Sekolah Kebangsaan, a Kuala Kangsar-inspired yellow-domed mosque, terrace homes, a retro bus station and pasar malam stalls. These are original stylized 3D meshes inspired by the agreed references, not exact recreations.
 
@@ -69,6 +69,36 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## Tamiya · Jom Dash! (v1.7)
+
+Talk to **Faiz or Mei Ling at the padang** and choose **Main Tamiya · Jom Dash!**. Choose **Oval Pekan**, **Selekoh Lapan** (raised figure-eight crossover), or **Litar Jaguh** (lane changer, ramps and tight bends); choose your car and **Laju / Seimbang / Stabil** setup. Enter the grid, start the meter, then tap **Lepas!** at the gold centre. After a three-second countdown, all three cars run automatically for three laps. Your car has a gold overhead marker, Faiz orange, Mei Ling pink. Positions, laps, recovery and finish times appear beside the track.
+
+Uncle Lim has a dedicated **Katalog Tamiya · Dash racers** with original comic portraits, speed, grip, stability, overall power, prices and ownership. Buy each car once using Duit Poket; it remains in your collection. The original `tamiya` collectible becomes **Pekan Runner**, keeping its RM12 price and owned copies. Faiz lends the same starter for free if you do not own it; there is no race entry fee. Owned upgrades become available in the car selector.
+
+| Car | Game price | Power / 100 | Speed | Grip | Stability |
+|---|---:|---:|---:|---:|---:|
+| Pekan Runner | RM12 | 53 | 46 | 54 | 58 |
+| Dash-2 Burning Sun | RM18 | 62 | 57 | 60 | 68 |
+| Dash-4 Cannonball | RM24 | 68 | 70 | 65 | 70 |
+| Dash-3 Shooting Star | RM32 | 76 | 78 | 74 | 77 |
+| Dash-5 Dancing Doll | RM40 | 86 | 82 | 87 | 88 |
+| Dash-1 Emperor | RM50 | 93 | 94 | 91 | 93 |
+
+The Dash names reference classic [Dash! Yonkuro cars](https://www.tamiya.com/english/tag/taglist.html?genre_item=e_dash), including the original [Cannonball](https://www.tamiya.com/japan/products/18022/index.html) and [Dancing Doll](https://www.tamiya.com/japan/products/18023/index.html). Meshes and portraits are original stylized game art. Prices and ratings are **arcade tuning**, rather than retail prices, manufacturer specifications or canonical rankings. Higher-tier cars are faster with the same tuning, but an expensive aggressive setup can lose to a cheaper stable car.
+
+Speed sets straight pace; grip controls corner pace; stability controls ramp pace. Laju increases speed but lowers grip/stability. Stabil adds grip and braking control at a small speed cost. Too little control at a tight corner or ramp gives a visible exit and timed recovery. Start accuracy changes the launch delay. All outcomes are computed locally from the car, setup, track and contact timing. Jaguh changes lanes once per lap with an elevated outside return; all cars cycle through the three lanes. The lanes use normalized lap progress for equal race distance; this is an arcade race, not a rigid-body Mini 4WD simulator. The rivals use fixed, track-specific car/setup profiles. Skip to finish preserves the exact result.
+
+Closing saves the car, phase, contact timing and elapsed race time; return to either friend to resume. Portrait orientation, hidden tabs and lost track graphics pause the race. Ending an unfinished race requires confirmation and pays nothing. Space/Enter activate buttons and selects support keyboard navigation; focus remains inside the dialog. Reduced motion removes wheel/recovery animation. The 3D town renderer waits while a reused, small WebGL renderer shows the comic track.
+
+| One-time milestone | Reward |
+|---|---:|
+| Finish the first three-lap race | RM0.80 |
+| Finish ahead of Faiz | RM1.20 |
+| Finish ahead of Mei Ling | RM1.60 |
+| Win first place on all three tracks | RM3.00 + Jaguh Tamiya Pekan badge |
+
+The Beg shows owned cars and the badge; Buku lists milestones, wins and the saved race. Rewards and records settle once after reload. Old saves keep items, wallet, jobs, story, clock, Dam Haji and Gasing. Individual parts, RC steering and multiplayer are future work.
 
 ## Gasing · Atuk and Faiz at the padang (v1.6)
 
@@ -118,7 +148,7 @@ The Buku lists the milestones, record and saved-match status. The Jaguh badge ap
 
 ## Jam kampung · the town clock (v1.4)
 
-Time passes while you explore: one game minute per real second. Menus, conversations, congkak, Dam Haji and gasing stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
+Time passes while you explore: one game minute per real second. Menus, conversations, congkak, Dam Haji and Tamiya stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
 
 - **Light through the day.** A warm dawn, full afternoon sun, a golden hour from 17:00, a purple Maghrib at 19:30 and a moonlit night. The sun crosses from east to west and its shadows follow. After dark the house windows glow and the cengkerik replace the birds.
 - **Street lights.** Lamps come on through dusk and are fully lit by night. The roads have 8 sodium lamps on steel poles, each with a warm orange pool. The kampung lanes and paths have 19 timber poles, each with a fluorescent tube under a tin hood and a cool white pool. The lamp nearest you also lights the children as they walk under it. The pools are one instanced draw, with only one real light, so phones stay fast.
@@ -131,7 +161,7 @@ Change the pace, hours and colours in `src/clock.js`: `MINUTES_PER_SECOND`, `HOU
 
 ## Katalog Kenangan (v1.3)
 
-All 51 existing items have original comic illustrations: 26 shop goods, five snacks, seven collectibles and 13 delivery parcels. Art appears at shop counters, in the bag and collection album, on delivery offers and in the quest book. Tap any picture to view it larger with a Malay nostalgia note. Open **Beg → Katalog Kenangan** to browse the complete catalogue, including delivery-only objects, and filter by category. Browsing does not spend Duit Poket; purchases still use the Beli button. Images are bundled locally and require no image API or server. Existing saves keep their item IDs and balances.
+All 56 items have original comic illustrations: 26 shop goods, five snacks, 12 collectibles and 13 delivery parcels. Art appears at shop counters, in the bag and collection album, on delivery offers and in the quest book. Tap any picture to view it larger with a Malay nostalgia note. Open **Beg → Katalog Kenangan** to browse the complete catalogue, including delivery-only objects, and filter by category. Browsing does not spend Duit Poket; purchases still use the Beli button. Images are bundled locally and require no image API or server. Existing saves keep their item IDs and balances.
 
 Rebuild the checked-in SVG art with `npm run art`. The images live in `assets/items/`, item names/notes in `src/item-art.js`, and shared image UI in `src/item-ui.js`.
 
@@ -181,7 +211,7 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
-Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship, congkak record and Dam Haji progress (including a partly played match), and gasing progress (including a partly played round) are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
+Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship, congkak record and Dam Haji progress (including a partly played match), and gasing progress (including a partly played round), and Tamiya progress (including a partly played race) are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
 
 ## Code layout
 
@@ -203,6 +233,9 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/clock.js`: the town clock: game time, weekday and period, who is on duty when, sleeping to Subuh and the light keyframes.
 - `src/gasing.js`, `src/gasing-progress.js`: pure throw simulation, phase transitions, save validation and one-time milestones.
 - `src/gasing-ui.js`, `src/gasing-arena.js`: pointer/keyboard throw controls and the illustrated dirt arena.
+- `src/tamiya-cars.js`, `src/tamiya-catalogue.js`: six cars, original portraits, arcade ratings and Uncle Lim's garage catalogue.
+- `src/tamiya.js`, `src/tamiya-progress.js`: deterministic three-car races, saved phases and one-time track milestones.
+- `src/tamiya-ui.js`, `src/tamiya-view.js`: accessible race controls and the low-poly 3D circuits.
 - `src/dam-haji.js`, `src/dam-progress.js`: pure Dam Haji rules, bounded opponent search, save validation and one-time milestones.
 - `src/dam-ui.js`, `src/dam-worker.js`: board presentation, match lifecycle and background opponent.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
@@ -216,6 +249,10 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![Uncle Lim’s six-car Dash catalogue](docs/tamiya-catalogue-v170.webp)
+
+![Jom Dash racing and three-track championship result on a phone](docs/tamiya-race-v170.webp)
 
 ![Gasing endurance round at the padang, landscape phone](docs/gasing-v160.webp)
 

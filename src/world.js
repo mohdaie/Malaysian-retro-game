@@ -1,15 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.6.1';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.6.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.6.1';
-import { createProps } from './props.js?v=1.6.1';
-import { ROUTINES, createRoutine } from './routines.js?v=1.6.1';
-import { ACTIONS } from './actions.js?v=1.6.1';
-import { createWalkability } from './collision.js?v=1.6.1';
-import { createLandmarks } from './landmarks.js?v=1.6.1';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.6.1';
-import { createTrees } from './trees.js?v=1.6.1';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.6.1';
+import { createCharacter } from './characters.js?v=1.7.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.7.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.7.0';
+import { createProps } from './props.js?v=1.7.0';
+import { ROUTINES, createRoutine } from './routines.js?v=1.7.0';
+import { ACTIONS } from './actions.js?v=1.7.0';
+import { createWalkability } from './collision.js?v=1.7.0';
+import { createLandmarks } from './landmarks.js?v=1.7.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.7.0';
+import { createTrees } from './trees.js?v=1.7.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.7.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -404,6 +404,11 @@ export async function makeWorld(canvas) {
         cylinder(.19,.025,.19,c,x,.79,1.8,undefined,12);cylinder(.065,.065,.13,0xc39663,x,.94,1.8,undefined,8);
       }
       sign('GASING · ATUK & FAIZ',3,1.35,-2.1,2.8);
+      // Solid portable Mini 4WD track on the other side of the padang.
+      box(3.7,.26,2.1,0x665e51,-3.4,.31,-.8);collider(-3.4,-.8,3.7,2.1,'tamiya-track');
+      for(let lane=0;lane<4;lane++){const rail=mesh(new T.TorusGeometry(1,.026,4,40),0xf4e9d0,-3.4,.47,-.8);rail.rotation.x=Math.PI/2;rail.scale.set(1.72-lane*.15,.83-lane*.1,1);}
+      for(const [x,c] of [[-3.7,0xd75245],[-3.1,0xe5a6bd]]){box(.17,.11,.32,c,x,.51,-1.3);box(.28,.035,.4,0x333943,x,.48,-1.3);}
+      sign('JOM DASH · FAIZ & MEI LING',-3.4,1.35,-2.5,3.5);
     },
     mosque(u){box(19,.18,19,0xdbd2b4,0,.12,0);landmarks.mosque(0,0,placeName(31).toUpperCase());},
     busstop(u){

@@ -1,21 +1,25 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.6.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.6.1';
-import { readSave, writeSave } from './save.js?v=1.6.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.6.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.6.1';
-import { createSoundscape } from './soundscape.js?v=1.6.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.6.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.6.1';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.6.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.6.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.6.1';
-import { ITEM_KINDS } from './item-art.js?v=1.6.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.6.1';
-import { createGasingUI } from './gasing-ui.js?v=1.6.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=1.6.1';
-import { createDamUI } from './dam-ui.js?v=1.6.1';
-import { DAM_QUESTS } from './dam-progress.js?v=1.6.1';
+import { makeWorld } from './world.js?v=1.7.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.7.0';
+import { readSave, writeSave } from './save.js?v=1.7.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.7.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.7.0';
+import { createSoundscape } from './soundscape.js?v=1.7.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.7.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.7.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.7.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.7.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.7.0';
+import { ITEM_KINDS } from './item-art.js?v=1.7.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.7.0';
+import { createGasingUI } from './gasing-ui.js?v=1.7.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=1.7.0';
+import { createDamUI } from './dam-ui.js?v=1.7.0';
+import { DAM_QUESTS } from './dam-progress.js?v=1.7.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=1.7.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=1.7.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.7.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -48,6 +52,9 @@ const damUI = createDamUI({ getEco: () => eco, getName: () => state.name, isPaus
   onChange: () => { refreshEconomy(); persist(); } });
 const gasingUI = createGasingUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
   onOpen: () => { $('hud').inert=true; setMode('gasing'); }, onClose: () => { $('hud').inert=false; setMode('explore'); },
+  onChange: () => { refreshEconomy(); persist(); } });
+const tamiyaUI = createTamiyaUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
+  onOpen: () => { $('hud').inert=true; setMode('tamiya'); }, onClose: () => { $('hud').inert=false; setMode('explore'); $('interact-button').focus(); },
   onChange: () => { refreshEconomy(); persist(); } });
 // Play as Amir or Nur. The name field follows the choice until it is edited.
 let chosen = 'amir';
@@ -233,6 +240,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   const away=npcKey&&npcBody(npcKey)?.post!==place,person=npcKey?{key:npcKey,name:NPCS[npcKey].name}:personAt(place);
   const npc=person?.key?NPCS[person.key]:null,asker=npcKey||npcAt(place);
   $('counter-panel').hidden=false;$('counter-place').textContent=(away?`${NPCS[npcKey].role} · at the padang`:placeName(place)).toUpperCase();
+  $('counter-panel').querySelector('.modal').classList.toggle('tamiya-shop-modal',view==='tamiya');
   $('counter-name').textContent=person?.name||placeName(place);
   const reception=!person;
   $('counter-text').textContent=note||(reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
@@ -248,9 +256,11 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     for(const job of eco.jobs.filter(j=>j.status==='carrying'&&j.from===place&&j.left===j.stops.length))add(`Return ${itemLabel(job.item,job.qty)}${job.kind==='purchase'?` · refund ${rm(job.cost)}`:''}`,()=>giveBack(job),'secondary');
     if(!reception){
       if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
+      if(merchant&&place===25)add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Harga & rating untuk game ini.`));
       if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
       if(npc)add('Talk',()=>talk(person.key,place,npcKey));
       if(['atuk','faiz'].includes(person.key))add(atPost(npcBody(person.key))?'Main gasing':`Main gasing · find ${person.name} at the padang tomorrow`,()=>{closeCounter();gasingUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
+      if(['faiz','meiling'].includes(person.key))add(atPost(npcBody(person.key))?'Main Tamiya · Jom Dash!':`Main Tamiya · find ${person.name} at the padang tomorrow`,()=>{closeCounter();tamiyaUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
       if(person.key==='din'&&!away)add('Main Dam Haji',()=>{closeCounter();damUI.open();});
       if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
     }
@@ -260,9 +270,13 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     for(const item of STOCK[place]){
       const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
       const name=itemIdentity(item,inspectItem,eco.collection[item]?`Dalam koleksi · × ${eco.collection[item]}`:ITEM_KINDS[it.kind]);const price=document.createElement('span');price.textContent=rm(it.price);
-      row.append(name,price);counterButton(row,'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price);
+      row.append(name,price);counterButton(row,TAMIYA_CARS[item]&&eco.collection[item]?'Dalam koleksi':'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price||!!(TAMIYA_CARS[item]&&eco.collection[item]));
       body.append(row);
     }
+    add('Back',()=>openCounter(place,npcKey),'secondary');
+  }else if(view==='tamiya'){
+    if(place!==25||!merchant)return openCounter(place,npcKey);
+    body.append(tamiyaCatalogue(eco,inspectItem,id=>shop(place,npcKey,id,'tamiya')));
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='work'){
     const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,storyOffers(state.story,eco));
@@ -309,13 +323,13 @@ function giveBack(job){
   if(!result.ok)return openCounter(place,counter.npc,'menu','That cannot be returned now.');
   persist();refreshEconomy();openCounter(place,counter.npc,'menu',result.refund?`Returned. Here is your ${rm(result.refund)} back.`:'Returned. No harm done.');
 }
-function shop(place,npcKey,item){
+function shop(place,npcKey,item,view='buy'){
   const result=buy(eco,place,item);
-  if(!result.ok)return openCounter(place,npcKey,'buy',result.reason==='space'?'Your bag is full.':'Not enough Duit Poket for that.');
+  if(!result.ok)return openCounter(place,npcKey,view,result.reason==='owned'?'Kereta ini sudah ada dalam koleksi.':result.reason==='space'?'Your bag is full.':'Not enough Duit Poket for that.');
   persist();refreshEconomy();audio?.shell();
   const it=ITEMS[item],note=result.kind==='snack'?`${it.name}. Sedap! Duit Poket: ${rm(eco.wallet)}.`:result.kind==='collect'?`${it.name} added to your collection. Duit Poket: ${rm(eco.wallet)}.`:`${it.name} is in your bag. Duit Poket: ${rm(eco.wallet)}.`;
   if(result.kind==='collect'&&place===25)storyEvent('bought-collectible');
-  openCounter(place,npcKey,'buy',note);
+  openCounter(place,npcKey,view,note);
 }
 function talk(key,place,npcKey){
   const npc=NPCS[key],gained=befriend(eco,key,'talk',today()),lines=npc.talk,points=eco.friends[key]||0;
@@ -348,6 +362,9 @@ function openBag(){
   $('dam-badge').hidden=!eco.dam.claimed.includes('jaguh');
   $('gasing-badge').hidden=!eco.gasing.claimed.includes('atuk');
   $('gasing-owned').hidden=!eco.collection.gasing;
+  $('tamiya-badge').hidden=!eco.tamiya.claimed.includes('jaguh');
+  $('tamiya-owned').textContent=Object.keys(eco.collection).some(id=>TAMIYA_CARS[id])?'Your Mini 4WD cars are ready. Race Faiz and Mei Ling at the padang.':'Faiz lends a beginner car. Uncle Lim sells the Dash-inspired collection.';
+  $('catalogue-button').textContent=`Katalog Kenangan · Lihat semua ${Object.keys(ITEMS).length} item →`;
   const owned=Object.entries(eco.collection);
   if(!owned.length)listItem(album,'Nothing yet. Uncle Lim sells cards, comics, gasing, wau, guli and Tamiya.','');
   album.classList.toggle('catalogue-grid',owned.length>0);
@@ -370,6 +387,9 @@ function openBook(){
   const gasingQuests=$('book-gasing');gasingQuests.replaceChildren();
   for(const q of GASING_QUESTS)listItem(gasingQuests,`${eco.gasing.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.gasing.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
   listItem(gasingQuests,'Atuk & Faiz · Padang by the gelanggang',`${eco.gasing.won} wins / ${eco.gasing.played} rounds · Best ${eco.gasing.best.toFixed(2)} s${eco.gasing.round&&eco.gasing.round.phase!=='result'?' · Saved round to resume':''}`);
+  const tamiyaQuests=$('book-tamiya');tamiyaQuests.replaceChildren();
+  for(const q of TAMIYA_QUESTS)listItem(tamiyaQuests,`${eco.tamiya.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.tamiya.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
+  listItem(tamiyaQuests,'Faiz & Mei Ling · Padang',`${eco.tamiya.won} wins / ${eco.tamiya.played} races · Tracks won ${eco.tamiya.wins.length}/3${eco.tamiya.round&&eco.tamiya.round.phase!=='result'?' · Saved race to resume':''}`);
   const friends=$('book-friends');friends.replaceChildren();
   for(const key of NPC_KEYS){const pts=eco.friends[key]||0;listItem(friends,`${NPCS[key].name} · ${NPCS[key].role}`,`${level(pts)} · ${pts}`);}
 }
@@ -422,7 +442,7 @@ window.addEventListener('keydown',event=>{
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
-  if(key==='escape'){if(mode==='gasing')gasingUI.close();else if(mode==='dam')damUI.close();else if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
+  if(key==='escape'){if(mode==='tamiya')tamiyaUI.close();else if(mode==='gasing')gasingUI.close();else if(mode==='dam')damUI.close();else if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur',clearControls);
@@ -651,7 +671,7 @@ function tick(){
   aimDrop=T.MathUtils.lerp(aimDrop,talkingTo?.85:0,1-Math.exp(-dt*4));camera.lookAt(look.x,look.y-aimDrop,look.z);
   world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
-  if (!orientationBlocked && !['board','dam','gasing','map','pause','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
+  if (!orientationBlocked && !['board','dam','gasing','tamiya','map','pause','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }

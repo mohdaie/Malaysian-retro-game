@@ -1,8 +1,9 @@
 // Code-authored vector game art, matching the town's original illustrated props.
-// Run npm run art to rebuild the 51 standalone, transparent SVG illustrations.
+// Run npm run art to rebuild the standalone, transparent SVG illustrations.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { ITEMS } from '../src/economy.js';
 import { ITEM_ART } from '../src/item-art.js';
+import { CAR_IDS, carIllustration } from '../src/tamiya-cars.js';
 
 const ink = '#302d38', cream = '#fff0ce', red = '#d85247', green = '#609865', blue = '#5e97b7', gold = '#e8b65b';
 const esc = s => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
@@ -81,6 +82,7 @@ function artPencils(){return Array.from({length:3},(_,i)=>rect(79+i*16,43,9,109,
 
 await mkdir('assets/items', { recursive: true });
 for (const [id, item] of Object.entries(ITEMS)) {
+  if (CAR_IDS.includes(id)) { await writeFile(`assets/items/${id}.svg`, carIllustration(id)); continue; }
   if (!art[id] || !ITEM_ART[id]) throw new Error(`Missing art: ${id}`);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title"><title id="title">${esc(ITEM_ART[id][0])}</title><ellipse cx="128" cy="217" rx="79" ry="11" fill="#604530" opacity=".12"/><g stroke="${ink}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${art[id]}</g></svg>\n`;
   await writeFile(`assets/items/${id}.svg`, svg);
