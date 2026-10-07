@@ -66,3 +66,42 @@
 .sleep-fade{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:#0c1226;opacity:0;transition:opacity .8s ease;pointer-events:auto}.sleep-fade.shown{opacity:1}.sleep-fade p{font:400 26px/1.4 Georgia,serif;color:#f9f4e5;text-align:center;padding:0 24px}
 @media(prefers-reduced-motion:reduce){.sleep-fade{transition:none}}
 .night .brand{color:#f9f4e5;text-shadow:0 1px 6px #0b1022}.night .location strong,.night .location .eyebrow{color:#f9f4e5;text-shadow:none;background:#0c1226b8;align-self:flex-start;padding:3px 7px;border-radius:4px}
+/* Pak Din's wooden Dam table. Landscape phones keep board and controls side by side. */
+.dam-modal{position:relative;width:min(870px,100%);text-align:left}
+.dam-modal h2{margin:5px 0 14px;font-size:28px}
+#dam-options,.dam-actions{display:grid;gap:10px}
+#dam-options .primary,#dam-options .secondary,.dam-actions .primary,.dam-actions .secondary{margin:0;text-align:center}
+.dam-modal h3{font-size:12px;margin:20px 0 8px}
+#dam-quests{list-style:none;padding:0;font-size:13px;line-height:2;color:#526346}
+.dam-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(190px,1fr);gap:24px;align-items:start}
+.dam-table{min-width:0}
+.dam-players{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;margin:0 0 8px}
+.dam-players span:last-child{color:#a82f25}
+.dam-board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;max-width:440px;border:8px solid #76502f;border-radius:5px;outline:3px solid #292832;box-shadow:4px 5px 0 #292832;overflow:hidden;background:#edce95}
+.dam-square{position:relative;aspect-ratio:1;border:0;border-radius:0;padding:0;display:grid;place-items:center;min-width:0;touch-action:manipulation;opacity:1!important}
+.dam-square.dark{background:#745035}.dam-square.light{background:#e7c594}.dam-square.dark:nth-child(3n){background:#80583a}
+.dam-square.selected{box-shadow:inset 0 0 0 4px #ffd95f;z-index:1}.dam-square.destination{background:#4e795a!important;box-shadow:inset 0 0 0 2px #ffe4a1}
+.dam-square:focus-visible{outline:3px solid #fff3c5;outline-offset:-4px;z-index:2}
+.dam-piece{width:75%;height:75%;border-radius:50%;border:3px solid #292832;box-shadow:0 3px 0 #292832,inset 0 2px 0 #ffffff55;display:grid;place-items:center;pointer-events:none;z-index:1}
+.dam-piece.red{background:#d8533f}.dam-piece.black{background:#373a42;border-color:#191c22}
+.dam-piece.haji{box-shadow:0 3px 0 #292832,0 -5px 0 #eac58a,0 -7px 0 #292832,inset 0 2px 0 #ffffff55;transform:translateY(2px)}
+.dam-piece.haji span{color:#ffedb8;font-size:clamp(12px,2vw,22px);font-weight:900}
+.dam-dot{width:25%;height:25%;background:#ffe392;border:2px solid #292832;border-radius:50%;pointer-events:none}
+.dam-square small{position:absolute;bottom:1px;left:2px;font-size:8px;color:#ffeac9;opacity:.8;pointer-events:none}
+.dam-square.light small{color:#493224}
+.dam-square.landed .dam-piece{animation:dam-land .24s ease-out}
+.dam-piece.captured{position:absolute;animation:dam-capture .25s forwards}
+#dam-status{font-size:17px;font-weight:800;line-height:1.5;margin:12px 0}
+#dam-tip{font-size:12px;line-height:1.65;color:#5c6753;min-height:54px}
+.dam-award{font-size:12px;color:#396239;font-weight:800;line-height:1.5}
+.dam-rules{border-top:1px dashed #b9a888;margin-top:20px;padding-top:12px;font-size:12px;line-height:1.7}.dam-rules summary{cursor:pointer;font-weight:800}
+.dam-badge{display:flex;align-items:center;gap:12px;background:#fff0c7;border:2px solid #292832;padding:10px;border-radius:8px;margin:12px 0;font-size:13px}.dam-badge p{font-size:11px;margin:4px 0}
+.dam-confirm{position:absolute;inset:0;z-index:5;background:#292832ba;display:grid;place-items:center;padding:20px;border-radius:inherit}
+.dam-confirm>div{background:#fff4dc;padding:22px;border:3px solid #292832;border-radius:12px;max-width:340px}.dam-confirm h3{font-size:20px;margin-top:0}.dam-confirm p{font-size:13px;line-height:1.7}.dam-confirm button{width:100%}
+@keyframes dam-land{from{transform:scale(.8)}to{transform:scale(1)}}
+@keyframes dam-capture{to{opacity:0;transform:scale(.4)}}
+@media(orientation:landscape) and (max-height:600px){
+ .dam-modal{padding:16px 20px;width:min(830px,100%)}.dam-modal h2{font-size:21px;margin:3px 0 10px}.dam-modal .eyebrow{font-size:8px}.dam-layout{grid-template-columns:minmax(0,calc(100dvh - 114px)) minmax(170px,1fr);gap:20px}.dam-board{max-width:calc(100dvh - 114px);border-width:5px}.dam-players{font-size:9px;margin-bottom:5px}.dam-square small{font-size:6px}.dam-piece{border-width:2px;box-shadow:0 2px 0 #292832,inset 0 1px 0 #ffffff55}.dam-piece.haji{box-shadow:0 2px 0 #292832,0 -3px 0 #eac58a,0 -5px 0 #292832}.dam-piece.haji span{font-size:13px}#dam-status{font-size:14px;margin:7px 0}#dam-tip{font-size:11px;min-height:0;margin:8px 0}.dam-actions{gap:8px}.dam-actions .primary,.dam-actions .secondary{padding:10px 12px;font-size:11px}.dam-award{font-size:10px}.dam-rules{margin-top:14px;font-size:10px}#dam-quests{font-size:11px;line-height:1.7}
+}
+@media(max-width:620px) and (min-height:601px){.dam-layout{grid-template-columns:1fr}.dam-board{width:100%;max-width:none}.dam-modal h2{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.dam-piece.captured,.dam-square.landed .dam-piece{animation:none}}

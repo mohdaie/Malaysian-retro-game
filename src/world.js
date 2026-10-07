@@ -1,15 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.4.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.4.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.4.0';
-import { createProps } from './props.js?v=1.4.0';
-import { ROUTINES, createRoutine } from './routines.js?v=1.4.0';
-import { ACTIONS } from './actions.js?v=1.4.0';
-import { createWalkability } from './collision.js?v=1.4.0';
-import { createLandmarks } from './landmarks.js?v=1.4.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.4.0';
-import { createTrees } from './trees.js?v=1.4.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.4.0';
+import { createCharacter } from './characters.js?v=1.5.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.5.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.5.0';
+import { createProps } from './props.js?v=1.5.0';
+import { ROUTINES, createRoutine } from './routines.js?v=1.5.0';
+import { ACTIONS } from './actions.js?v=1.5.0';
+import { createWalkability } from './collision.js?v=1.5.0';
+import { createLandmarks } from './landmarks.js?v=1.5.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.5.0';
+import { createTrees } from './trees.js?v=1.5.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.5.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -327,6 +327,17 @@ export async function makeWorld(canvas) {
       for(const x of [-4,4]){box(.18,4.3,.18,0x755d42,x,2.2,-10);collider(x,-10,.18,.18,'post');}
       for(const x of [-2,2]){box(.9,1.7,.75,0x749458,x,.95,-10);box(.7,.5,.1,0x414b3f,x,1.35,-9.6);collider(x,-10,.9,.75,'pump');}
       sign('PETROL · 2001',0,4.35,-6.4,8);
+      // Pak Din's solid wooden Dam table, beside the kiosk's front counter.
+      box(1.25,.12,1.25,0x6e482e,-3,.8,5.4);collider(-3,5.4,1.25,1.25,'dam-table');
+      for(const x of [-3.5,-2.5])for(const z of [4.9,5.9])box(.09,.74,.09,0x6e482e,x,.39,z);
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+        const x=-3+(c-3.5)*.13,z=5.4+(r-3.5)*.13;
+        box(.13,.025,.13,(r+c)%2?0x65442e:0xeacb96,x,.875,z);
+        if((r+c)%2&&(r<3||r>4))cylinder(.048,.048,.035,r<3?0x2a2832:0xd8533f,x,.905,z,undefined,10);
+      }
+      for(const z of [4.35,6.45]){box(.5,.08,.5,0xa77a4b,-3,.44,z);box(.14,.4,.14,0x6e482e,-3,.2,z);collider(-3,z,.5,.5,'seat');}
+      cylinder(.08,.065,.18,0xbd8c51,-2.43,.93,5.88,undefined,10);
+      sign('DAM HAJI · PAK DIN',-3,.6,6.035,1.2);
     },
     warung(u){
       // Warung has an open social space facing the lane.

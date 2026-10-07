@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.4.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.5.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -65,14 +65,36 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
 - Local progress saves with resume, save validation and graceful storage failure.
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
-- Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus and congkak.
+- Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus, congkak and Dam Haji.
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
+## Dam Haji · meja Pak Din (v1.5)
+
+Talk to **Pak Din at Kiosk Petrol Retro** while he is on duty (07:00–21:00), then choose **Main Dam Haji**. His wooden checkerboard, stools and kopi sit beside the kiosk; the table and stools have collisions and move with the town layout. His shop and delivery work are still available.
+
+- **Belajar**: a guided practice match with contextual explanations and a Hint button.
+- **Santai**: a friendly opponent looking three complete turns ahead.
+- **Jaguh**: a stronger challenge looking up to five complete turns ahead, within a bounded search budget.
+- All decisions run locally in a module worker. If workers are unavailable, a one-turn local opponent keeps the game playable. No API calls, server, entry fee or wagering.
+- Tap a red piece and a highlighted destination. Captures animate, Haji appears as two stacked pieces, and the same selected piece must continue a capture chain. Board buttons have square/piece labels and support keyboard activation. Reduced motion is respected.
+- Closing the board saves the exact match, including a forced capture chain or Pak Din's pending turn. Talk to Pak Din again and choose **Sambung**. The town clock and world rendering pause behind the board. Resigning requires confirmation and counts as a loss; it does not earn the practice milestone.
+
+Pekan uses an explicit **8×8 house-rule variant**, 12 pieces per side, red first. Men move and capture diagonally forward. Captures are compulsory and a chain must be completed; any complete sequence may be chosen, without maximum-capture or Haji priority. Haji moves along open diagonals in both directions and may land on any empty square beyond one captured opponent. Promotion ends the turn. No legal moves is a loss; threefold repetition or 80 consecutive Haji turns without a capture is a draw. These rules are shown at the table; local/regional rules vary.
+
+| One-time milestone | Reward |
+|---|---|
+| Finish a Belajar match | RM 0.20 |
+| Promote your first red Haji | RM 0.30 |
+| Beat Pak Din at Santai | RM 0.50 |
+| Beat Pak Din at Jaguh | RM 1.00 + Jaguh Dam Pekan badge |
+
+The Buku lists the milestones, record and saved-match status. The Jaguh badge appears in the Beg. Rewards and completed-match counts settle once, including after reloading. Older saves receive empty Dam progress while retaining the wallet, jobs, collection, chapter and clock. Dam Haji is solo in this release.
+
 ## Jam kampung · the town clock (v1.4)
 
-Time passes while you explore: one game minute per real second. Menus, conversations and congkak stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
+Time passes while you explore: one game minute per real second. Menus, conversations, congkak and Dam Haji stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
 
 - **Light through the day.** A warm dawn, full afternoon sun, a golden hour from 17:00, a purple Maghrib at 19:30 and a moonlit night. The sun crosses from east to west and its shadows follow. After dark the house windows glow and the cengkerik replace the birds.
 - **Street lights.** Lamps come on through dusk and are fully lit by night. The roads have 8 sodium lamps on steel poles, each with a warm orange pool. The kampung lanes and paths have 19 timber poles, each with a fluorescent tube under a tin hood and a cool white pool. The lamp nearest you also lights the children as they walk under it. The pools are one instanced draw, with only one real light, so phones stay fast.
@@ -133,9 +155,9 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, dam haji, gasing and guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, gasing and guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
-Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship and congkak record are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
+Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship, congkak record and Dam Haji progress (including a partly played match) are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
 
 ## Code layout
 
@@ -155,6 +177,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `assets/`: generated game materials and provenance.
 - `src/main.js`: chase camera, input, character choice, counters and dialogue, quest card, bag, quest book, map and minigame presentation.
 - `src/clock.js`: the town clock: game time, weekday and period, who is on duty when, sleeping to Subuh and the light keyframes.
+- `src/dam-haji.js`, `src/dam-progress.js`: pure Dam Haji rules, bounded opponent search, save validation and one-time milestones.
+- `src/dam-ui.js`, `src/dam-worker.js`: board presentation, match lifecycle and background opponent.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
 - `src/cast.js`: the 14 NPCs (ids, homes, posts, menus, lines), every household contact and where each person stands.
 - `src/story.js`: Chapter 01 for both playable characters: steps, events and the chapter's own jobs.
@@ -166,6 +190,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
 
 ![The kampung at 21:30, windows lit](docs/night-v140.webp)
 
