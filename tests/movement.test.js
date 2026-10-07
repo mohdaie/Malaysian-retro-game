@@ -26,3 +26,12 @@ test('running through a long frame respects a thin wall and slides along it', ()
   assert.ok(position.x < .4, 'must not jump to the other side of the wall');
   assert.ok(Math.abs(position.z - RUN_SPEED * .1) < 1e-12, 'unblocked axis should keep moving');
 });
+
+test('starting inside an obstacle can always move out, then collides normally again', () => {
+  const post = { x: 0, z: 0, r: .3 }, walk = (x, z) => Math.hypot(x - post.x, z - post.z) > .6;
+  const p = { x: .2, z: 0 };
+  moveWithCollision(p, 1, 0, WALK_SPEED, .2, walk);
+  assert.ok(p.x > .6, 'escapes the overlap');
+  const q = { x: -2, z: 0 }; moveWithCollision(q, 1, 0, WALK_SPEED, 1, walk);
+  assert.ok(q.x <= -.6, 'from outside it still stops at the obstacle');
+});

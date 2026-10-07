@@ -86,6 +86,7 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 - **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes, and from a stop rolls the bike backwards with the rear wheel turning toward the stick, so it can back away from a wall (v2.1.1). A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
 - **The rider:** sits on the saddle and leans over the swept-back bar with hands on the grips. The feet follow the pedals as the cranks turn, and stay still when you coast (freewheel).
 - **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
+- **Stuck?** Pause (Ⅱ) → **Reset basikal** parks it beside you, facing open ground. If you push for two seconds without the bike moving, it lifts itself out to open ground (v2.1.2).
 
 ## Real movement for Amir and Nur (v2.0)
 

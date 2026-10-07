@@ -1,4 +1,4 @@
-import { newMatch, cleanMatch } from './dam-haji.js?v=2.1.1';
+import { newMatch, cleanMatch } from './dam-haji.js?v=2.1.2';
 export const DAM_QUESTS = [
   { id: 'practice', title: 'Duduk belajar', text: 'Finish a Belajar match with Pak Din.', sen: 20 },
   { id: 'haji', title: 'Haji pertama', text: 'Promote your first red piece to Haji.', sen: 30 },

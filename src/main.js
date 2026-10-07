@@ -1,32 +1,32 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.1.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.1.2';
 import * as T from 'three';
 import { makeWorld } from './world.js?v=2.2.0';
-import { createBicycle, stepBike } from './bicycle.js?v=2.1.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.1.1';
-import { readSave, writeSave } from './save.js?v=2.1.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.1.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.1.1';
-import { createSoundscape } from './soundscape.js?v=2.1.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.1.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.1.1';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.1.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.1.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.1.1';
-import { ITEM_KINDS } from './item-art.js?v=2.1.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.1.1';
-import { createGasingUI } from './gasing-ui.js?v=2.1.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.1.1';
-import { createDamUI } from './dam-ui.js?v=2.1.1';
-import { DAM_QUESTS } from './dam-progress.js?v=2.1.1';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.1.1';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.1.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.1.1';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.1.1';
-import { createTownMap } from './town-map-ui.js?v=2.1.1';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.1.1';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.1.1';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.1.1';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.1.1';
+import { createBicycle, stepBike } from './bicycle.js?v=2.1.2';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.1.2';
+import { readSave, writeSave } from './save.js?v=2.1.2';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.1.2';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.1.2';
+import { createSoundscape } from './soundscape.js?v=2.1.2';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.1.2';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.1.2';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.1.2';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.1.2';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.1.2';
+import { ITEM_KINDS } from './item-art.js?v=2.1.2';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.1.2';
+import { createGasingUI } from './gasing-ui.js?v=2.1.2';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.1.2';
+import { createDamUI } from './dam-ui.js?v=2.1.2';
+import { DAM_QUESTS } from './dam-progress.js?v=2.1.2';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.1.2';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.1.2';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.1.2';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.1.2';
+import { createTownMap } from './town-map-ui.js?v=2.1.2';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.1.2';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.1.2';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.1.2';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.1.2';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -38,7 +38,7 @@ const { camera, renderer, scene } = world;
 // Moves (v2.1): jump, duck, say hi, walk and the bicycle. The bike parks at
 // home, stays wherever it is left and saves with the game.
 const bicycle = createBicycle(scene), WALK_ONLY = 1.35, JUMP_SPEED = 4.3, GRAVITY = 13;
-let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false;
+let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false, bikeStuck = 0;
 let jumpY = 0, jumpVy = 0, airborne = false, jumpQueued = -1, jumpedNow = false, landedNow = false;
 let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
@@ -498,6 +498,7 @@ $('dev-cheats').onsubmit=event=>{
   $('dev-feedback').textContent=added?`+${rm(added)} · Duit Poket ${rm(eco.wallet)}${ok?' · Tersimpan.':''}`:'Duit Poket sudah maksimum.';
 };
 $('resume-button').onclick=()=>{$('pause-panel').hidden=true;setMode('explore');};
+$('bike-reset-button').onclick=()=>{resetBike();$('pause-panel').hidden=true;setMode('explore');toast('Basikal parked beside you.');};
 $('home-button').onclick=()=>{persist();$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
@@ -537,15 +538,29 @@ for(const type of ['pointerup','pointercancel','lostpointercapture'])$('joystick
 // ---- Moves: jump, duck, say hi, walk and the bicycle ----
 // Beside the front door, facing open ground: at least 4 m clear ahead, so
 // the first push rides straight off.
-function parkAtHome(){
-  const h=world.spawns[state.who],clear=(x,z,heading)=>{for(let t=.25;t<=4;t+=.25)if(!world.canWalk(x+Math.sin(heading)*t,z+Math.cos(heading)*t))return false;return true;};
+function parkAtHome(){const h=world.spawns[state.who];return parkNear(h.x,h.z,h.heading);}
+// A spot near (x, z) with room for the bike: both wheels on open ground and
+// `run` metres clear ahead, searching outward in rings from beside the point.
+function parkNear(x,z,heading,run=4){
+  const clear=(px,pz,h,length)=>{for(let t=-.7;t<=length;t+=.25)if(!world.canWalk(px+Math.sin(h)*t,pz+Math.cos(h)*t))return false;return true;};
   let fallback=null;
-  for(const d of [1.7,-1.7,2.4,-2.4,3.2,-3.2]){
-    const x=h.x-Math.cos(h.heading)*d,z=h.z+Math.sin(h.heading)*d;if(!world.canWalk(x,z))continue;
-    fallback??={x,z,heading:h.heading};
-    for(const turn of [0,Math.PI/2,-Math.PI/2,Math.PI])if(clear(x,z,h.heading+turn))return {x,z,heading:h.heading+turn};
+  for(const radius of [1.7,2.4,1.2,3.2,4,5,6.5,8]){
+    for(let k=0;k<16;k++){
+      const a=heading+Math.PI/2+k/16*Math.PI*2,px=x+Math.sin(a)*radius,pz=z+Math.cos(a)*radius;
+      if(!world.canWalk(px,pz))continue;
+      for(const turn of [0,Math.PI/2,-Math.PI/2,Math.PI]){
+        if(clear(px,pz,heading+turn,run))return {x:px,z:pz,heading:heading+turn};
+        if(!fallback&&clear(px,pz,heading+turn,1))fallback={x:px,z:pz,heading:heading+turn};
+      }
+    }
   }
-  return fallback??{x:h.x,z:h.z,heading:h.heading};
+  return fallback??{x,z,heading};
+}
+// Pause menu: bring the bike to wherever you are, parked facing open ground.
+function resetBike(){
+  if(riding){riding=false;player.group.rotation.set(0,bike.heading,0);}
+  const p=player.group.position,spot=parkNear(p.x,p.z,player.group.rotation.y);
+  bike={x:spot.x,z:spot.z,heading:spot.heading,speed:0,steer:0,lean:0};parkBike();updateMoveButtons();persist();
 }
 function parkBike(){bicycle.place(bike,world.groundHeight(bike.x,bike.z),!riding);}
 function updateMoveButtons(){
@@ -748,6 +763,9 @@ function tick(){
       const moved={x:bike.x,z:bike.z};moveWithCollision(moved,Math.sin(bike.heading),Math.cos(bike.heading),bike.speed,dt,world.canWalk);
       const went=Math.hypot(moved.x-bike.x,moved.z-bike.z),sign=Math.sign(bike.speed);if(dt>0&&went<Math.abs(bike.speed)*dt*.6)bike.speed=sign*went/dt;
       bike.x=moved.x;bike.z=moved.z;bicycle.roll(went*(sign||1),pedalling);
+      // Wedged for a while with the stick pushed: lift it out to open ground.
+      bikeStuck=length>.3&&went<.01*dt*60?bikeStuck+dt:0;
+      if(bikeStuck>2.2){bikeStuck=0;const spot=parkNear(bike.x,bike.z,bike.heading,2.5);Object.assign(bike,{x:spot.x,z:spot.z,heading:spot.heading,speed:0});toast('Basikal tersangkut · lifted out to open ground.');}
       p.x=bike.x;p.z=bike.z;player.group.rotation.set(0,bike.heading,bike.lean);
     }else{
       moveWithCollision(p,dx,dz,crouching?(player.native?.crouchWalk??1.2):walkOnly?WALK_ONLY:isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
