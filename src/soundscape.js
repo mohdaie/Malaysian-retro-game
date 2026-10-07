@@ -1,5 +1,5 @@
 // Original synthesized ambience and foley, optional and fully local.
-export function createSoundscape(isActive) {
+export function createSoundscape(isActive, isNight = () => false) {
   const context=new AudioContext(),master=context.createGain();master.gain.value=.22;master.connect(context.destination);
   const noise=context.createBuffer(1,context.sampleRate*4,context.sampleRate),data=noise.getChannelData(0);
   let seed=2001,last=0;
@@ -10,6 +10,8 @@ export function createSoundscape(isActive) {
   function chirp(){
     if(context.state!=='running'||!isActive())return;
     const t=context.currentTime;
+    // After dark the birds roost and the cengkerik take over.
+    if(isNight()){for(let i=0;i<6;i++){const osc=context.createOscillator(),gain=context.createGain(),s=t+i*.09;osc.type='square';osc.frequency.setValueAtTime(4300,s);gain.gain.setValueAtTime(0,s);gain.gain.linearRampToValueAtTime(.008,s+.01);gain.gain.exponentialRampToValueAtTime(.0005,s+.05);osc.connect(gain);gain.connect(master);osc.start(s);osc.stop(s+.06);}return;}
     for(let i=0;i<3;i++){
       const osc=context.createOscillator(),gain=context.createGain();osc.type='sine';osc.frequency.setValueAtTime(2100+i*170,t+i*.19);osc.frequency.exponentialRampToValueAtTime(3300,t+i*.19+.055);osc.frequency.exponentialRampToValueAtTime(1800,t+i*.19+.13);
       gain.gain.setValueAtTime(0,t+i*.19);gain.gain.linearRampToValueAtTime(.035,t+i*.19+.018);gain.gain.exponentialRampToValueAtTime(.001,t+i*.19+.14);osc.connect(gain);gain.connect(master);osc.start(t+i*.19);osc.stop(t+i*.19+.16);

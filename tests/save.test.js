@@ -4,7 +4,7 @@ import { validateSave, readSave, writeSave } from '../src/save.js';
 import { newEconomy } from '../src/economy.js';
 const valid = { version: 3, who: 'nur', name: 'Nur', story: 2, x: 12, z: 0, ...newEconomy(), wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
   jobs: [{ id: 'J1', offer: 'S-first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], left: 1, item: 'gula', qty: 2, cost: 0, upah: 100, status: 'carrying', story: 'first-parcel' }], nextJob: 2,
-  friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 } };
+  friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 } };
 const memory = () => { const data = new Map(); return { getItem: k => data.get(k), setItem: (k, v) => data.set(k, v) }; };
 test('valid saves roundtrip and invalid/out-of-bounds saves are rejected', () => {
   const storage = memory();
@@ -29,4 +29,10 @@ test('tampered wallet, bag, collection and job entries are dropped, and paid job
   assert.deepEqual(eco.bag, { gula: 2 }); assert.deepEqual(eco.collection, { guli: 1 });
   assert.deepEqual(eco.jobs, [], 'J1 is already paid; J9 goes nowhere');
   assert.equal(eco.nextJob, 2); assert.deepEqual(eco.friends, {});
+});
+test('the town clock saves, and saves without one (or a broken one) start on day 1 at 14:00', () => {
+  const { clock, ...noClock } = valid;
+  assert.deepEqual(validateSave(noClock).clock, { day: 1, minute: 840 });
+  for (const bad of [{ day: 0, minute: 400 }, { day: 2, minute: 9999 }, { day: 1.5, minute: 60 }, 'noon']) assert.deepEqual(validateSave({ ...valid, clock: bad }).clock, { day: 1, minute: 840 });
+  assert.deepEqual(validateSave(valid).clock, { day: 3, minute: 1200 });
 });

@@ -1,16 +1,17 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.3.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.3.0';
-import { readSave, writeSave } from './save.js?v=1.3.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.3.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.3.0';
-import { createSoundscape } from './soundscape.js?v=1.3.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.3.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.3.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.3.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.3.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.3.0';
-import { ITEM_KINDS } from './item-art.js?v=1.3.0';
+import { makeWorld } from './world.js?v=1.4.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.4.0';
+import { readSave, writeSave } from './save.js?v=1.4.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.4.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.4.0';
+import { createSoundscape } from './soundscape.js?v=1.4.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.4.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.4.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.4.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.4.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.4.0';
+import { ITEM_KINDS } from './item-art.js?v=1.4.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.4.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -23,6 +24,8 @@ let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
 // collection, jobs, friendship) lives in `eco` and saves with them.
 const state = { who: 'amir', name: 'Amir', story: 0 };
+// The town clock (clock.js): game day and minute, saved with the rest.
+let time = newClock(), shownMinute = -1, lateNudge = 0, sleeping = false;
 let eco = newEconomy(), counter = null, storySpot = null, opponent = 'Nenek';
 let mode = 'title', yaw = .55, distance = CAMERA_DEFAULT, elapsed = 0, lastSave = 0, nearby = null;
 let dialogue = [], dialogueDone = null, joystick = { x: 0, y: 0 }, running = false, board = null, boardBusy = false, boardToken = 0;
@@ -47,17 +50,19 @@ for (const b of document.querySelectorAll('[data-who]')) b.onclick = () => choos
 $('player-name').addEventListener('input', () => { $('player-name').dataset.edited = '1'; });
 if (saved) { choose(saved.who); $('player-name').value = saved.name; $('player-name').dataset.edited = '1'; }
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => dayKey(time);
 const placeOf = id => BUILDINGS.find(b => b.id === id);
 const npcBody = key => world.npcs.find(n => n.id === key);
+const atPost = n => Boolean(n) && onDuty(n.id, time.minute);
 const myHome = () => PLAYERS[state.who].home;
 const placeName = id => id === 1 ? `Rumah ${state.who === 'amir' ? state.name : 'Amir'}` : id === 11 ? `Rumah ${state.who === 'nur' ? state.name : 'Nur'}` : placeOf(id).name;
 const doorGap = (a, b) => Math.hypot(placeOf(a).door.x - placeOf(b).door.x, placeOf(a).door.z - placeOf(b).door.z);
 // The person who answers at a place: its NPC if they are posted there, the
-// player's own parent at home, else the resident. Null while its NPC is away.
+// player's own parent at home, else the resident. Null while its NPC is away:
+// out at their post, or gone home for the night when their post is here.
 function personAt(place) {
   const key = npcAt(place);
-  if (key) return npcBody(key)?.post === place ? { key, name: NPCS[key].name } : null;
+  if (key) { const n = npcBody(key); return n && (atPost(n) ? n.post === place : n.post !== place) ? { key, name: NPCS[key].name } : null; }
   if (place === myHome()) return { key: null, name: PLAYERS[state.who].parent };
   const c = contactAt(place); return c ? { key: null, name: c.name } : null;
 }
@@ -68,11 +73,12 @@ function storyTarget() {
   const step = STEPS[state.story];
   if (!step?.target) return null;
   if (step.target === 'job') { const job = eco.jobs.find(j => j.story); if (!job) return null; const p = placeOf(job.status === 'accepted' ? job.from : nextStop(job)); return { x: p.door.x, z: p.door.z, job: true }; }
-  const n = npcBody(step.target); return n ? { x: n.x, z: n.z, height: n.character.height } : null;
+  const n = npcBody(step.target); return atPost(n) ? { x: n.x, z: n.z, height: n.character.height } : null;
 }
 function refreshQuest() {
   const step = STEPS[state.story];
-  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = step.title; $('quest-description').textContent = step.text;
+  const gone = step.target && step.target !== 'job' && !atPost(npcBody(step.target));
+  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = step.title; $('quest-description').textContent = gone ? `${step.text} ${NPCS[step.target].name} ${time.minute>=(HOURS[step.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[step.target]||HOURS.default)[0])}.`}` : step.text;
   $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `0${state.story + 1} / 0${DONE}`;
   $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;
   storySpot = storyTarget(); world.setStoryMarker(storySpot && !storySpot.job ? storySpot : null);
@@ -101,7 +107,7 @@ function setMode(next) {
   $('touch-controls').style.visibility = next === 'explore' ? '' : 'hidden';
 }
 function persist() {
-  const ok = writeSave(storage, { version: 3, ...state, ...eco, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 3, ...state, ...eco, clock: { ...time }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saved = readSave(storage); $('continue-button').hidden = false; }
   return ok;
@@ -110,6 +116,7 @@ function begin(value = null) {
   if (value) Object.assign(state, { who: value.who, name: value.name, story: value.story });
   else Object.assign(state, { who: chosen, name: $('player-name').value.trim().slice(0, 20) || PLAYERS[chosen].name, story: 0 });
   eco = value ? cleanEconomy(value) : newEconomy();
+  time = cleanClock(value?.clock); shownMinute = -1; lateNudge = 0; showTime();
   player = world.choosePlayer(state.who);
   // A save from an older layout may stand inside a moved building.
   const home = world.spawns[state.who];
@@ -123,6 +130,21 @@ function begin(value = null) {
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
   toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value?.upgraded ? `Selamat kembali, ${state.name}. The story has been rewritten: chapter 1 starts fresh, and your Duit Poket is kept.` : value ? `Selamat kembali, ${state.name}.` : `Cuti sekolah! Faiz and Mei Ling are at the padang.`);
   if(PREVIEW)$('day-label').textContent='Map preview';
+}
+// ---- Town clock: the light follows the time; from Maghrib you can sleep at
+// home and wake at Subuh the next day. ----
+function showTime(){
+  const minute=Math.floor(time.minute);if(minute===shownMinute)return;
+  const wasNight=shownMinute>=0&&!isNight(shownMinute)&&isNight(minute);shownMinute=minute;
+  world.setSky(skyAt(minute));
+  const label=`${weekday(time.day)} · ${timeLabel(minute)}`;
+  if(!PREVIEW)$('day-label').textContent=label;$('day-icon').textContent=isNight(minute)?'☾':'☀';$('hud').classList.toggle('night',isNight(minute));
+  $('clock-label').textContent=`HARI ${time.day} · ${label} · ${period(minute)}`.toUpperCase();
+  // Who is out changes with the hour, and so does the story marker.
+  refreshQuest();
+  if(wasNight)toast('Dah Maghrib. The shops are closing. Go home to sleep when you are ready.');
+  if(minute>=22*60&&lateNudge<1){lateNudge=1;toast('Dah lewat malam. Time to go home and sleep.');}
+  if(minute>=LATEST&&lateNudge<2){lateNudge=2;toast(`It is very late. Go home to ${placeName(myHome())} and sleep.`);}
 }
 $('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
   showDialogue('A new afternoon', ['Starting a new story replaces the saved journey on this device.'], () => begin());
@@ -203,10 +225,13 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   $('counter-panel').hidden=false;$('counter-place').textContent=(away?`${NPCS[npcKey].role} · at the padang`:placeName(place)).toUpperCase();
   $('counter-name').textContent=person?.name||placeName(place);
   const reception=!person;
-  $('counter-text').textContent=note||(reception?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
+  $('counter-text').textContent=note||(reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
   const body=$('counter-body');body.replaceChildren();
   const add=(label,onclick,cls,disabled)=>counterButton(body,label,onclick,cls,disabled);
-  const here=away?{collect:[],deliver:[]}:jobsAt(eco,place),merchant=!away&&(npc?.menu==='merchant'||(!npc&&STOCK[place]));
+  // A closed shop takes parcels at the door but hands nothing out.
+  const shut=!away&&npcAt(place)&&!atPost(npcBody(npcAt(place)))&&npcBody(npcAt(place)).post===place;
+  const here=away?{collect:[],deliver:[]}:jobsAt(eco,place);if(shut)here.collect=[];
+  const merchant=!away&&(npc?.menu==='merchant'||(!npc&&STOCK[place]));
   if(view==='menu'){
     for(const job of here.deliver)add(`Deliver parcel · ${itemLabel(job.item,job.stops.length>1?1:job.qty)}`,()=>handOver(job));
     for(const job of here.collect)add(job.kind==='purchase'?`Buy for ${placeName(job.requester)} · ${itemLabel(job.item,job.qty)} · ${rm(job.cost)}`:`Collect ${itemLabel(job.item,job.qty)}`,()=>pickUp(job));
@@ -217,6 +242,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
       if(npc)add('Talk',()=>talk(person.key,place,npcKey));
       if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
     }
+    if(place===myHome())add(canSleep(time.minute)?'Tidur · sleep until Subuh':`Tidur · from Maghrib (now ${timeLabel(time.minute)})`,goToSleep,'primary',!canSleep(time.minute));
     add('Leave',closeCounter,'secondary');
   }else if(view==='buy'){
     for(const item of STOCK[place]){
@@ -283,6 +309,18 @@ function talk(key,place,npcKey){
   const npc=NPCS[key],gained=befriend(eco,key,'talk',today()),lines=npc.talk,points=eco.friends[key]||0;
   persist();
   openCounter(place,npcKey,'menu',`${sayLine(lines[(points+new Date().getDate())%lines.length])}${gained?`  (+${gained} friendship · ${level(points)})`:''}`);
+}
+function goToSleep(){
+  if(sleeping||!canSleep(time.minute))return;
+  sleeping=true;closeCounter();setMode('sleep');
+  const fade=$('sleep-fade');fade.hidden=false;$('sleep-text').textContent=`Selamat malam, ${state.name}…`;
+  requestAnimationFrame(()=>fade.classList.add('shown'));
+  setTimeout(()=>{
+    sleep(time);showTime();
+    const home=world.spawns[state.who];player.group.position.set(home.x,world.groundHeight(home.x,home.z)-.065,home.z);player.group.rotation.y=home.heading;yaw=home.heading+Math.PI;
+    persist();$('sleep-text').textContent=`Subuh · Hari ${time.day}, ${weekday(time.day)}`;
+    setTimeout(()=>{fade.classList.remove('shown');setTimeout(()=>{fade.hidden=true;sleeping=false;setMode('explore');toast(`Selamat pagi, ${state.name}! ${weekday(time.day)}, ${timeLabel(time.minute)}. The azan from the masjid; the town wakes up at seven.`);},700);},1600);
+  },900);
 }
 function closeCounter(){$('counter-panel').hidden=true;counter=null;setMode('explore');}
 $('counter-close').onclick=closeCounter;
@@ -415,7 +453,7 @@ for (const type of ['pointerup','pointercancel','lostpointercapture']) $('world'
 let audio=null;
 $('sound').onchange=async()=>{
   try {
-    if($('sound').checked){audio??=createSoundscape(()=>!document.hidden&&!orientationBlocked&&mode==='explore');await audio.resume();}
+    if($('sound').checked){audio??=createSoundscape(()=>!document.hidden&&!orientationBlocked&&mode==='explore',()=>isNight(time.minute));await audio.resume();}
     else await audio?.suspend();
   }catch{$('sound').checked=false;toast('Sound is unavailable on this device.');}
 };
@@ -510,7 +548,7 @@ function drawMap(canvas,full=false){
   }
   if(storySpot&&!storySpot.job){const q=storySpot;ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
   for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=full?6:4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
-  world.npcs.forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});
+  world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});
   const p=player.group.position;ctx.fillStyle='#b15c33';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),full?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#b15c33';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
   if(full){ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#272630';ctx.fillText('N ↑',w-25,20);}
@@ -542,18 +580,21 @@ function tick(){
     }
     player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel);
     nearby=null;let best=2.6;
-    for(const n of world.npcs){const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
-    if(!nearby){best=2.4;for(const b of BUILDINGS){if(npcBody(npcAt(b.id))?.post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
+    for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
+    if(!nearby){best=2.4;for(const b of BUILDINGS){if(atPost(npcBody(npcAt(b.id)))&&npcBody(npcAt(b.id)).post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
     $('interaction').hidden=!nearby;
     if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
     const firstStop=jobStops()[0];$('job-distance').textContent=firstStop?`${Math.round(Math.hypot(p.x-firstStop.x,p.z-firstStop.z))} m away`:'';
     $('location-name').textContent=zoneAt(p.x,p.z);
     $('quest-distance').textContent=storySpot?`${Math.round(Math.hypot(p.x-storySpot.x,p.z-storySpot.z))} m away`:'';
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
+    tickClock(time,dt);showTime();
   } else player.animate(dt,0);
   // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
   for(const n of world.npcs){
     const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20;
+    // Off duty they are at home: out of sight and out of the way.
+    if(mode!=='title'&&!atPost(n)){character.group.visible=false;n.collider.x=1e4;continue;}
     character.group.visible=mode==='title'||gap<42;if(character.figure.castShadow!==near)character.figure.castShadow=near;
     if(!character.group.visible)continue;
     // Their own loop (routines.js): they stop for you when you come close, and wait while you talk.
@@ -578,6 +619,7 @@ function tick(){
     cameraTarget.sub(look).multiplyScalar(lensDistance/distance).add(look);
   }
   // Shadows cover the street ahead of the lens rather than behind it.
+  world.updateLampLight(p.x,p.z);
   if(mode==='title')world.updateSun(look.x,look.z);else world.updateSun(look.x-Math.sin(yaw)*16,look.z-Math.cos(yaw)*16);
   const fov=mode==='title'?43:CAMERA_FOV;if(Math.abs(camera.fov-fov)>.01){camera.fov=T.MathUtils.lerp(camera.fov,fov,1-Math.exp(-dt*5));camera.updateProjectionMatrix();}
   // A slow glide down from the title view, then a tight follow while exploring.
@@ -592,7 +634,7 @@ function tick(){
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }
-camera.position.set(-10,32,58);camera.lookAt(-30,0,25);refreshQuest();syncOrientation();$('loading').hidden=true;tick();
+camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

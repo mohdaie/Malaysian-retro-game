@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#204d45">
   <meta name="description" content="Explore a nostalgic Malaysian town in 2001. Meet Amir and Nur, visit the warung, and learn congkak.">
   <title>Retro Malaysia · A kampung story</title>
-  <link rel="stylesheet" href="./styles.css?v=1.3.0">
+  <link rel="stylesheet" href="./styles.css?v=1.4.0">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
 <body>
@@ -15,17 +15,18 @@
     <div id="loading"><span class="loading-dot"></span>Finding our way home…</div>
     <div id="hud" hidden>
       <header class="topbar">
-        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v1.3.0</small></div></div>
-        <div class="top-actions"><span class="day-chip">☀ <span id="day-label">Sabtu · 2001</span></span><button id="wallet-button" class="icon-button wallet" aria-label="Duit Poket and quest book"><small>DUIT POKET</small><b id="wallet-amount">RM 2.00</b></button><button id="bag-button" class="icon-button" aria-label="Open your bag">Beg<span id="bag-count" class="count"></span> <kbd>B</kbd></button><button id="book-button" class="icon-button" aria-label="Open your quest book">Buku <kbd>J</kbd></button><button id="map-button" class="icon-button" aria-label="Open town map">Map <kbd>M</kbd></button><button id="pause-button" class="icon-button" aria-label="Pause and settings">Ⅱ</button></div>
+        <div class="brand"><span class="brand-mark">R<span>M</span></span><div>RETRO MALAYSIA<small>A KAMPUNG STORY · v1.4.0</small></div></div>
+        <div class="top-actions"><span class="day-chip"><span id="day-icon">☀</span> <span id="day-label">Sabtu · 2001</span></span><button id="wallet-button" class="icon-button wallet" aria-label="Duit Poket and quest book"><small>DUIT POKET</small><b id="wallet-amount">RM 2.00</b></button><button id="bag-button" class="icon-button" aria-label="Open your bag">Beg<span id="bag-count" class="count"></span> <kbd>B</kbd></button><button id="book-button" class="icon-button" aria-label="Open your quest book">Buku <kbd>J</kbd></button><button id="map-button" class="icon-button" aria-label="Open town map">Map <kbd>M</kbd></button><button id="pause-button" class="icon-button" aria-label="Pause and settings">Ⅱ</button></div>
       </header>
       <aside class="quest-card"><span class="eyebrow" id="quest-chapter">CHAPTER 01 · CUTI SEKOLAH</span><h2 id="quest-title">A familiar face</h2><p id="quest-description">Find Nur outside your house.</p><div class="quest-footer"><span id="quest-step">01 / 03</span><span id="quest-distance"></span></div><div class="quest-track"><i id="quest-progress"></i></div><div id="job-line" class="job-line" hidden><div class="job-head"><span class="eyebrow" id="job-eyebrow">PENGHANTARAN</span><span id="job-distance"></span></div><p id="job-text"></p></div></aside>
-      <div class="location"><span class="eyebrow">YOU ARE IN</span><strong id="location-name">Kampung Seri Kenangan</strong></div>
+      <div class="location"><span class="eyebrow" id="clock-label">YOU ARE IN</span><strong id="location-name">Kampung Seri Kenangan</strong></div>
       <div class="minimap-wrap"><canvas id="minimap" width="180" height="180" aria-label="Town minimap"></canvas><span>PEKAN SERI KENANGAN</span></div>
       <div id="interaction" hidden><button id="interact-button"><kbd>E</kbd> <span id="interact-label">Talk</span></button></div>
       <div id="desktop-hint">W A S D <span>walk</span> · Shift <span>run</span> · E <span>talk</span> · drag <span>camera</span></div>
       <div id="touch-controls"><div id="joystick" aria-label="Movement joystick"><div id="joystick-knob"></div></div><div class="touch-actions"><button id="run-button" aria-label="Hold to run">Run</button></div></div>
       <div id="touch-hint">Swipe to look · pinch to zoom</div>
       <div id="toast" role="status" hidden></div>
+      <div id="sleep-fade" class="sleep-fade" hidden><p id="sleep-text"></p></div>
     </div>
     <section id="start-screen" class="screen-overlay">
       <div class="intro-card"><span class="eyebrow">MALAYSIA, CIRCA 2001</span><h1>Some places<br>stay with <em>you.</em></h1><p>A familiar lane. A friendly warung.<br>One more game before maghrib.</p><div class="title-rule"></div><div class="game-title">RETRO<br><span>MALAYSIA</span></div><span class="intro-subtitle">A KAMPUNG STORY</span>
@@ -45,6 +46,6 @@
     <section id="orientation-panel" class="orientation-panel" hidden aria-label="Rotate your device to play"><div><div class="rotate-symbol" aria-hidden="true">↻</div><span class="eyebrow">BEST PLAYED SIDEWAYS</span><h2>Turn your phone.<br>The kampung is waiting.</h2><p>Gameplay stays in landscape. Your progress is kept while you rotate.</p><button id="landscape-button" class="primary">Enter landscape fullscreen →</button></div></section>
     <section id="error-panel" class="modal-backdrop" hidden><div class="modal"><h2>The town couldn't load.</h2><p id="error-text"></p><button onclick="location.reload()" class="primary">Try again</button></div></section>
   </main>
-  <script src="./src/boot.js?v=1.3.0"></script>
+  <script src="./src/boot.js?v=1.4.0"></script>
 </body>
 </html>
