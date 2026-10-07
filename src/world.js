@@ -10,6 +10,7 @@ import { createWalkability } from './collision.js?v=2.1.2';
 import { createStorefronts } from './storefronts.js?v=2.1.2';
 import { createLandmarks } from './landmarks.js?v=2.1.2';
 import { loadTownCars } from './town-cars.js?v=2.2.0';
+import { loadTownBus } from './town-bus.js?v=2.2.1';
 import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.1.2';
 import { createTrees } from './trees.js?v=2.1.2';
 import { plantTown, placeProps, TRUNK } from './planting.js?v=2.1.2';
@@ -22,6 +23,7 @@ export async function makeWorld(canvas) {
   await document.fonts.load('bold 35px sans-serif');
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   const carLoad = loadTownCars(renderer).catch(error => { console.warn('Town car model unavailable; using the original sedans', error); return null; });
+  const busLoad = loadTownBus(renderer).catch(error => { console.warn('Town bus model unavailable; using the original bus', error); return null; });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
@@ -291,7 +293,7 @@ export async function makeWorld(canvas) {
     for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
   }
   const landmarks=createLandmarks({parent:()=>root,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
-  const townCars = await carLoad, cars = [];
+  const [townCars, townBus] = await Promise.all([carLoad, busLoad]), cars = [], buses = [];
   const storefronts=await createStorefronts(renderer);
   const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
@@ -430,10 +432,13 @@ export async function makeWorld(canvas) {
       for(const x of [-4,4]){box(3,.18,.8,0xb5986a,x,.65,2);collider(x,2,3,.8,'bench');}
     },
     bus(u){
+      collider(0,0,4.3,10.3,'vehicle');
+      buses.push({id:u.id,source:townBus?'glb':'procedural',x:u.x,z:u.z});
+      if(townBus){root.add(townBus);townBus.position.y=groundHeight(u.x,u.z)+.015;return;}
       softBox(4,3.1,10,0xe7dbc0,0,2.1,0,undefined,.2);box(4.05,.8,10.1,0xb95670,0,1.4,0);box(3.6,1.2,.12,glass,0,2.9,5.07);
       for(const side of [-1,1])for(let z=-3.2;z<=3.3;z+=2.1)box(.1,1.1,1.6,glass,side*2.05,2.9,z);
       for(const side of [-1,1])for(const z of [-3.4,3.4]){const wheel=cylinder(.65,.65,.3,0x414b3f,side*2,.7,z,undefined,12);wheel.rotation.z=Math.PI/2;}
-      sign('BAS PEKAN · 01',0,3.43,5.12,3.2,'#2c4d40');collider(0,0,4.3,10.3,'vehicle');
+      sign('BAS PEKAN · 01',0,3.43,5.12,3.2,'#2c4d40');
     },
     workshop(u){
       // Open workshop bay, with walls, tyre stacks and bench as solid obstacles.
@@ -699,5 +704,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
