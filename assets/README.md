@@ -1,5 +1,7 @@
 # Game art provenance
 
+- `items/*.svg`: 51 original, code-authored illustrations of the economy's goods, snacks, collectibles and delivery cargo. Thick ink outlines, muted cel colours and period objects match the game's authored canvas/geometry art. They are vector illustrations, not photographs or generated raster images. Every item has a distinct drawing, including the borrowed comic, forgotten book, home-made kuih and returned food-container variants. Packaging uses fictional/general labels; no external artwork or brand logos is embedded. Rebuild with `npm run art` from `scripts/item-art.mjs`; titles and Malay memory notes live in `src/item-art.js`.
+
 - `textures/kampung-grass.webp`: generated specifically for this game with the built-in image-generation tool, October 2026. Prompt requested seamless tropical lawn albedo without scene objects, text or perspective.
 - `textures/kampung-timber.webp`: generated specifically for this game with the built-in image-generation tool, October 2026. Prompt requested seamless horizontal aged kampung timber boards without scene objects or text.
 - Both are WebP encodings of the original generated outputs, with no compositing or external photographic source.

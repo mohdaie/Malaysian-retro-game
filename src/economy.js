@@ -2,7 +2,8 @@
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.2.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.3.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=1.3.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
@@ -61,6 +62,10 @@ export const ITEMS = {
   pesanan: { name: 'Pesanan alat tulis (school order)', size: 1, kind: 'cargo' },
   hidangan: { name: 'Bungkusan hidangan (meal parcel)', size: 1, kind: 'cargo' }
 };
+for (const [id, item] of Object.entries(ITEMS)) {
+  const [title, memory] = ITEM_ART[id];
+  Object.assign(item, { image: itemImagePath(id), title, memory });
+}
 
 // What each place sells over the counter.
 export const STOCK = {
@@ -281,4 +286,3 @@ export function cleanEconomy(value) {
   if (value.congkak && int(value.congkak.played, 0, 1e6) && int(value.congkak.won, 0, value.congkak.played)) eco.congkak = { played: value.congkak.played, won: value.congkak.won };
   return eco;
 }
-
