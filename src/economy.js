@@ -2,14 +2,14 @@
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.1.1';
-import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.1.1';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.1.1';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=2.1.1';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.1.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.1.1';
-import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.1.1';
-import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.1.1';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.1.2';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.1.2';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.1.2';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=2.1.2';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.1.2';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.1.2';
+import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.1.2';
+import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.1.2';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the

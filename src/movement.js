@@ -15,6 +15,10 @@ export function moveWithCollision(position, dx, dz, speed, dt, canWalk) {
   const steps = Math.max(1, Math.ceil(dt / .025), Math.ceil(Math.hypot(dx,dz)*speed*dt/.12));
   const step = speed * dt / steps;
   for (let i = 0; i < steps; i++) {
+    // Already overlapping something (a townsperson stepped in, an old save,
+    // a bike left in a tight spot): let the move happen so you can get out,
+    // instead of every step being refused.
+    if (!canWalk(position.x, position.z)) { position.x += dx * step; position.z += dz * step; continue; }
     if (canWalk(position.x + dx * step, position.z)) position.x += dx * step;
     if (canWalk(position.x, position.z + dz * step)) position.z += dz * step;
   }
