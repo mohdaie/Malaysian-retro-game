@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.3.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.4.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -70,6 +70,18 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
+## Jam kampung · the town clock (v1.4)
+
+Time passes while you explore: one game minute per real second. Menus, conversations and congkak stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
+
+- **Light through the day.** A warm dawn, full afternoon sun, a golden hour from 17:00, a purple Maghrib at 19:30 and a moonlit night. The sun crosses from east to west and its shadows follow. After dark the house windows glow and the cengkerik replace the birds.
+- **The town closes.** Most townsfolk are at their posts from 07:00 to 19:15. Kak Ita's warung stays open until 22:00, Pak Din's kiosk until 21:00, Ustaz Hassan stays at the masjid from Subuh to Isyak and Nenek sits on her veranda until 21:30. Off duty, a shop takes parcels at the door but hands nothing out. Faiz, Mei Ling and Atuk leave the padang and answer at their own front doors.
+- **Tidur.** From Maghrib (19:30), go to your own front door and choose **Tidur** to sleep through to **06:00 Subuh** the next day. Past midnight the clock waits at 23:59 until you go home.
+- Friendship from talking counts once per game day, not once per real day.
+- The day and time save with your progress. Saves from v1.3 and earlier wake on Hari 1 at 14:00.
+
+Change the pace, hours and colours in `src/clock.js`: `MINUTES_PER_SECOND`, `HOURS` per NPC and the light keyframes.
+
 ## Katalog Kenangan (v1.3)
 
 All 51 existing items have original comic illustrations: 26 shop goods, five snacks, seven collectibles and 13 delivery parcels. Art appears at shop counters, in the bag and collection album, on delivery offers and in the quest book. Tap any picture to view it larger with a Malay nostalgia note. Open **Beg → Katalog Kenangan** to browse the complete catalogue, including delivery-only objects, and filter by category. Browsing does not spend Duit Poket; purchases still use the Beli button. Images are bundled locally and require no image API or server. Existing saves keep their item IDs and balances.
@@ -120,9 +132,9 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: the town clock and schedules, congkak with the neighbours and a tournament, dam haji, gasing and guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, dam haji, gasing and guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
-Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, position, wallet, bag, collection, jobs, friendship and congkak record are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
+Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship and congkak record are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
 
 ## Code layout
 
@@ -141,17 +153,20 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/soundscape.js`: original local ambience and foley.
 - `assets/`: generated game materials and provenance.
 - `src/main.js`: chase camera, input, character choice, counters and dialogue, quest card, bag, quest book, map and minigame presentation.
+- `src/clock.js`: the town clock: game time, weekday and period, who is on duty when, sleeping to Subuh and the light keyframes.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
 - `src/cast.js`: the 14 NPCs (ids, homes, posts, menus, lines), every household contact and where each person stands.
 - `src/story.js`: Chapter 01 for both playable characters: steps, events and the chapter's own jobs.
 - `src/economy.js`: items, shops, requests, parcels, upah, jobs, bag space, purchases and friendship, as pure functions in sen.
-- `src/save.js`: versioned local save validation (v3) and upgrades from older saves.
+- `src/save.js`: versioned local save validation (v3, with the optional clock) and upgrades from older saves.
 - `tests/`: congkak invariants, complete simulated games, gait and IK reachability, collisions, the economy and chapter rules, and save upgrades and storage failure handling.
 - `scripts/`: dependency-free development server and static build.
 - `vendor/`: checked-in Three.js browser runtime and its MIT license, required for direct branch publishing.
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![The kampung at 21:30, windows lit](docs/night-v140.webp)
 
 ![Shophouse terrace](docs/shophouses-v080.webp)
 

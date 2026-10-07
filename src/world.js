@@ -1,15 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.3.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.3.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.3.0';
-import { createProps } from './props.js?v=1.3.0';
-import { ROUTINES, createRoutine } from './routines.js?v=1.3.0';
-import { ACTIONS } from './actions.js?v=1.3.0';
-import { createWalkability } from './collision.js?v=1.3.0';
-import { createLandmarks } from './landmarks.js?v=1.3.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.3.0';
-import { createTrees } from './trees.js?v=1.3.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.3.0';
+import { createCharacter } from './characters.js?v=1.4.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.4.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.4.0';
+import { createProps } from './props.js?v=1.4.0';
+import { ROUTINES, createRoutine } from './routines.js?v=1.4.0';
+import { ACTIONS } from './actions.js?v=1.4.0';
+import { createWalkability } from './collision.js?v=1.4.0';
+import { createLandmarks } from './landmarks.js?v=1.4.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.4.0';
+import { createTrees } from './trees.js?v=1.4.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.4.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -29,7 +29,8 @@ export async function makeWorld(canvas) {
   // Units of the town plan are built in their own frame: `root` is the group
   // being filled and `placing` the unit whose transform colliders follow.
   let root = scene, placing = null;
-  scene.add(new T.HemisphereLight(0xe5f3ff, 0x82917a, 1.20));
+  const hemi = new T.HemisphereLight(0xe5f3ff, 0x82917a, 1.20);
+  scene.add(hemi);
   const sun = new T.DirectionalLight(0xffedda, 1.30);
   sun.position.set(-35, 70, 30);
   sun.castShadow = true;
@@ -605,5 +606,14 @@ export async function makeWorld(canvas) {
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,updateSun: (x,z) => { sun.position.set(x-35,70,z+30); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  // The town clock's light (clock.js skyAt): sun or moon, sky fill, fog, the
+  // painted horizon's tint and warm window glow after dark.
+  let sunOffset=[-35,70,30];
+  const windowGlass=mats.get('window-glass');
+  function setSky(sky){
+    sun.color.setHex(sky.sun);sun.intensity=sky.sunI;hemi.color.setHex(sky.sky);hemi.groundColor.setHex(sky.ground);hemi.intensity=sky.fill;
+    scene.fog.color.setHex(sky.fog);scene.background.setHex(sky.bg);horizon.material.color.setHex(sky.horizon);
+    windowGlass.emissive.setHex(0xffc66b);windowGlass.emissiveIntensity=sky.glow*.9;sunOffset=sky.sunOffset;
+  }
+  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
