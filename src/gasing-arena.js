@@ -1,4 +1,4 @@
-import { spinAt } from './gasing.js?v=2.1.1';
+import { spinAt } from './gasing.js?v=2.1.2';
 // An illustrated close-up of the padang: original canvas shapes with comic ink.
 export function drawGasingArena(canvas, round, name, reduced = false) {
   const c = canvas.getContext('2d'), W = 800, H = 460;

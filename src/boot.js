@@ -14,7 +14,7 @@
     }
   };
   const timeout = setTimeout(() => showFailure(new Error('Game startup timed out after 30 seconds.')), 30000);
-  import('./main.js?v=2.1.1').then(() => {
+  import('./main.js?v=2.1.2').then(() => {
     ready = true;
     clearTimeout(timeout);
     document.getElementById('error-panel').hidden = true;

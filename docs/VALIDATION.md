@@ -212,3 +212,9 @@ A side-view check of the rider measured the hands on the grips (0.25, 0.93, 0.25
 Multi-touch was checked with two simulated fingers in Chromium on an 844×390 touch screen. Finger 1 held the joystick forward while finger 2 tapped Jalan (on, then off), Cangkung (on, then off), Lompat and Hai. Every tap registered and the player kept moving throughout. In v2.1.0 these buttons acted on `click`, which phones do not send during a second touch.
 
 In play, a bike pushed against an obstacle backed out 1.4–1.8 m when pulled back, then turned and rode off. The home parking spot now faces at least 4 m of clear ground.
+
+## v2.1.2 · resetting a stuck basikal
+
+`npm test`: **137 tests passed**. A new movement test checks that a body starting inside an obstacle can always move out. Before this, every step from inside an overlap was refused, so a bike or player that ended up overlapping something could not move in any direction. From outside, the body still stops at the obstacle.
+
+In play, the player walked about 3 m from the bike, opened the pause menu and chose **Reset basikal**. The bike was parked 1.7 m beside the player, then mounted and ridden with no errors. Riding with the stick held for two seconds without moving lifts the bike out to open ground.

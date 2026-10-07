@@ -1,6 +1,6 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.1.1';
-import { PLAYERS, DONE } from './story.js?v=2.1.1';
-import { cleanClock, newClock } from './clock.js?v=2.1.1';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.1.2';
+import { PLAYERS, DONE } from './story.js?v=2.1.2';
+import { cleanClock, newClock } from './clock.js?v=2.1.2';
 export const SAVE_KEY = 'retro-malaysia-save-v1';
 // Version 3 (v1.0): who you play (Amir or Nur), your name, the chapter step
 // and the whole economy. Saves from earlier prototypes keep the name and the
