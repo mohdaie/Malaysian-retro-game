@@ -1,15 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.5.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.5.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.5.0';
-import { createProps } from './props.js?v=1.5.0';
-import { ROUTINES, createRoutine } from './routines.js?v=1.5.0';
-import { ACTIONS } from './actions.js?v=1.5.0';
-import { createWalkability } from './collision.js?v=1.5.0';
-import { createLandmarks } from './landmarks.js?v=1.5.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.5.0';
-import { createTrees } from './trees.js?v=1.5.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.5.0';
+import { createCharacter } from './characters.js?v=1.6.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.6.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.6.0';
+import { createProps } from './props.js?v=1.6.0';
+import { ROUTINES, createRoutine } from './routines.js?v=1.6.0';
+import { ACTIONS } from './actions.js?v=1.6.0';
+import { createWalkability } from './collision.js?v=1.6.0';
+import { createLandmarks } from './landmarks.js?v=1.6.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.6.0';
+import { createTrees } from './trees.js?v=1.6.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.6.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -396,6 +396,14 @@ export async function makeWorld(canvas) {
       const ring=mesh(new T.TorusGeometry(1.2,.045,4,24),0xf4e9d0,0,.17,0);ring.rotation.x=Math.PI/2;
       for(const side of [-1,1])for(const zz of [-1.2,1.2]){cylinder(.055,.055,2,0xf4e9d0,side*6.5,1.12,zz);roundCollider(side*6.5,zz,.055,'goal');}
       sign('GELANGGANG',0,2.8,4.4,5);
+      // A dirt practice circle and a solid box of tops in the padang corner.
+      cylinder(1.75,1.75,.035,0xc4a173,3,.205,-.5,undefined,32);
+      const gasingRing=mesh(new T.TorusGeometry(1.55,.035,4,32),0xf8eac9,3,.24,-.5);gasingRing.rotation.x=Math.PI/2;
+      box(.9,.48,.65,0x9a7149,5.4,.44,1.8);collider(5.4,1.8,.9,.65,'gasing-box');
+      for(const [x,c] of [[5.15,0xcb5540],[5.65,0x527bb3]]){
+        cylinder(.19,.025,.19,c,x,.79,1.8,undefined,12);cylinder(.065,.065,.13,0xc39663,x,.94,1.8,undefined,8);
+      }
+      sign('GASING · ATUK & FAIZ',3,1.35,-2.1,2.8);
     },
     mosque(u){box(19,.18,19,0xdbd2b4,0,.12,0);landmarks.mosque(0,0,placeName(31).toUpperCase());},
     busstop(u){

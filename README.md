@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.5.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.6.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -65,10 +65,34 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
 - Local progress saves with resume, save validation and graceful storage failure.
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
-- Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus, congkak and Dam Haji.
+- Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus, congkak, Dam Haji and gasing.
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## Gasing · Atuk and Faiz at the padang (v1.6)
+
+Find **Atuk or Faiz at the padang by the gelanggang** during their normal daytime hours, talk, and choose **Main gasing**. Atuk teaches **Belajar**, lends equipment, offers solo **Latihan sendiri**, and hosts **Cabaran Atuk**. Faiz hosts **Lawan Faiz**. Their errands and existing story events still work. A dirt practice circle and a solid wooden box of tops sit in the court corner and follow the map editor.
+
+1. **Lilit tali:** wind the string in a short animation.
+2. **Power:** hold the Power button, then release near the gold target (78% ideal, 68–88% marked). Maximum power is less effective than a controlled throw.
+3. **Lepas:** tap when the moving release marker reaches the centre.
+4. **Endurance:** both tops rotate, lose speed, wobble and fall. The longer spin wins; within 0.05 seconds is a draw. The lesson demonstration is easier than Faiz, and Atuk is the strongest opponent. Solo practice has no rival.
+
+This is an explicitly **arcade endurance model**, not a tournament physics reference. Power accuracy and release accuracy set angular speed, stability and dirt drag. Angular speed decreases linearly to the stopping threshold; wobble grows as the top slows. Results are deterministic from the throw. Opponents use bounded, round-specific timing profiles rather than a paid AI service. The maximum clean spin is about 26 seconds. The Skip spin animation button advances to the exact same result.
+
+Atuk's loan is available without a purchase. The **gasing already sold by Uncle Lim** automatically becomes your own usable top if it is in your collection, with a different colour and equal performance. Neither top is consumed. Closing saves the phase, timing values and simulation elapsed time; visit either host and choose **Sambung**. Held input resets safely on close, blur, hidden tabs and portrait orientation. Returning from a saved spin continues the same result. Ending an unfinished round requires confirmation and earns no completion or rewards.
+
+| One-time milestone | Reward |
+|---|---|
+| Finish Atuk’s Belajar lesson | RM 0.20 |
+| Finish a steady spin of at least 20 seconds (stability ≥85%) | RM 0.30 |
+| Beat Faiz | RM 0.50 |
+| Beat Atuk | RM 1.00 + Jaguh Gasing Pekan badge |
+
+The Buku shows milestones, wins, rounds, personal best and the saved-round status. The badge and owned-equipment note appear in the Beg. Completion, records and rewards settle once across reloads. Old saves keep the wallet, collection, jobs, chapter, clock and Dam Haji progress. The clock and 3D renderer pause behind gasing; the illustrated arena uses local Canvas 2D with reduced-motion support. Keyboard players hold/release Space or Enter on Power and activate Lepas at the centre; assistive activation can tap Power to start and tap again to lock.
+
+Striking/knock-out battles, Pak Salleh’s tournament and multiplayer are later work.
 
 ## Dam Haji · meja Pak Din (v1.5)
 
@@ -94,7 +118,7 @@ The Buku lists the milestones, record and saved-match status. The Jaguh badge ap
 
 ## Jam kampung · the town clock (v1.4)
 
-Time passes while you explore: one game minute per real second. Menus, conversations, congkak and Dam Haji stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
+Time passes while you explore: one game minute per real second. Menus, conversations, congkak, Dam Haji and gasing stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
 
 - **Light through the day.** A warm dawn, full afternoon sun, a golden hour from 17:00, a purple Maghrib at 19:30 and a moonlit night. The sun crosses from east to west and its shadows follow. After dark the house windows glow and the cengkerik replace the birds.
 - **Street lights.** Lamps come on through dusk and are fully lit by night. The roads have 8 sodium lamps on steel poles, each with a warm orange pool. The kampung lanes and paths have 19 timber poles, each with a fluorescent tube under a tin hood and a cool white pool. The lamp nearest you also lights the children as they walk under it. The pools are one instanced draw, with only one real light, so phones stay fast.
@@ -155,9 +179,9 @@ See [the final prototype design brief](docs/FINAL-DESIGN.md) for the implemented
 
 ## Scope and next work
 
-Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, gasing and guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
+Version 1.0.0 makes the town a working place: the 14-person cast from the NPC guide with their own bodies, both children playable, the rewritten Chapter 01, and the Duit Poket delivery economy. The cast guide's later steps are not in this version: full daily schedules (townsfolk walking between home and work), congkak with the neighbours and a tournament, guli, the bedroom shelf, and multiplayer. Building interiors are also outside it. Browser emulation validates the controls; physical phone GPU performance still needs device testing.
 
-Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship, congkak record and Dam Haji progress (including a partly played match) are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
+Save data is stored in the browser on this device and origin; it does not sync across devices. The character, name, chapter step, game day and time, position, wallet, bag, collection, jobs, friendship, congkak record and Dam Haji progress (including a partly played match), and gasing progress (including a partly played round) are saved, not a partly played congkak round. Saves from v0.11 and earlier keep the name and Duit Poket and start the new chapter as Amir.
 
 ## Code layout
 
@@ -177,6 +201,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `assets/`: generated game materials and provenance.
 - `src/main.js`: chase camera, input, character choice, counters and dialogue, quest card, bag, quest book, map and minigame presentation.
 - `src/clock.js`: the town clock: game time, weekday and period, who is on duty when, sleeping to Subuh and the light keyframes.
+- `src/gasing.js`, `src/gasing-progress.js`: pure throw simulation, phase transitions, save validation and one-time milestones.
+- `src/gasing-ui.js`, `src/gasing-arena.js`: pointer/keyboard throw controls and the illustrated dirt arena.
 - `src/dam-haji.js`, `src/dam-progress.js`: pure Dam Haji rules, bounded opponent search, save validation and one-time milestones.
 - `src/dam-ui.js`, `src/dam-worker.js`: board presentation, match lifecycle and background opponent.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
@@ -190,6 +216,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/boot.js`: startup loader with recoverable module-load errors and a timeout.
 
 ## Preview
+
+![Gasing endurance round at the padang, landscape phone](docs/gasing-v160.webp)
 
 ![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
 
