@@ -1,4 +1,4 @@
-import { HOURS, onDuty } from './clock.js?v=2.5.0';
+import { HOURS, onDuty } from './clock.js?v=2.6.0';
 
 // The visuals and the counter use the same town-clock schedule.
 export const SHOPS = {

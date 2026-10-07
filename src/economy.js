@@ -2,14 +2,16 @@
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.5.0';
-import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.5.0';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.5.0';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=2.5.0';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.5.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.5.0';
-import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.5.0';
-import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.5.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.6.0';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.6.0';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.6.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=2.6.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.6.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.6.0';
+import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.6.0';
+import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.6.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.6.0';
+import { newNostalgia, cleanNostalgia, recordNostalgiaDelivery } from './nostalgia-quests.js?v=2.6.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
@@ -75,10 +77,11 @@ for (const [id, item] of Object.entries(ITEMS)) {
   Object.assign(item, { image: itemImagePath(id), title, memory });
 }
 
+Object.assign(ITEMS, NOSTALGIA_ITEMS);
 // What each place sells over the counter.
 export const STOCK = {
   22: ['beras', 'gula', 'teh', 'telur', 'minuman', 'sabun', 'pencuci', 'benih', 'kotak', 'kainlap', 'lampin', 'roti', 'aiskrim', 'keropok', 'sirap'],
-  25: ['guli', 'pelekat', 'komik', 'kad', 'gasing', 'wau', ...Object.keys(TAMIYA_CARS), ...Object.keys(TAMIYA_PARTS), 'begkertas', 'label', 'resit', 'bukulatihan', 'kapur', 'poster', 'taliwau', 'pensel', 'bukuskrap'],
+  25: ['guli', 'pelekat', 'komik', 'kad', 'gasing', 'wau', ...Object.keys(TAMIYA_CARS).filter(id => !TAMIYA_CARS[id].rewardOnly), ...Object.keys(TAMIYA_PARTS), 'begkertas', 'label', 'resit', 'bukulatihan', 'kapur', 'poster', 'taliwau', 'pensel', 'bukuskrap'],
   37: ['minuman', 'pelincir', 'keropok', 'sirap'],
   36: ['sarungkerja', 'sarungkebun', 'kainlap', 'sabun'],
   9: ['sayur'],
@@ -150,7 +153,7 @@ export const itemLabel = (item, qty) => `${qty} × ${ITEMS[item].name}`;
 export const level = points => LEVELS.find(([min]) => points >= min)[1];
 
 export function newEconomy() {
-  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress(), prayer: newPrayerProgress() };
+  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress(), prayer: newPrayerProgress(), nostalgia: newNostalgia() };
 }
 const add = (bag, item, qty) => { bag[item] = (bag[item] || 0) + qty; if (bag[item] <= 0) delete bag[item]; };
 const space = (item, qty) => ITEMS[item].size * qty;
@@ -203,7 +206,7 @@ export function accept(eco, offer) {
   if (eco.jobs.some(j => j.offer === offer.id)) return { ok: false, reason: 'taken' };
   if (freeSpace(eco) < space(offer.item, offer.qty)) return { ok: false, reason: 'space' };
   const job = { id: `J${eco.nextJob}`, offer: offer.id, kind: offer.kind, requester: offer.requester, from: offer.from, to: offer.to, stops: [...offer.stops], left: offer.stops.length,
-    item: offer.item, qty: offer.qty, cost: offer.cost, upah: offer.upah, status: 'accepted', story: offer.story || null };
+    item: offer.item, qty: offer.qty, cost: offer.cost, upah: offer.upah, route: Number.isFinite(offer.route) ? Math.max(0, Math.min(10000, Math.round(offer.route))) : 0, status: 'accepted', story: offer.story || null };
   eco.nextJob += 1; eco.jobs.push(job); return { ok: true, job };
 }
 // Collect prepaid cargo from the sender, or buy the goods at the supplier.
@@ -229,6 +232,7 @@ export function deliver(eco, id, place) {
   const paid = job.upah + (job.kind === 'purchase' ? job.cost : 0);
   eco.wallet += paid; eco.jobs = eco.jobs.filter(j => j !== job);
   eco.done = [...eco.done, id].slice(-200); eco.served[job.requester] = (eco.served[job.requester] || 0) + 1;
+  recordNostalgiaDelivery(eco, job);
   return { ok: true, job, paid, more: 0 };
 }
 // Cancel before pickup costs nothing. After pickup, unused goods go back to
@@ -248,6 +252,7 @@ export function cancel(eco, id, place = null) {
 // Shopping for yourself: snacks are eaten, collectibles go to the album,
 // goods go in the bag. Personal purchases are never reimbursed.
 export function buy(eco, place, item) {
+  if (ITEMS[item]?.rewardOnly) return { ok: false, reason: 'quest-only' };
   if (!STOCK[place]?.includes(item)) return { ok: false, reason: 'not-sold' };
   const it = ITEMS[item];
   if ((TAMIYA_CARS[item] || TAMIYA_PARTS[item]) && eco.collection[item]) return { ok: false, reason: 'owned' };
@@ -279,15 +284,17 @@ export function cleanEconomy(value) {
   const eco = newEconomy();
   if (!value || typeof value !== 'object') return eco;
   eco.prayer = cleanPrayerProgress(value.prayer);
+  eco.nostalgia = cleanNostalgia(value.nostalgia);
   const int = (n, lo, hi) => Number.isInteger(n) && n >= lo && n <= hi, place = n => int(n, 1, 38);
   if (int(value.wallet, 0, 1e7)) eco.wallet = value.wallet;
-  for (const [item, qty] of Object.entries(value.bag || {})) if (ITEMS[item] && ITEMS[item].kind !== 'snack' && int(qty, 1, 999)) eco.bag[item] = qty;
-  for (const [item, qty] of Object.entries(value.collection || {})) if (ITEMS[item]?.kind === 'collect' && int(qty, 1, 999)) eco.collection[item] = qty;
+  for (const [item, qty] of Object.entries(value.bag || {})) if (ITEMS[item] && !ITEMS[item].rewardOnly && ITEMS[item].kind !== 'snack' && int(qty, 1, 999)) eco.bag[item] = qty;
+  for (const [item, qty] of Object.entries(value.collection || {})) if (ITEMS[item]?.kind === 'collect' && !NOSTALGIA_ITEMS[item] && int(qty, 1, 999)) eco.collection[item] = qty;
+  for (const id of Object.keys(eco.nostalgia.earned)) eco.collection[id] = 1;
   if (Array.isArray(value.done)) eco.done = value.done.filter(id => typeof id === 'string' && /^J\d+$/.test(id)).slice(-200);
   if (Array.isArray(value.jobs)) eco.jobs = value.jobs.filter(j => j && /^J\d+$/.test(j.id) && !eco.done.includes(j.id) && typeof j.offer === 'string' && place(j.requester) && place(j.from) && place(j.to)
     && Array.isArray(j.stops) && j.stops.length >= 1 && j.stops.length <= 5 && j.stops.every(place) && int(j.left, 1, j.stops.length) && ITEMS[j.item] && int(j.qty, 1, 99)
     && ['parcel', 'purchase'].includes(j.kind) && int(j.cost, 0, 1e6) && int(j.upah, 0, 1e6) && ['accepted', 'carrying'].includes(j.status))
-    .map(({ id, offer, kind, requester, from, to, stops, left, item, qty, cost, upah, status, story }) => ({ id, offer, kind, requester, from, to, stops: [...stops], left, item, qty, cost, upah, status, story: typeof story === 'string' ? story : null })).slice(0, MAX_JOBS);
+    .map(({ id, offer, kind, requester, from, to, stops, left, item, qty, cost, upah, route, status, story }) => ({ id, offer, kind, requester, from, to, stops: [...stops], left, item, qty, cost, upah, ...(route === undefined ? {} : { route: int(route, 0, 10000) ? route : 0 }), status, story: typeof story === 'string' ? story : null })).slice(0, MAX_JOBS);
   const highest = Math.max(0, ...[...eco.done, ...eco.jobs.map(j => j.id)].map(id => Number(id.slice(1))));
   eco.nextJob = int(value.nextJob, 1, 1e9) ? Math.max(value.nextJob, highest + 1) : highest + 1;
   for (const [p, n] of Object.entries(value.served || {})) if (place(Number(p)) && int(n, 0, 1e6)) eco.served[p] = n;
