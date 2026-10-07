@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.5.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.6.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -14,6 +14,10 @@ The first afternoon of the school holidays, the same for both characters. Amir s
 6. **Simpan sikit-sikit**: spend a little of your upah on your first collectible at Uncle Lim's.
 
 Afterwards the town is open: take delivery work from any shop or house, save up, play congkak with Nenek again and visit your friends. A gold diamond points at the chapter's next person, and boxes mark your job stops.
+
+## Long-term keepsake quests
+
+Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, Nokia 3310, Sony Walkman WM-EX9, Lightning Magnum and a KLCC miniature. Accept each story from its giver, finish 10–24 deliveries with varied destinations and long routes, follow five or six clues, then win its game challenges. Progress survives losses and reloads. Rewards include a personal dedication; Lightning Magnum is playable in the Tamiya garage. The catalogue reserves another 22 keepsakes for future chapters. See [quest requirements and photo credits](docs/NOSTALGIA.md).
 
 ## The town's people
 

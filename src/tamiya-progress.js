@@ -1,6 +1,7 @@
-import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.5.0';
-import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.5.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.5.0';
+import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.6.0';
+import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.6.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.6.0';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.6.0';
 export const TAMIYA_QUESTS=[
   {id:'first',title:'Bateri masuk, jom race!',text:'Finish your first three-lap race.',sen:80},
   {id:'faiz',title:'Potong Faiz',text:'Finish ahead of Faiz.',sen:120},
@@ -27,6 +28,7 @@ export function recordTamiya(eco){
   const p=eco.tamiya,s=p.round,awards=[];if(!s||s.phase!=='result'||s.settled)return awards;
   const [player,faiz,mei]=racePlans(s),win=player.duration<Math.min(faiz.duration,mei.duration)-.001;
   s.settled=true;p.played++;if(win){p.won++;if(!p.wins.includes(s.track))p.wins.push(s.track);}
+  if(win)recordNostalgiaWin(eco,{game:'tamiya',track:s.track});
   p.best[s.track]=Math.min(p.best[s.track]||Infinity,player.duration);
   const eligible=['first',player.duration<faiz.duration-.001&&'faiz',player.duration<mei.duration-.001&&'meiling',p.wins.length===Object.keys(TAMIYA_TRACKS).length&&'jaguh'];
   for(const id of eligible.filter(Boolean))if(!p.claimed.includes(id)){const q=TAMIYA_QUESTS.find(q=>q.id===id);p.claimed.push(id);eco.wallet+=q.sen;awards.push(q);}return awards;

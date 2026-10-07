@@ -1,4 +1,4 @@
-import { mapView, project, unproject, clampView, zoomView, routeLength } from './map-navigation.js?v=2.5.0';
+import { mapView, project, unproject, clampView, zoomView, routeLength } from './map-navigation.js?v=2.6.0';
 
 export function createTownMap({ buildings, districts, roads, bridges, getEntries, getPlayer, getQuest, getJobs, getNavigation, planRoute, onNavigate, onClose }) {
   const $ = id => document.getElementById(id), canvas = $('town-map'), ctx = canvas.getContext('2d');

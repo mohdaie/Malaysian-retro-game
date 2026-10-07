@@ -83,6 +83,7 @@ function artPencils(){return Array.from({length:3},(_,i)=>rect(79+i*16,43,9,109,
 
 await mkdir('assets/items', { recursive: true });
 for (const [id, item] of Object.entries(ITEMS)) {
+  if (item.rewardOnly) continue;
   if (PART_IDS.includes(id)) { await writeFile(`assets/items/${id}.svg`, partIllustration(id)); continue; }
   if (CAR_IDS.includes(id)) { await writeFile(`assets/items/${id}.svg`, carIllustration(id)); continue; }
   if (!art[id] || !ITEM_ART[id]) throw new Error(`Missing art: ${id}`);

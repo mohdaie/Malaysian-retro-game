@@ -10,6 +10,12 @@ test('all shop, collectible and delivery items resolve to distinct local illustr
   const used = new Set([...Object.values(STOCK).flat(), ...Object.values(REQUESTS).flat().map(x => x.item), ...Object.values(PARCELS).flat().map(x => x.item)]);
   for (const id of used) assert.ok(ITEMS[id]?.image, `Missing image for ${id}`);
   for (const [id, item] of Object.entries(ITEMS)) {
+    if(item.rewardOnly){
+      assert.match(item.image,/^\.\/assets\/nostalgia\/[A-Z]\d{2}\.webp$/);
+      const image=await readFile(new URL('../'+item.image,import.meta.url));assert.equal(image.toString('ascii',0,4),'RIFF');assert.equal(image.toString('ascii',8,12),'WEBP');
+      hashes.add(createHash('sha256').update(image).digest('hex'));
+      const detail=detailContents(id);assert.ok(detail.title&&detail.memory.length>30);assert.ok(detail.caption.includes('Quest keepsake'));assert.ok(!detail.caption.includes('RM 0.00'));continue;
+    }
     assert.equal(item.image, `./assets/items/${id}.svg`);
     const svg = await readFile(new URL(`${id}.svg`, root), 'utf8');
     assert.match(svg, /viewBox="0 0 256 256"/);
@@ -22,5 +28,5 @@ test('all shop, collectible and delivery items resolve to distinct local illustr
     if (item.kind === 'cargo') assert.ok(!detail.caption.includes('undefined') && !detail.caption.includes('NaN'));
   }
   assert.equal(hashes.size, Object.keys(ITEMS).length, 'Each item has its own drawing, including borrowed/returned variants');
-  assert.equal((await readdir(root)).filter(x => x.endsWith('.svg')).length, Object.keys(ITEMS).length);
+  assert.equal((await readdir(root)).filter(x => x.endsWith('.svg')).length, Object.values(ITEMS).filter(i=>!i.rewardOnly).length);
 });

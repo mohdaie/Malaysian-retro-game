@@ -8,9 +8,10 @@ export const TAMIYA_CARS = {
   tamiya_doll: { name: 'Dancing Doll', series: 'Dash-5', price: 4000, speed: 82, grip: 87, stability: 88, colour: '#e783ac', accent: '#f5ecd9', shape: 'doll', number: '5', memory: 'Badan merah jambu, roller kemas, warna ceria pada litar berliku. Mei Ling lebih suka kereta stabil daripada terkeluar track.' },
   tamiya_emperor: { name: 'Emperor', series: 'Dash-1', price: 5000, speed: 94, grip: 91, stability: 93, colour: '#f2eee1', accent: '#d74b42', shape: 'emperor', number: '1', memory: 'Hidung putih-merah, kokpit gelap dan sayap besar gaya Dash! Yonkuro. Kereta idaman dalam kabinet Uncle Lim.' }
 };
-export const CAR_IDS = Object.keys(TAMIYA_CARS);
+TAMIYA_CARS.nostalgia_T01 = { name: 'Lightning Magnum', series: 'Earned keepsake · Aero Mini 4WD', price: 0, rewardOnly: true, speed: 88, grip: 84, stability: 85, colour: '#2477b8', accent: '#db4141', shape: 'star', number: 'L', memory: 'A blue championship keepsake earned through the long story trail and victories on every track. Its personal dedication stays in your collection.' };
+export const CAR_IDS = Object.keys(TAMIYA_CARS).filter(id => !TAMIYA_CARS[id].rewardOnly);
 export const carRating = id => Math.round((TAMIYA_CARS[id].speed + TAMIYA_CARS[id].grip + TAMIYA_CARS[id].stability) / 3);
-export const ownedCars = collection => CAR_IDS.filter(id => collection[id] > 0);
+export const ownedCars = collection => Object.keys(TAMIYA_CARS).filter(id => collection[id] > 0);
 
 // Standalone original vector portraits, also used in the collection album.
 export function carIllustration(id) {

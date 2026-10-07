@@ -1,4 +1,5 @@
-import { newMatch, cleanMatch } from './dam-haji.js?v=2.5.0';
+import { newMatch, cleanMatch } from './dam-haji.js?v=2.6.0';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.6.0';
 export const DAM_QUESTS = [
   { id: 'practice', title: 'Duduk belajar', text: 'Finish a Belajar match with Pak Din.', sen: 20 },
   { id: 'haji', title: 'Haji pertama', text: 'Promote your first red piece to Haji.', sen: 30 },
@@ -27,7 +28,7 @@ export function recordDam(eco) {
   if (m.last?.promoted && m.cells[m.last.to] === 2) claim('haji');
   if (m.over && !m.settled) {
     m.settled = true; eco.dam.played++;
-    if (m.winner === 0) eco.dam.won++;
+    if (m.winner === 0) { eco.dam.won++; recordNostalgiaWin(eco, { game: 'dam', level: m.level }); }
     if (m.reason !== 'resigned' && m.level === 'belajar') claim('practice');
     if (m.winner === 0 && m.level === 'santai') claim('santai');
     if (m.winner === 0 && m.level === 'jaguh') claim('jaguh');

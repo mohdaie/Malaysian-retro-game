@@ -1,4 +1,5 @@
-import { newGasingRound, cleanGasingRound, STABLE_SECONDS } from './gasing.js?v=2.5.0';
+import { newGasingRound, cleanGasingRound, STABLE_SECONDS } from './gasing.js?v=2.6.0';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.6.0';
 export const GASING_QUESTS = [
   { id: 'lesson', title: 'Lilit, tarik, lepas', text: 'Finish Atuk’s Belajar lesson.', sen: 20 },
   { id: 'stable', title: 'Pusing tegak', text: 'Finish a steady spin lasting at least 20 seconds.', sen: 30 },
@@ -25,6 +26,7 @@ export function recordGasing(eco) {
   const p = eco.gasing, s = p.round, awards = [];
   if (!s || s.phase !== 'result' || s.settled) return awards;
   s.settled = true; p.played++; if (s.winner === 0) p.won++; p.best = Math.max(p.best, s.player.duration);
+  if (s.winner === 0) recordNostalgiaWin(eco, { game: 'gasing', opponent: s.kind });
   const eligible = [s.kind === 'belajar' && 'lesson', s.player.duration >= STABLE_SECONDS && s.player.stability >= .85 && 'stable', s.winner === 0 && s.kind === 'faiz' && 'faiz', s.winner === 0 && s.kind === 'atuk' && 'atuk'];
   for (const id of eligible.filter(Boolean)) if (!p.claimed.includes(id)) {
     const q = GASING_QUESTS.find(q => q.id === id); p.claimed.push(id); eco.wallet += q.sen; awards.push(q);
