@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.3.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.4.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -70,13 +70,17 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
+## Nur from a 3D model too (v2.4)
+
+Nur is now her TRELLIS.2 model as well: hood up over her hijab, pink hoodie with the flower, black backpack with its charm and water bottle, light blue cargo pants and pink-striped shell-toes (`assets/models/nur.glb`, 9.5k triangles, 656 KB, 1.48 m). She uses the same preparation and the same moves as Amir, and rides a mint basikal sized to her legs. The preparation script now keeps things hanging well behind the hips (her water bottle) with the body instead of a leg, and reads each character's height from its joints file.
+
 ## Amir from a 3D model (v2.3)
 
 Amir is now the textured 3D model made from his character art with TRELLIS.2 (Microsoft's image-to-3D model, MIT licence) on Hugging Face. It plays every move on the same motion-capture skeleton.
 
 - **Preparing the model:** `scripts/bake-model.mjs` stands it 1.5 m tall and adds smooth normals. It weights each vertex to the skeleton by distance along the surface, so a hand hanging beside a cargo pocket doesn't pull the pocket. The torso, limbs and head are separated first, so the chest belongs to the spine and the arms only take the arms. The joint positions were read off front and side orthographic renders (`assets/models/amir.joints.json`). The result is `assets/models/amir.glb`: 10.8k triangles and a 1024² JPEG texture, 791 KB.
 - **In the game** (`src/actor.js`): the skeleton is fitted to those joints and the arms are lowered into the model's A-pose before binding. The clips are retargeted to keep the recorded joint rotations, scale the hip travel to Amir's shorter legs, and drop the adult bone lengths. A ground lock keeps his feet on the floor, and he rides a smaller basikal to match his leg length. The comic toon shading and ink outline match the town.
-- **Fallback:** if the model can't load, he falls back to the code-built body. Nur still uses the code-built body; a model of her can be added the same way.
+- **Fallback:** if the model can't load, he falls back to the code-built body. Nur gets the same treatment in v2.4.
 
 To bring in another model: export a front-facing A-pose character as GLB, read its joints from a front and side render into a joints file, run `node scripts/bake-model.mjs in.glb out.glb joints.json [texture.jpg]`, and add it to `MODELS` in `src/actor.js`.
 
@@ -303,7 +307,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/routines.js`, `src/actions.js`: each NPC's editable loop and the idle action poses.
 - `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.
 - `src/actor.js`: Amir and Nur on the motion-capture skeleton: the smoothly weighted body and clothes, their heads, backpacks, and the speed-matched walk/jog/sprint blend.
-- `scripts/bake-model.mjs`, `assets/models/amir.glb`, `assets/models/amir.joints.json`: Amir's TRELLIS.2 model, prepared for the skeleton (v2.3).
+- `scripts/bake-model.mjs`, `assets/models/{amir,nur}.glb`, `assets/models/{amir,nur}.joints.json`: Amir's (v2.3) and Nur's (v2.4) TRELLIS.2 models, prepared for the skeleton.
 - `src/bicycle.js`: the basikal model, its pose and the rider's saddle, pedal and grip targets, and the riding step (speed, steering, lean).
 - `assets/models/kids-mocap.glb`: the CC0 skeleton and 14 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
@@ -350,6 +354,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ![Gasing rope winding and release sequence, v1.6.1](docs/gasing-rope-v161.webp)
 
 ![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
+
+![Amir and Nur from their TRELLIS.2 models: idle, walk, jog and crouch, and Nur in town](docs/nur-trellis-v240.webp)
 
 ![Amir from his TRELLIS.2 model: idle, walk, jog and crouch, and in town](docs/amir-trellis-v230.webp)
 

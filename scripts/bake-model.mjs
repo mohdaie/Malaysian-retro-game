@@ -15,7 +15,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 const [input, output, jointsFile, textureFile] = process.argv.slice(2);
-const HEIGHT = 1.5;
+let HEIGHT = 1.5;
 
 // ---- GLB in ----
 const glb = await readFile(input);
@@ -34,14 +34,16 @@ const imageView = gltf.bufferViews[image.bufferView];
 let texture = { bytes: bin.subarray(imageView.byteOffset || 0, (imageView.byteOffset || 0) + imageView.byteLength), mime: image.mimeType };
 if (textureFile) texture = { bytes: await readFile(textureFile), mime: textureFile.endsWith('.png') ? 'image/png' : 'image/jpeg' };
 
-// ---- Stand it on the ground, 1.5 m tall ----
+// ---- Stand it on the ground at its height (1.5 m unless the joints file sets one) ----
+const J = JSON.parse(await readFile(jointsFile, 'utf8'));
+if (J.height) { HEIGHT = J.height; delete J.height; }
 const n = src.length / 3;
 let minY = Infinity, maxY = -Infinity; for (let i = 0; i < n; i++) { minY = Math.min(minY, src[i * 3 + 1]); maxY = Math.max(maxY, src[i * 3 + 1]); }
 const scale = HEIGHT / (maxY - minY), place = ([x, y, z]) => [x * scale, (y - minY) * scale, z * scale];
 const pos = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const p = place([src[i * 3], src[i * 3 + 1], src[i * 3 + 2]]); pos.set(p, i * 3); }
 
 // ---- Joints (metres) and the bone segments they define ----
-const J = JSON.parse(await readFile(jointsFile, 'utf8')), joints = {};
+const joints = {};
 for (const [name, p] of Object.entries(J)) {
   if (name.endsWith('L')) { joints[name] = place(p); joints[name.slice(0, -1) + 'R'] = place([-p[0], p[1], p[2]]); }
   else joints[name] = place(p);
@@ -83,7 +85,10 @@ const nearest = new Int32Array(m);
 for (let i = 0; i < m; i++) {
   const p = wpos[i];
   if (p[1] > joints.neck[1] + .015) { nearest[i] = BONES.indexOf(p[1] < joints.head[1] ? 'neck' : 'head'); continue; }
-  let part = 'torso', best = p[1] < crotch ? Infinity : segment(p, [joints.hips[0], joints.hips[1] - .05, joints.hips[2]], joints.neck) / THICK.torso;
+  // Below the crotch only what hangs well behind the hips (a bag's bottle,
+  // the bottom of a backpack) may stay with the torso.
+  const behind = p[2] < joints.hips[2] - .15;
+  let part = 'torso', best = p[1] < crotch && !behind ? Infinity : segment(p, [joints.hips[0], joints.hips[1] - .05, joints.hips[2]], joints.neck) / THICK.torso;
   for (const [limb, bones] of Object.entries(LIMBS)) for (const b of bones) { const d = segment(p, joints[b], joints[tail[b]]) / THICK[limb.slice(0, 3)]; if (d < best) { best = d; part = limb; } }
   if (part === 'torso') { nearest[i] = BONES.indexOf(spineBand(p[1])); continue; }
   let close = Infinity; for (const b of LIMBS[part]) { const d = segment(p, joints[b], joints[tail[b]]); if (d < close) { close = d; nearest[i] = BONES.indexOf(b); } }
