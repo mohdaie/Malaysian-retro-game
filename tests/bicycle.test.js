@@ -25,3 +25,13 @@ test('the bike turns gradually, leans into the corner, and brakes before turning
   const speed = bike.speed; stepBike(bike, { dx: -1, dz: 0 }, .1);
   assert.ok(bike.speed < speed, 'pulling back the other way brakes');
 });
+test('against a wall the bike rolls back out, rear wheel toward the stick, then rides forward again', () => {
+  const bike = fresh();
+  assert.equal(ride(bike, { dx: 0, dz: -1 }, 1.5), false, 'no pedalling backwards');
+  assert.ok(Math.abs(bike.speed + BIKE.back) < .01, 'rolls back at walking pace');
+  assert.ok(Math.abs(bike.heading) < 1e-9, 'straight back keeps the heading');
+  const turning = fresh(); ride(turning, { dx: .7, dz: -.7 }, 1);
+  assert.ok(turning.speed < 0 && turning.heading < 0, 'rear swings toward the stick');
+  ride(bike, { dx: 0, dz: 1 }, 2);
+  assert.ok(bike.speed > 3, 'pushing forward again stops the roll back and rides on');
+});

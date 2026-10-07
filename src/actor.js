@@ -2,8 +2,8 @@ import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.1.0';
-import { createCharacter, motif } from './characters.js?v=2.1.0';
+import { toon, outline } from './illustration.js?v=2.1.1';
+import { createCharacter, motif } from './characters.js?v=2.1.1';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -362,7 +362,7 @@ export function createActor(scene, x, z, kind, rig) {
     } else {
       if (crouching) { target.crouch = 1 - go; target.crouchWalk = go; }
       else {
-        const jog = smooth(native.walk * 1.2, native.jog * .8, speed), sprint = smooth(native.jog * 1.05, native.sprint * .95, speed);
+        const jog = smooth(Math.max(native.walk * 1.2, 1.5), native.jog * .8, speed), sprint = smooth(native.jog * 1.05, native.sprint * .95, speed);
         Object.assign(target, { walk: go * (1 - jog), jog: go * jog * (1 - sprint), sprint: go * jog * sprint, talk: (1 - go) * (action === 'talk' ? 1 : 0), idle: (1 - go) * (action === 'talk' ? 0 : 1) });
       }
       // Landing: knees take the weight, then hand back to standing or running.

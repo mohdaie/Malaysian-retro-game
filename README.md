@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.1.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.1.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -72,18 +72,18 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 
 ## Moves and the basikal (v2.1)
 
-Amir and Nur can now jump, duck, walk, say hi and ride a bicycle.
+Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, every move button works while your other thumb holds the joystick (v2.1.1).
 
 | Move | Desktop | Phone | What happens |
 |---|---|---|---|
 | **Lompat** (jump) | Space | Lompat | Motion-captured take-off, airtime and a knee-bend landing; you can jump while running |
 | **Cangkung** (duck) | C | Cangkung | Crouch idle and crouch-walk (motion-captured); Run stands you back up |
-| **Jalan** (walk) | Z | Jalan | Toggles walking pace instead of a jog on a full push |
+| **Jalan** (walk) | Z | Jalan | Toggles a brisk walk (1.35 m/s) instead of a jog on a full push |
 | **Hai** (say hi) | H | Hai | The right arm waves over whatever the body is doing; townsfolk within 8 m stop, turn and wave back |
 | **Basikal** | F | Basikal | Get on or off your bicycle |
 
-**The basikal.** A 2001 kid's bicycle (red for Amir, mint for Nur) waits beside your house. Walk up to it and press Basikal.
-- **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes before it swings round. A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
+**The basikal.** A 2001 kid's bicycle (red for Amir, mint for Nur) waits beside your house, facing open ground. Walk up to it and press Basikal.
+- **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes, and from a stop rolls the bike backwards with the rear wheel turning toward the stick, so it can back away from a wall (v2.1.1). A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
 - **The rider:** sits on the saddle and leans over the swept-back bar with hands on the grips. The feet follow the pedals as the cranks turn, and stay still when you coast (freewheel).
 - **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
 

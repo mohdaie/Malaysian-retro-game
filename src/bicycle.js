@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.1.0';
+import { toon, outline } from './illustration.js?v=2.1.1';
 
 // A kid's bicycle of 2001 (v2.1): steel frame, 20-inch spoked wheels, a
 // chrome bar with rubber grips, a sprung saddle and a kickstand. It parks at
@@ -8,29 +8,43 @@ import { toon, outline } from './illustration.js?v=2.1.0';
 // ground under the bottom bracket.
 export const BIKE = {
   wheel: .27, rear: -.43, front: .53, crank: .15, bracket: .29, gear: 2.4,
-  cruise: 6.5, fast: 8.5, accel: 3, brake: 7, coast: .6, turn: 2.2, seat: [0, .74, -.2], grips: .25
+  cruise: 6.5, fast: 8.5, back: 1.6, accel: 3, brake: 7, coast: .6, turn: 2.2, seat: [0, .74, -.2], grips: .25
 };
 
 // Riding, one step: steer toward the stick direction (world, length 0..1),
 // faster when `fast`; turn harder at low speed and lean into the corner.
-// Pure, so it can be tested; returns how far the cranks turned.
+// Pulling back brakes, and from a stop rolls the bike backwards, the rear
+// wheel turning toward the stick, so it can back out of a wall. `speed` is
+// negative while rolling back. Pure, so it can be tested; returns whether
+// the rider is pedalling.
+const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 export function stepBike(bike, input, dt) {
   const amount = Math.min(1, Math.hypot(input.dx, input.dz));
   let turned = 0, pedal = false;
   if (amount > .1) {
-    const want = Math.atan2(input.dx, input.dz), diff = Math.atan2(Math.sin(want - bike.heading), Math.cos(want - bike.heading));
-    // Pointing back the way you came brakes first, then swings round slowly.
-    const reverse = Math.abs(diff) > 2.2 && bike.speed > .6;
-    const rate = BIKE.turn * (.45 + .55 * Math.min(1, bike.speed / 2.5));
-    turned = reverse ? 0 : T.MathUtils.clamp(diff, -rate * dt, rate * dt);
-    bike.heading += turned;
-    const target = reverse ? 0 : amount * (input.fast ? BIKE.fast : BIKE.cruise) * (1 - .45 * Math.min(1, Math.abs(diff) / Math.PI));
-    if (bike.speed < target) { bike.speed = Math.min(target, bike.speed + BIKE.accel * dt); pedal = true; }
-    else bike.speed = Math.max(target, bike.speed - (reverse ? BIKE.brake : BIKE.coast * 2) * dt);
-    pedal ||= !reverse && target > .5;
-    bike.steer = T.MathUtils.lerp(bike.steer, T.MathUtils.clamp(diff * .5, -.45, .45), 1 - Math.exp(-dt * 8));
+    const want = Math.atan2(input.dx, input.dz), diff = wrap(want - bike.heading), backward = Math.abs(diff) > 2.2;
+    if (backward && bike.speed > .3) {
+      // Still rolling forward: brake first.
+      bike.speed = Math.max(0, bike.speed - BIKE.brake * dt);
+    } else if (backward) {
+      // Roll back: the rear swings toward the stick.
+      const rate = BIKE.turn * .55, aim = wrap(want + Math.PI - bike.heading);
+      turned = T.MathUtils.clamp(aim, -rate * dt, rate * dt); bike.heading += turned;
+      const target = -amount * BIKE.back;
+      bike.speed = bike.speed > target ? Math.max(target, bike.speed - BIKE.accel * dt) : Math.min(target, bike.speed + BIKE.brake * dt);
+      bike.steer = T.MathUtils.lerp(bike.steer, T.MathUtils.clamp(-aim * .5, -.45, .45), 1 - Math.exp(-dt * 8));
+    } else {
+      const rate = BIKE.turn * (.45 + .55 * Math.min(1, Math.abs(bike.speed) / 2.5));
+      turned = T.MathUtils.clamp(diff, -rate * dt, rate * dt); bike.heading += turned;
+      const target = amount * (input.fast ? BIKE.fast : BIKE.cruise) * (1 - .45 * Math.min(1, Math.abs(diff) / Math.PI));
+      if (bike.speed < 0) bike.speed = Math.min(0, bike.speed + BIKE.brake * dt);
+      else if (bike.speed < target) { bike.speed = Math.min(target, bike.speed + BIKE.accel * dt); pedal = true; }
+      else bike.speed = Math.max(target, bike.speed - BIKE.coast * 2 * dt);
+      pedal ||= target > .5 && bike.speed >= 0;
+      bike.steer = T.MathUtils.lerp(bike.steer, T.MathUtils.clamp(diff * .5, -.45, .45), 1 - Math.exp(-dt * 8));
+    }
   } else {
-    bike.speed = Math.max(0, bike.speed - BIKE.coast * dt);
+    bike.speed = bike.speed > 0 ? Math.max(0, bike.speed - BIKE.coast * dt) : Math.min(0, bike.speed + BIKE.brake * dt);
     bike.steer = T.MathUtils.lerp(bike.steer, 0, 1 - Math.exp(-dt * 4));
   }
   const yawRate = dt > 0 ? turned / dt : 0;
