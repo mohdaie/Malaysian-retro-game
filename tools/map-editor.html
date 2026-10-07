@@ -679,7 +679,7 @@ async function save() {
   const errors = problems.filter(p => p.level === 'error').length;
   try {
     const at = new Date().toISOString();
-    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v1.1.0' });
+    await db.doc('plans/draft').set({ plan, savedAt: at, errors, warnings: problems.length - errors, base: 'game-v1.2.0' });
     savedAt = at; dirty = false; writeLocal(); renderPanel();
   } catch (error) {
     $('saveinfo').textContent = error?.code === 'invalid_argument' ? 'Only the owner and editors of this page can save. Use Copy layout instead.' : 'Saving failed. Check your connection and try again.';

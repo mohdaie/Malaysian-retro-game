@@ -1,6 +1,7 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=1.1.0';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=1.1.0';
+import { toon, outline } from './illustration.js?v=1.2.0';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=1.2.0';
+import { ACTIONS } from './actions.js?v=1.2.0';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map(), fabrics = new Map();
@@ -765,9 +766,9 @@ export function createCharacter(scene, x, z, kind = 'amir') {
   const baseY = -bounds.min.y + .065 / scale; body.position.y = baseY; shadow.position.y = .075 / scale;
   // Older townsfolk stand with a slight stoop.
   const stoop = look.stoop ?? 0;
-  let blend = 0, run = 0, speed = 0, phase = 0, time = 0;
+  let blend = 0, run = 0, speed = 0, phase = 0, time = 0, acting = null, actingTime = 0, actWeight = 0;
   const target = new T.Vector3(), inverseBody = new T.Quaternion(), chain = new T.Quaternion(), footRotation = new T.Quaternion(), xAxis = new T.Vector3(1, 0, 0);
-  function animate(dt, moving = 0, running = false, travel = 0) {
+  function animate(dt, moving = 0, running = false, travel = 0, action = null, actionTime = 0) {
     time += dt;
     // Speed comes from successful collision movement, so pushing against a
     // wall stops the stride, and the gait blends from a walk into a run.
@@ -791,6 +792,20 @@ export function createCharacter(scene, x, z, kind = 'amir') {
       const out = i === 0 ? -1 : 1;
       arms[i].rotation.set(pose.arms[i].swing - pose.lean * .5 - stoop * .5, 0, out * (.1 + .04 * blend * run));
       elbows[i].rotation.x = pose.arms[i].bend;
+    }
+    // Idle actions (see actions.js) blend in over the standing pose and out again.
+    actWeight = T.MathUtils.lerp(actWeight, action ? 1 : 0, 1 - Math.exp(-dt * 5));
+    if (action) { acting = action; actingTime = actionTime; }
+    const act = acting && actWeight > .002 && ACTIONS[acting]?.(actingTime);
+    if (act) {
+      const w = actWeight;
+      for (let i = 0; i < 2; i++) {
+        const a = act.arms?.[i], e = act.elbows?.[i], r = arms[i].rotation;
+        if (a) r.set(r.x + (a[0] - r.x) * w, r.y + (a[1] - r.y) * w, r.z + (a[2] - r.z) * w);
+        if (e != null) elbows[i].rotation.x += (e - elbows[i].rotation.x) * w;
+      }
+      if (act.torso) { torso.rotation.x += act.torso[0] * w; torso.rotation.y += act.torso[1] * w; torso.rotation.z += act.torso[2] * w; }
+      if (act.head) { head.rotation.x += act.head[0] * w; head.rotation.y += act.head[1] * w; head.rotation.z += act.head[2] * w; }
     }
     backpack.rotation.x = Math.sin(phase * 2) * .03 * blend;
     backpack.rotation.z = -pose.hipRoll * .6;

@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.1.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.2.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -33,6 +33,8 @@ Afterwards the town is open: take delivery work from any shop or house, save up,
 | 12 | Atuk, toy storyteller | Rumah Atuk, afternoons at the padang | Loose shirt, kain pelikat, cap, wooden toy box |
 | 13 | Faiz, your friend | Rumah Faiz, afternoons at the padang | Graphic tee, shorts, selipar, a mini 4WD in hand |
 | 14 | Mei Ling, your friend | Rumah Mei Ling, afternoons at the padang | Striped tee, bob, sling bag |
+
+Each of the 14 has their own afternoon loop around their post (v1.2): Kak Ita stirs her pot, walks over to wipe a table and fans herself; Pak Mat bends over his beds; Uncle Lim reads with his arms folded; Faiz waves and stretches. They stop and turn to you when you come close, and wait while you talk. You decide the loops in `src/routines.js`, a plain list per person of steps (`stand`, `do` an action, `walk` to a spot, `face` a way). There are 15 actions: wave, look, stir, wipe, write, read, fan, stretch, hips, fold, talk, bend, scratch, check and nod.
 
 Every other place has a named household contact (Mak Cik Zaitun at Rumah Amir, Cik Aminah at Rumah Nur, and so on). Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
 
@@ -120,6 +122,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
 - `src/landmarks.js`: low-poly shophouse terrace, mosque and sedan built from the concept sheets.
+- `src/routines.js`, `src/actions.js`: each NPC's editable loop and the idle action poses.
 - `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
