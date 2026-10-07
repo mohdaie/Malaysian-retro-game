@@ -16,13 +16,17 @@ The first afternoon of the school holidays, the same for both characters. Amir s
 These six steps introduce the town. Chapter 1 then continues with **Pameran Kenangan**, Pak Salleh's school-holiday exhibition:
 
 7. Meet Pak Salleh at the balai raya and hear the invitation.
-8. Choose any of the six keepsake stories and accept it from its giver.
+8. Explore the town, discover a keepsake story through conversation and accept it from its giver.
 9. Complete its varied deliveries and long-route requirements to earn trust.
 10. Follow its ordered clues to learn the story behind the object.
 11. Win its game challenges, then collect the keepsake and personal dedication.
 12. Return to Pak Salleh and share that story at the exhibition to complete Chapter 1.
 
-The gold chapter marker and quest book follow the next relevant delivery, clue, challenge host or giver. Each keepsake card explains what its story contributes to the exhibition. Only one earned keepsake is required for the ending; all six stories remain available. Sharing keeps the item in the player's collection and saves a personal exhibition display. Existing saves at the former ending (step 6) continue at the invitation, preserving all money, items and quest progress. See [chapter flow and validation](docs/CHAPTER-1.md).
+The gold chapter marker follows the next known delivery, clue, challenge host or giver. Before a story is discovered, the player explores without a keepsake marker. Buku records accepted stories with a small exhibition tag. Only one earned keepsake is required for the ending; all six stories remain available. Sharing keeps the item in the player's collection and saves a personal exhibition display. Existing saves at the former ending (step 6) continue at the invitation, preserving all money, items and quest progress. See [chapter flow and validation](docs/CHAPTER-1.md).
+
+## Buku: a journal of discoveries
+
+Three tabs replace the long quest list: **Tugasan** holds the short chapter goal, active deliveries and accepted stories; **Kenangan** holds earned keepsakes and their photos; **Pekan** records games played and people met. Cards show one current phase, with expandable automatic task checkmarks and discovered notes. Future clue stops, challenges and rewards stay hidden until their phase or earning. Unowned catalogue keepsakes use an anonymous locked cover. No progress, grind requirements or saves are reset. See [journal design and validation](docs/JOURNAL.md).
 
 ## Long-term keepsake quests
 

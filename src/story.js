@@ -19,7 +19,7 @@ export const STEPS = [
   { title: 'Congkak di beranda', text: 'Sit with Nenek on her veranda and play a round of congkak.', target: 'nenek', on: 'played-congkak-nenek' },
   { title: 'Simpan sikit-sikit', text: 'Buy your first collectible at Uncle Lim’s. Then help Pak Salleh prepare something special for the school holidays.', target: 'lim', on: 'bought-collectible' },
   { title: 'Pameran Kenangan', text: 'Pak Salleh is preparing a school-holiday exhibition at the balai raya. Ask how your deliveries and the town’s old keepsakes can help.', target: 'salleh', on: 'invited-exhibition' },
-  { title: 'Pilih kisah pertama', text: 'Choose one of six keepsake stories in your quest book and speak to its giver. Every story can become your contribution to the exhibition.', target: 'memory', on: null },
+  { title: 'Dengar cerita pekan', text: 'Explore the town and listen to its people. A story you discover may become your contribution to the exhibition.', target: 'memory', on: null },
   { title: 'Dipercayai satu pekan', text: 'Finish varied deliveries and long routes for your chosen keepsake. Learn the town and earn its people’s trust for the exhibition.', target: 'memory', on: null },
   { title: 'Jejak kenangan', text: 'Follow your keepsake’s clues across town, in order. Discover the people behind the object so their story can be shared at the balai raya.', target: 'memory', on: null },
   { title: 'Buktikan usaha', text: 'Win the keepsake’s game challenges. Show the patience and practice that its giver asks of you.', target: 'memory', on: null },
@@ -86,7 +86,7 @@ export function chapterGuide(step, eco, exhibition = null) {
   const phase = current < 6 ? 'KENAL PEKAN' : current < 9 ? 'BINA KEPERCAYAAN' : 'PAMERAN KENANGAN';
   let target = base.target, text = base.text;
   if (target === 'memory') {
-    if (!q) target = 'faiz';
+    if (!q) target = null;
     else if (p.stage === 'grind') {
       const job = eco.jobs[0];
       target = job ? { place: job.status === 'accepted' ? job.from : job.stops[job.stops.length-job.left], job: true } : 'rahman';

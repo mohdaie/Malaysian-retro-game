@@ -26,10 +26,10 @@ export function itemIdentity(id, onInspect, description = '') {
 export function catalogueCard(id, onInspect, owned = 0) {
   const item = ITEMS[id], card = document.createElement('li'), name = document.createElement('b'), note = document.createElement('small');
   card.className = 'catalogue-card'; card.dataset.item = id;
-  name.textContent = item.title;
+  name.textContent = item.rewardOnly&&!owned?'Kenangan rahsia':item.title;
   note.textContent = item.rewardOnly ? owned ? 'Keepsake earned · Open its story' : 'Locked keepsake · Earn through its quest' : owned ? `Dalam koleksi · × ${owned}` : item.kind === 'cargo' ? 'Penghantaran sahaja' : `${ITEM_KINDS[item.kind]} · ${rm(item.price)}`;
   const picture=itemThumbnail(id, onInspect, true);
-  if(item.rewardOnly&&!owned){picture.querySelector('img').src='./assets/nostalgia-locked.svg';picture.querySelector('img').alt='Locked keepsake';card.classList.add('locked-keepsake');}
+  if(item.rewardOnly&&!owned){picture.querySelector('img').src='./assets/nostalgia-locked.svg';picture.querySelector('img').alt='Kenangan rahsia';picture.setAttribute('aria-label','Lihat kenangan rahsia');card.classList.add('locked-keepsake');}
   card.append(picture, name, note);
   return card;
 }

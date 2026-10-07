@@ -30,6 +30,8 @@ import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.7.0';
 import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.7.0';
 import { NOSTALGIA_QUESTS, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.7.0';
 import { memoryQuestCard } from './nostalgia-ui.js?v=2.7.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.7.0';
+import { CHAPTER_BRIEFS } from './journal.js?v=2.7.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -120,7 +122,7 @@ function refreshQuest() {
   const guide = chapterGuide(state.story, eco, state.exhibition);state.story=guide.step;
   const gone = typeof guide.target==='string' && NPCS[guide.target] && !atPost(npcBody(guide.target)) && !storyTarget();
   $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = guide.title;
-  $('quest-description').textContent = gone ? `${guide.text} ${NPCS[guide.target].name} ${time.minute>=(HOURS[guide.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[guide.target]||HOURS.default)[0])}.`}` : guide.text;
+  $('quest-description').textContent = gone ? `${CHAPTER_BRIEFS[guide.step]} ${NPCS[guide.target].name} ${time.minute>=(HOURS[guide.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[guide.target]||HOURS.default)[0])}.`}` : CHAPTER_BRIEFS[guide.step];
   $('quest-phase').textContent=guide.phase;
   $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `${String(state.story + 1).padStart(2,'0')} / ${String(DONE).padStart(2,'0')}`;
   $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;
@@ -301,7 +303,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
         if(state.story===12)for(const id of Object.keys(eco.nostalgia.earned))add(`Share at Pameran Kenangan · ${ITEMS[id].title}`,()=>finishExhibition(id));
         if(state.exhibition)add('Visit my Pameran Kenangan display',()=>openCounter(place,npcKey,'exhibition'));
       }
-      if(memories.length)add(`Stories & keepsakes · ${memories.length}`,()=>openCounter(place,npcKey,'memories'));
+      if(memories.length)add('Ada kisah untuk dicerita',()=>openCounter(place,npcKey,'memories'));
       if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
       if(merchant&&place===25)add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Parts, gear & bateri pun ada. Harga & rating untuk game ini.`));
       if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
@@ -425,9 +427,9 @@ function inviteExhibition(){
   closeCounter();
   showDialogue('Pak Salleh · Pameran Kenangan',[
     `${state.name}, buying your first toy is only the beginning. This cuti sekolah, we are filling the balai raya with things that have a story.`,
-    'Faiz has an unfinished verse. Cikgu Farid remembers a comic passed around class. Kak Lina and Abang Kamal have family stories. Uncle Lim has a championship car, and Nenek has an old trip plan.',
-    'Choose a keepsake story. Help the town through deliveries, follow its clues, and win its challenges. Then bring the keepsake’s story here. We will keep one space for you.'
-  ],()=>{storyEvent('invited-exhibition');openCounter(32,'salleh','menu','Choose any of the six keepsake stories in Buku. Your existing progress counts. Earn one and return to share its story at the exhibition.');});
+    'Cuba singgah kedai, berbual di beranda, dan dengar cerita orang pekan. Kadang-kadang benda kecil menyimpan kenangan yang besar.',
+    'Kalau seseorang minta bantuan, cubalah dengar. Bila kau jumpa satu kenangan yang bermakna, bawa ceritanya ke sini. Aku simpan satu ruang untuk kau.'
+  ],()=>{storyEvent('invited-exhibition');openCounter(32,'salleh','menu','Teroka pekan dan dengar cerita penduduk. Tugas yang kau terima akan dicatat dalam Buku.');});
 }
 function finishExhibition(id){
   if(counter?.place!==32||state.story!==12)return;
@@ -485,38 +487,13 @@ function openBag(){
   album.classList.toggle('catalogue-grid',owned.length>0);
   for(const [item,qty] of owned)album.append(catalogueCard(item,inspectItem,qty));
 }
+let selectBookTab=null;
 function openBook(){
   if(mode!=='explore')return;setMode('book');$('book-panel').hidden=false;
   refreshQuest();const guide=chapterGuide(state.story,eco,state.exhibition);
-  const story=$('book-story');story.replaceChildren();listItem(story,guide.title,guide.text);
-  $('book-chapter-phase').textContent=`${CHAPTER} · ${guide.phase}`;
-  $('book-chapter-link').textContent=guide.connection;
-  const target=guide.target;
-  let routeId=typeof target==='object'&&target?`place:${target.place}`:typeof target==='string'&&target!=='job'?`npc:${target}`:null;
-  if(target==='job'){const job=eco.jobs.find(j=>j.story);if(job)routeId=`place:${job.status==='accepted'?job.from:nextStop(job)}`;}
-  $('book-chapter-route').hidden=!routeId;$('book-chapter-route').onclick=()=>navigateMemory(routeId);
-  $('book-chapter-keepsakes').onclick=()=>{const card=guide.questId?$('book-memories').querySelector(`[data-nostalgia="${guide.questId}"]`):$('book-memories');card.scrollIntoView({block:'start'});};
-  const memories=$('book-memories');memories.replaceChildren();
-  for(const id of Object.keys(NOSTALGIA_QUESTS))memories.append(memoryQuestCard(id,eco,memoryActions()));
-  const jobs=$('book-jobs');jobs.replaceChildren();
-  for(const job of eco.jobs){
-    let action=null;
-    if(job.status==='accepted'){action=document.createElement('button');action.textContent='Cancel';action.onclick=()=>{cancel(eco,job.id);persist();refreshEconomy();closePanel('book-panel');openBook();};}
-    listItem(jobs,`${jobText(job)}`,`${job.status==='carrying'?`Return at ${placeName(job.from)} to cancel · `:''}${rm(job.upah)}`,action,job.item);
-  }
-  if(!eco.jobs.length)listItem(jobs,'No delivery in progress. Ask at any shop (Delivery work) or house (Requests).','');
-  $('book-summary').textContent=`Deliveries completed: ${eco.done.length} · Jobs ${eco.jobs.length}/${MAX_JOBS} · Duit Poket: ${rm(eco.wallet)} · Congkak: ${eco.congkak.won} won of ${eco.congkak.played}`;
-  const damQuests=$('book-dam');damQuests.replaceChildren();
-  for(const q of DAM_QUESTS)listItem(damQuests,`${eco.dam.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.dam.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
-  listItem(damQuests,'Pak Din · Kiosk Petrol Retro',`${eco.dam.won} wins / ${eco.dam.played} matches${eco.dam.match&&!eco.dam.match.over?' · Saved match to resume':''}`);
-  const gasingQuests=$('book-gasing');gasingQuests.replaceChildren();
-  for(const q of GASING_QUESTS)listItem(gasingQuests,`${eco.gasing.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.gasing.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
-  listItem(gasingQuests,'Atuk & Faiz · Padang by the gelanggang',`${eco.gasing.won} wins / ${eco.gasing.played} rounds · Best ${eco.gasing.best.toFixed(2)} s${eco.gasing.round&&eco.gasing.round.phase!=='result'?' · Saved round to resume':''}`);
-  const tamiyaQuests=$('book-tamiya');tamiyaQuests.replaceChildren();
-  for(const q of TAMIYA_QUESTS)listItem(tamiyaQuests,`${eco.tamiya.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.tamiya.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
-  listItem(tamiyaQuests,'Faiz & Mei Ling · Padang',`${eco.tamiya.won} wins / ${eco.tamiya.played} races · Tracks won ${eco.tamiya.wins.length}/3${eco.tamiya.round&&eco.tamiya.round.phase!=='result'?' · Saved race to resume':''}`);
-  const friends=$('book-friends');friends.replaceChildren();
-  for(const key of NPC_KEYS){const pts=eco.friends[key]||0;listItem(friends,`${NPCS[key].name} · ${NPCS[key].role}`,`${level(pts)} · ${pts}`);}
+  selectBookTab=renderQuestJournal($('book-content'),{eco,state,guide,placeName,inspect:inspectItem,actions:memoryActions(),navigate:navigateMemory,
+    cancel:id=>{cancel(eco,id);persist();refreshEconomy();closePanel('book-panel');openBook();}});
+  $('book-tab-tasks').focus();
 }
 function closePanel(id){$(id).hidden=true;setMode('explore');}
 $('bag-button').onclick=openBag;$('book-button').onclick=openBook;$('wallet-button').onclick=openBook;
@@ -528,11 +505,11 @@ function inspectItem(id,trigger){
   const keepsake=NOSTALGIA_ITEMS[id],earned=eco.nostalgia.earned[id];
   if(keepsake){
     const status=nostalgiaStatus(eco,id);detail.memory=earned?`${keepsake.story}\n\n“${earned.inscription}”\nGiven by ${earned.giver}, for ${earned.player}, game day ${earned.day}.`:status.place?`Next story clue: ${placeName(status.place)}. ${status.text}`:status.text;
-    if(!earned)detail.image='./assets/nostalgia-locked.svg';
-    detail.caption+=` · ${keepsake.referenceType}`;
+    if(!earned){detail.image='./assets/nostalgia-locked.svg';detail.title='Kenangan rahsia';detail.caption='Belum diperoleh';detail.memory=eco.nostalgia.quests[id]?'Teruskan kisah yang kau terima. Ganjarannya menunggu di penghujung perjalanan.':'Teroka pekan dan dengar cerita penduduk untuk menemui kenangan ini.';}
+    if(earned)detail.caption+=` · ${keepsake.referenceType}`;
   }
-  $('item-quest-button').hidden=!NOSTALGIA_QUESTS[id];
-  $('item-quest-button').onclick=()=>{closeItem();$('catalogue-panel').hidden=true;$('bag-panel').hidden=true;$('counter-panel').hidden=true;counter=null;setMode('explore');openBook();$('book-memories').querySelector(`[data-nostalgia="${id}"]`)?.scrollIntoView({block:'start'});};
+  $('item-quest-button').hidden=!eco.nostalgia.quests[id];
+  $('item-quest-button').onclick=()=>{closeItem();$('catalogue-panel').hidden=true;$('bag-panel').hidden=true;$('counter-panel').hidden=true;counter=null;setMode('explore');openBook();if(earned)selectBookTab('memories');$('book-content').querySelector(`[data-nostalgia="${id}"]`)?.scrollIntoView({block:'start'});};
   $('item-title').textContent=detail.title;$('item-memory').textContent=detail.memory;
   $('item-caption').textContent=detail.caption;$('item-image').src=detail.image;$('item-image').alt=detail.title;
   $('item-panel').hidden=false;setMode('item');$('item-close').focus();
@@ -546,7 +523,7 @@ $('item-close').onclick=closeItem;
 function renderCatalogue(){
   const list=$('catalogue-list');list.replaceChildren();
   const entries=Object.entries(ITEMS).filter(([,it])=>catalogueFilter==='all'||catalogueFilter==='keepsakes'&&it.rewardOnly||it.kind===catalogueFilter);
-  for(const [id] of entries){const card=catalogueCard(id,inspectItem,eco.collection[id]||0);if(NOSTALGIA_ITEMS[id]){const status=document.createElement('small');status.className='memory-catalogue-status';status.textContent=nostalgiaStatus(eco,id).text;card.append(status);}list.append(card);}
+  for(const [id] of entries){const card=catalogueCard(id,inspectItem,eco.collection[id]||0);if(eco.nostalgia.earned[id]){const status=document.createElement('small');status.className='memory-catalogue-status';status.textContent=nostalgiaStatus(eco,id).text;card.append(status);}list.append(card);}
   $('catalogue-count').textContent=`${entries.length} / ${Object.keys(ITEMS).length} item · Pekan Seri Kenangan, circa 2001`;
   for(const button of $('catalogue-filters').children)button.setAttribute('aria-pressed',String(button.dataset.kind===catalogueFilter));
 }
