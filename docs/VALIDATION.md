@@ -194,3 +194,13 @@ Street lights: 27 lamps are placed (8 sodium lamps on the asphalt roads, 19 timb
 The skeleton file is 838 KB (about 370 KB gzipped), down from the library's 6.6 MB, keeping 8 clips. Speeds measured from the planted foot at the kids' scale (0.813 of the 1.83 m source rig): walk 0.85 m/s, jog 4.27 m/s, sprint 6.29 m/s. The game's full-stick speed is 4.3 m/s and Run is 6.3 m/s.
 
 In headless Chromium (1280×720 desktop and 844×390 phone landscape), Amir and Nur stand, jog, sprint and turn through the kampung with the chase camera. The new bodies measure 1.50 m tall. The view rendered 255 draw calls and about 199k triangles. No page errors; the three console warnings are the same as on v1.9. Side-view renders confirm knees and elbows bend continuously, with no gaps at the joints. These are emulated checks, not a physical-device test.
+
+## v2.1.0 · jump, duck, walk, say hi and the basikal
+
+`npm test`: **135 tests passed**. The new bicycle tests check that pedalling builds up to cruising speed, Run builds up to the faster speed and coasting freewheels. They also check gradual steering, leaning into a turn, and braking before turning back. The save tests check that the bike is saved where it was left, and that a missing or broken position parks it at home.
+
+The skeleton file is 1.12 MB (458 KB gzipped) with 14 clips.
+
+In headless Chromium at 1280×720 and on a touch-emulated 844×390 phone, a new game was played through jump (mid-air captured), duck, crouch-walk, wave, getting on the bike, riding, a leaning turn, coasting and getting off. The bike was left parked on its kickstand. On the phone, Hai becomes Loceng while riding, Cangkung and Lompat are disabled, and Basikal shows as pressed. There were no page errors.
+
+A side-view check of the rider measured the hands on the grips (0.25, 0.93, 0.255 to the millimetre) and the feet on the pedals at every crank angle tested. These are emulated checks, not a physical-device test.

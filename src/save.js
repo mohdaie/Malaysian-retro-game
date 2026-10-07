@@ -1,6 +1,6 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.0.0';
-import { PLAYERS, DONE } from './story.js?v=2.0.0';
-import { cleanClock, newClock } from './clock.js?v=2.0.0';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.1.0';
+import { PLAYERS, DONE } from './story.js?v=2.1.0';
+import { cleanClock, newClock } from './clock.js?v=2.1.0';
 export const SAVE_KEY = 'retro-malaysia-save-v1';
 // Version 3 (v1.0): who you play (Amir or Nur), your name, the chapter step
 // and the whole economy. Saves from earlier prototypes keep the name and the
@@ -13,12 +13,17 @@ export function validateSave(value) {
   const name = value.name.trim().slice(0, 20);
   if (value.version === 3) {
     if (!PLAYERS[value.who] || !Number.isInteger(value.story) || value.story < 0 || value.story > DONE) return null;
-    return { version: 3, who: value.who, name: name || PLAYERS[value.who].name, story: value.story, x: value.x, z: value.z, ...cleanEconomy(value), clock: cleanClock(value.clock) };
+    return { version: 3, who: value.who, name: name || PLAYERS[value.who].name, story: value.story, x: value.x, z: value.z, ...cleanEconomy(value), clock: cleanClock(value.clock), bike: cleanBike(value.bike) };
   }
   if (!Number.isInteger(value.quest) || value.quest < 0 || value.quest > 3) return null;
   const eco = newEconomy();
   if (value.version === 2 && Number.isInteger(value.wallet) && value.wallet >= 0 && value.wallet <= 1e7) eco.wallet = value.wallet;
   return { version: 3, who: 'amir', name: name || 'Amir', story: 0, x: value.x, z: value.z, ...eco, clock: newClock(), upgraded: true };
+}
+// Where the bicycle was left (v2.1); missing or broken means parked at home.
+export function cleanBike(bike) {
+  if (!bike || ![bike.x, bike.z, bike.heading].every(Number.isFinite) || Math.abs(bike.x) > 78 || Math.abs(bike.z) > 68) return null;
+  return { x: bike.x, z: bike.z, heading: bike.heading };
 }
 export function readSave(storage) {
   try { return validateSave(JSON.parse(storage.getItem(SAVE_KEY))); } catch { return null; }

@@ -1,31 +1,32 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.0.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.1.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.0.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.0.0';
-import { readSave, writeSave } from './save.js?v=2.0.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.0.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.0.0';
-import { createSoundscape } from './soundscape.js?v=2.0.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.0.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.0.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.0.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.0.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.0.0';
-import { ITEM_KINDS } from './item-art.js?v=2.0.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.0.0';
-import { createGasingUI } from './gasing-ui.js?v=2.0.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.0.0';
-import { createDamUI } from './dam-ui.js?v=2.0.0';
-import { DAM_QUESTS } from './dam-progress.js?v=2.0.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.0.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.0.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.0.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.0.0';
-import { createTownMap } from './town-map-ui.js?v=2.0.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.0.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.0.0';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.0.0';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.0.0';
+import { makeWorld } from './world.js?v=2.1.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.1.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.1.0';
+import { readSave, writeSave } from './save.js?v=2.1.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.1.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.1.0';
+import { createSoundscape } from './soundscape.js?v=2.1.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.1.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.1.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.1.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.1.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.1.0';
+import { ITEM_KINDS } from './item-art.js?v=2.1.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.1.0';
+import { createGasingUI } from './gasing-ui.js?v=2.1.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.1.0';
+import { createDamUI } from './dam-ui.js?v=2.1.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.1.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.1.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.1.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.1.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.1.0';
+import { createTownMap } from './town-map-ui.js?v=2.1.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.1.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.1.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.1.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.1.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -34,6 +35,11 @@ try { world = await makeWorld($('world')); } catch (error) {
   throw error;
 }
 const { camera, renderer, scene } = world;
+// Moves (v2.1): jump, duck, say hi, walk and the bicycle. The bike parks at
+// home, stays wherever it is left and saves with the game.
+const bicycle = createBicycle(scene), WALK_ONLY = 1.15, JUMP_SPEED = 4.3, GRAVITY = 13;
+let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false;
+let jumpY = 0, jumpVy = 0, airborne = false, jumpQueued = -1, jumpedNow = false, landedNow = false;
 let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
 // collection, jobs, friendship) lives in `eco` and saves with them.
@@ -132,7 +138,7 @@ function setMode(next) {
   $('touch-controls').style.visibility = next === 'explore' ? '' : 'hidden';
 }
 function persist() {
-  const ok = writeSave(storage, { version: 3, ...state, ...eco, clock: { ...time }, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 3, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saved = readSave(storage); $('continue-button').hidden = false; }
   return ok;
@@ -151,6 +157,10 @@ function begin(value = null) {
   player.group.position.set(x, world.groundHeight(x, z) - .065, z);
   if (!value) player.group.rotation.y = home.heading;
   yaw = player.group.rotation.y + Math.PI; cameraPitch = CAMERA_PITCH; cameraSettle = 0;
+  riding = crouching = walkOnly = airborne = false; jumpY = 0; jumpQueued = -1; player.group.rotation.z = 0;
+  const parked = value?.bike && world.canWalk(value.bike.x, value.bike.z) ? value.bike : parkAtHome();
+  bike = { x: parked.x, z: parked.z, heading: parked.heading, speed: 0, steer: 0, lean: 0 };
+  bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); parkBike(); updateMoveButtons();
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
@@ -193,6 +203,7 @@ function interact() {
   if(orientationBlocked)return;
   if(mode==='dialogue'){advanceDialogue();return;}
   if(mode!=='explore'||!nearby)return;
+  if(riding)dismount();
   if(nearby.kind==='place'){openCounter(nearby.id);return;}
   // Face each other; the camera swings to an over-the-shoulder two-shot.
   const p=player.group.position;
@@ -493,11 +504,12 @@ window.addEventListener('keydown',event=>{
   if(orientationBlocked)return;
   if(mode==='pause'&&event.key==='Escape'){event.preventDefault();$('resume-button').click();return;}
   if(mode==='item'&&event.key==='Tab'){event.preventDefault();$('item-close').focus();return;}
-  if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape'].includes(event.key))return;
+  if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape',' ','c','h','f','z'].includes(event.key))return;
   const key=event.key.toLowerCase();
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(key))event.preventDefault();
   keys.add(key);
   if(key==='e')interact();
+  if(mode==='explore'){if(key===' ')jump();if(key==='c')duck();if(key==='h')sayHi();if(key==='f')toggleBike();if(key==='z')toggleWalk();}
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
@@ -522,6 +534,44 @@ function moveStick(event){
 }
 $('joystick').addEventListener('pointermove',moveStick);
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('joystick').addEventListener(type,event=>{if(event.pointerId===stickPointer){stickPointer=null;joystick={x:0,y:0};$('joystick-knob').style.transform='';}});
+// ---- Moves: jump, duck, say hi, walk and the bicycle ----
+function parkAtHome(){
+  const h=world.spawns[state.who];
+  for(const d of [1.7,-1.7,2.4,-2.4,3.2]){const x=h.x-Math.cos(h.heading)*d,z=h.z+Math.sin(h.heading)*d;if(world.canWalk(x,z))return {x,z,heading:h.heading};}
+  return {x:h.x,z:h.z,heading:h.heading};
+}
+function parkBike(){bicycle.place(bike,world.groundHeight(bike.x,bike.z),!riding);}
+function updateMoveButtons(){
+  $('duck-button').setAttribute('aria-pressed',String(crouching));$('walk-button').setAttribute('aria-pressed',String(walkOnly));$('bike-button').setAttribute('aria-pressed',String(riding));
+  $('jump-button').disabled=riding;$('duck-button').disabled=riding;$('wave-button').textContent=riding?'Loceng':'Hai';
+}
+function jump(){if(mode!=='explore'||riding||airborne||jumpQueued>=0)return;crouching=false;jumpQueued=.07;jumpedNow=true;updateMoveButtons();}
+function duck(){if(mode!=='explore'||riding)return;crouching=!crouching;updateMoveButtons();}
+function toggleWalk(){if(mode!=='explore')return;walkOnly=!walkOnly;updateMoveButtons();toast(walkOnly?'Jalan · walking pace. Tap Jalan again to jog.':'Jog · a full push jogs again.');}
+// Say hi: wave, and anyone close by on duty waves back. On the bike it rings the bell.
+function sayHi(){
+  if(mode!=='explore')return;
+  if(riding){audio?.bell?.();return;}
+  player.wave?.();const p=player.group.position;
+  for(const n of world.npcs)if(atPost(n)&&Math.hypot(n.x-p.x,n.z-p.z)<8)n.waveUntil=elapsed+.5+2.1;
+}
+function toggleBike(){
+  if(mode!=='explore')return;
+  if(!player.actor){toast('The basikal needs the motion-capture characters, which did not load on this device.');return;}
+  if(riding){dismount();return;}
+  const p=player.group.position,gap=Math.hypot(p.x-bike.x,p.z-bike.z);
+  if(gap>2.8){toast(`Your basikal is ${Math.round(gap)} m away. Walk up to it and press Basikal (F).`);return;}
+  if(airborne||jumpQueued>=0)return;
+  riding=true;crouching=false;Object.assign(bike,{speed:0,steer:0,lean:0});p.x=bike.x;p.z=bike.z;player.group.rotation.set(0,bike.heading,0);
+  updateMoveButtons();
+}
+function dismount(){
+  riding=false;Object.assign(bike,{speed:0,lean:0});
+  const p=player.group.position;
+  for(const s of [1,-1]){const x=bike.x+Math.cos(bike.heading)*.75*s,z=bike.z-Math.sin(bike.heading)*.75*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
+  p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,bike.heading,0);parkBike();updateMoveButtons();persist();
+}
+for(const [id,action] of [['jump-button',jump],['duck-button',duck],['wave-button',sayHi],['bike-button',toggleBike],['walk-button',toggleWalk]])$(id).addEventListener('click',action);
 $('run-button').onpointerdown=event=>{running=true;event.currentTarget.setPointerCapture(event.pointerId);};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])$('run-button').addEventListener(type,()=>running=false);
 // Orbit with a drag/swipe on the world, independent of the left joystick.
@@ -655,6 +705,7 @@ function drawMap(canvas){
   if(storySpot&&!storySpot.job){const q=storySpot;ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
   for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
   world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),2.5,0,Math.PI*2);ctx.fill();});
+  if(!riding){ctx.fillStyle='#c8322c';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(bike.x),pz(bike.z),3.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
   const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
   if(navigation?.route.length){ctx.beginPath();navigation.route.forEach((p,i)=>{i?ctx.lineTo(px(p.x),pz(p.z)):ctx.moveTo(px(p.x),pz(p.z));});ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#175fd0';ctx.lineWidth=3;ctx.stroke();}
@@ -673,13 +724,29 @@ function tick(){
     let sy=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)-joystick.y;
     const length=Math.hypot(sx,sy);if(length>1){sx/=length;sy/=length;}
     const dx=sx*Math.cos(yaw)-sy*Math.sin(yaw),dz=-sx*Math.sin(yaw)-sy*Math.cos(yaw);
-    const isRunning=running||keys.has('shift');
+    const isRunning=(running||keys.has('shift'))&&!walkOnly;
+    if(isRunning&&crouching){crouching=false;updateMoveButtons();}
     const p=player.group.position;
     const previousX=p.x,previousZ=p.z;
-    moveWithCollision(p,dx,dz,isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
-    p.y=world.groundHeight(p.x,p.z)-.065;
-    audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
-    if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
+    let pedalling=false;
+    if(riding){
+      // The bike steers toward the stick and carries the rider.
+      pedalling=stepBike(bike,{dx,dz,fast:isRunning},dt);
+      const moved={x:bike.x,z:bike.z};moveWithCollision(moved,Math.sin(bike.heading),Math.cos(bike.heading),bike.speed,dt,world.canWalk);
+      const went=Math.hypot(moved.x-bike.x,moved.z-bike.z);if(dt>0&&went<bike.speed*dt*.6)bike.speed=went/dt;
+      bike.x=moved.x;bike.z=moved.z;bicycle.roll(went,pedalling);
+      p.x=bike.x;p.z=bike.z;player.group.rotation.set(0,bike.heading,bike.lean);
+    }else{
+      moveWithCollision(p,dx,dz,crouching?(player.native?.crouchWalk??1.2):walkOnly?WALK_ONLY:isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
+      if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
+    }
+    // Jumping: a short push-off, then up and down under gravity.
+    if(jumpQueued>=0){jumpQueued-=dt;if(jumpQueued<0){airborne=true;jumpVy=JUMP_SPEED;}}
+    if(airborne){jumpVy-=GRAVITY*dt;jumpY+=jumpVy*dt;if(jumpY<=0){jumpY=0;airborne=false;landedNow=true;audio?.footsteps(1);}}
+    const ground=world.groundHeight(p.x,p.z);
+    p.y=ground-.065+jumpY;
+    if(riding)bicycle.place(bike,ground);
+    if(!riding&&!airborne)audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
     const travel=Math.hypot(p.x-previousX,p.z-previousZ);
     // Chase camera: swing in behind the runner while they move, gently when
     // turning and not at all when they run back toward the lens.
@@ -688,7 +755,8 @@ function tick(){
       const weight=(Math.cos(delta)*.5+.5)*Math.min(1,travel/Math.max(.0001,dt*WALK_SPEED));
       yaw+=delta*(1-Math.exp(-dt*2.6*weight));
     }
-    player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel);
+    player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel,null,{crouch:crouching,air:airborne,jumped:jumpedNow,landed:landedNow,ride:riding?bicycle.targets():null});
+    jumpedNow=landedNow=false;
     nearby=null;let best=2.6;
     for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
     if(!nearby){best=2.4;for(const b of BUILDINGS){if(atPost(npcBody(npcAt(b.id)))&&npcBody(npcAt(b.id)).post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
@@ -701,7 +769,7 @@ function tick(){
     if(navigation){const next=navigation.route[1]||navigation.entry,angle=Math.atan2(next.x-p.x,-(next.z-p.z))+yaw;$('navigation-arrow').textContent=navigation.arrived?'✓':'↑';$('navigation-arrow').style.transform=`rotate(${navigation.arrived?0:angle}rad)`;$('navigation-hud').hidden=false;}
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
-  } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null);
+  } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null,{crouch:crouching,ride:riding?bicycle.targets():null});
   // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
   for(const n of world.npcs){
     const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20;
@@ -712,10 +780,12 @@ function tick(){
     // Their own loop (routines.js): they stop for you when you come close, and wait while you talk.
     const talking=talkingTo?.id===n.id||counter?.npc===n.id;
     if(talking)n.routine.state.heading=character.group.rotation.y;
-    const s=n.routine.update(dt,{pause:talking||mode!=='explore'&&mode!=='title',look:mode==='explore'&&gap<2.4?pp:null});
+    // Wave back when the player says hi nearby (after a short beat).
+    const waving=n.waveUntil>elapsed&&n.waveUntil-elapsed<2.1;
+    const s=n.routine.update(dt,{pause:talking||waving||mode!=='explore'&&mode!=='title',look:mode==='explore'&&(gap<2.4||n.waveUntil>elapsed)?pp:null});
     n.x=s.x;n.z=s.z;n.collider.x=s.x;n.collider.z=s.z;
     character.group.position.set(s.x,world.groundHeight(s.x,s.z)-.065,s.z);if(!talking)character.group.rotation.y=s.heading;
-    character.animate(dt,s.moving,false,s.travel,s.action,s.actionTime);
+    character.animate(dt,s.moving,false,s.travel,waving?'wave':s.action,waving?2.1-(n.waveUntil-elapsed):s.actionTime);
   }
   world.wind.value=elapsed;
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}

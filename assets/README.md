@@ -7,7 +7,7 @@
 - Both are WebP encodings of the original generated outputs, with no compositing or external photographic source.
 - Roof, plaster, earth, road, sign, flag, sky and contact-shadow textures are original canvas art in `src/world.js` and `src/characters.js`.
 - All building, vegetation, vehicle, prop and character meshes are original code-authored geometry. Sound synthesis and the townsfolk's animation are implemented in the repository.
-- `models/kids-mocap.glb` (v2.0): the skeleton and 8 motion-captured clips (Idle, Walk, Jog, Sprint, Idle Talking, Interact, Pick Up, Sitting Idle) from the **Universal Animation Library** by Quaternius, CC0 1.0 public domain (https://quaternius.com/packs/universalanimationlibrary.html, OpenGameArt mirror). Pruned from the Godot GLB with glTF-Transform. The library's mannequin mesh is not rendered; Amir's and Nur's bodies are generated in `src/actor.js`.
+- `models/kids-mocap.glb` (v2.0): the skeleton and 14 motion-captured clips (Idle, Walk, Jog, Sprint, Idle Talking, Interact, Pick Up, Sitting Idle; from v2.1 also Jump Start, Jump Loop, Jump Land, Crouch Idle, Crouch Forward and Driving, the seated base for the bicycle) from the **Universal Animation Library** by Quaternius, CC0 1.0 public domain (https://quaternius.com/packs/universalanimationlibrary.html, OpenGameArt mirror). Pruned from the Godot GLB with glTF-Transform. The library's mannequin mesh is not rendered; Amir's and Nur's bodies are generated in `src/actor.js`.
 - `vendor/addons/`: three.js GLTFLoader, SkeletonUtils and BufferGeometryUtils (MIT, same license as three.js).
 - Three.js is the only external runtime dependency; its MIT license is in `vendor/THREE-LICENSE.txt`.
 

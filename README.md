@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.0.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.1.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -70,6 +70,23 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
+## Moves and the basikal (v2.1)
+
+Amir and Nur can now jump, duck, walk, say hi and ride a bicycle.
+
+| Move | Desktop | Phone | What happens |
+|---|---|---|---|
+| **Lompat** (jump) | Space | Lompat | Motion-captured take-off, airtime and a knee-bend landing; you can jump while running |
+| **Cangkung** (duck) | C | Cangkung | Crouch idle and crouch-walk (motion-captured); Run stands you back up |
+| **Jalan** (walk) | Z | Jalan | Toggles walking pace instead of a jog on a full push |
+| **Hai** (say hi) | H | Hai | The right arm waves over whatever the body is doing; townsfolk within 8 m stop, turn and wave back |
+| **Basikal** | F | Basikal | Get on or off your bicycle |
+
+**The basikal.** A 2001 kid's bicycle (red for Amir, mint for Nur) waits beside your house. Walk up to it and press Basikal.
+- **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes before it swings round. A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
+- **The rider:** sits on the saddle and leans over the swept-back bar with hands on the grips. The feet follow the pedals as the cranks turn, and stay still when you coast (freewheel).
+- **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
+
 ## Real movement for Amir and Nur (v2.0)
 
 Amir and Nur now move like real children. Their walk, jog, sprint, standing idle and talking gestures are **motion-captured** clips from Quaternius' [Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html) (CC0), played on its 53-bone human skeleton.
@@ -78,7 +95,7 @@ Amir and Nur now move like real children. Their walk, jog, sprint, standing idle
 - **Real proportions.** A 1.50 m twelve-year-old with a head about 1/6.5 of their height, instead of the old one-quarter chibi head.
 - **Their own faces.** The faces, Nur's hijab and hood, and Amir's new soft, layered hair (no more cone spikes) come from the original character designs.
 - **No foot sliding.** The game measures how fast each clip's planted foot moves, blends walk → jog → sprint by your actual speed and plays each one at the matching rate. A light push on the stick walks, a full push jogs and Run sprints. In conversations and at counters the kids use the talking idle.
-- The skeleton and clips are a 838 KB file (`assets/models/kids-mocap.glb`, 8 of the library's clips). If it can't load, the kids fall back to the hand-animated bodies.
+- The skeleton and clips are a 1.1 MB file (`assets/models/kids-mocap.glb`, 14 of the library's clips since v2.1). If it can't load, the kids fall back to the hand-animated bodies.
 
 The 14 townsfolk still use the earlier hand-animated bodies; moving them to the same skeleton is the next step.
 
@@ -224,6 +241,8 @@ Rebuild the checked-in SVG art with `npm run art`. The images live in `assets/it
 |---|---|---|
 | Move | WASD / arrows | Drag joystick |
 | Run | Hold Shift | Hold Run while moving |
+| Jump / duck / walk / say hi | Space / C / Z / H | Lompat / Cangkung / Jalan / Hai |
+| Basikal (get on or off) | F | Basikal |
 | Talk | E | Talk button when close |
 | Rotate / tilt camera | Drag on the world (Q / R also rotate) | Swipe on the world |
 | Zoom | Mouse wheel / pause settings | Pinch / pause settings |
@@ -273,7 +292,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/routines.js`, `src/actions.js`: each NPC's editable loop and the idle action poses.
 - `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.
 - `src/actor.js`: Amir and Nur on the motion-capture skeleton: the smoothly weighted body and clothes, their heads, backpacks, and the speed-matched walk/jog/sprint blend.
-- `assets/models/kids-mocap.glb`: the CC0 skeleton and 8 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
+- `src/bicycle.js`: the basikal model, its pose and the rider's saddle, pedal and grip targets, and the riding step (speed, steering, lean).
+- `assets/models/kids-mocap.glb`: the CC0 skeleton and 14 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
 - `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
@@ -318,6 +338,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ![Gasing rope winding and release sequence, v1.6.1](docs/gasing-rope-v161.webp)
 
 ![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
+
+![Amir on his basikal: feet on the pedals, hands on the grips, leaning into a turn](docs/basikal-v210.webp)
 
 ![Amir and Nur, before and after motion capture](docs/kids-mocap-v200.webp)
 
