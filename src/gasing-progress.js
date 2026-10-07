@@ -1,4 +1,4 @@
-import { newGasingRound, cleanGasingRound, STABLE_SECONDS } from './gasing.js?v=2.1.0';
+import { newGasingRound, cleanGasingRound, STABLE_SECONDS } from './gasing.js?v=2.1.1';
 export const GASING_QUESTS = [
   { id: 'lesson', title: 'Lilit, tarik, lepas', text: 'Finish Atuk’s Belajar lesson.', sen: 20 },
   { id: 'stable', title: 'Pusing tegak', text: 'Finish a steady spin lasting at least 20 seconds.', sen: 30 },

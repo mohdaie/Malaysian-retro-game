@@ -204,3 +204,11 @@ The skeleton file is 1.12 MB (458 KB gzipped) with 14 clips.
 In headless Chromium at 1280×720 and on a touch-emulated 844×390 phone, a new game was played through jump (mid-air captured), duck, crouch-walk, wave, getting on the bike, riding, a leaning turn, coasting and getting off. The bike was left parked on its kickstand. On the phone, Hai becomes Loceng while riding, Cangkung and Lompat are disabled, and Basikal shows as pressed. There were no page errors.
 
 A side-view check of the rider measured the hands on the grips (0.25, 0.93, 0.255 to the millimetre) and the feet on the pedals at every crank angle tested. These are emulated checks, not a physical-device test.
+
+## v2.1.1 · touch fixes, a brisker walk and reversing the bike
+
+`npm test`: **136 tests passed**. A new bicycle test checks that from a stop, pulling back rolls the bike backwards at walking pace with no pedalling, that the rear swings toward the stick, and that pushing forward again rides on.
+
+Multi-touch was checked with two simulated fingers in Chromium on an 844×390 touch screen. Finger 1 held the joystick forward while finger 2 tapped Jalan (on, then off), Cangkung (on, then off), Lompat and Hai. Every tap registered and the player kept moving throughout. In v2.1.0 these buttons acted on `click`, which phones do not send during a second touch.
+
+In play, a bike pushed against an obstacle backed out 1.4–1.8 m when pulled back, then turned and rode off. The home parking spot now faces at least 4 m of clear ground.
