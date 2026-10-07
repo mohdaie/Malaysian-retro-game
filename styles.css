@@ -156,3 +156,10 @@
 }
 @media(max-height:350px) and (orientation:landscape){.map-header .eyebrow{display:none}.map-header h2{font-size:17px}.map-layout{grid-template-columns:minmax(0,1fr) 210px}.map-result small{display:none}.map-result{min-height:44px}#map-result-count{display:none}#map-selected-info{max-height:30px;overflow-y:auto}#navigation-hud{bottom:40px;width:210px}}
 @media(orientation:portrait){.map-layout{grid-template-columns:1fr;grid-template-rows:minmax(180px,1fr) minmax(180px,1fr)}.map-wide .map-layout{grid-template-rows:1fr}}
+/* Five prayer times fit as compact, clear choices on landscape phones. */
+.prayer-times{display:grid;grid-template-columns:1fr 1fr;gap:8px}.prayer-slot{display:flex;flex-direction:column;gap:4px;min-height:86px;padding:10px 12px;border:1.5px solid #acb69d;border-radius:9px;text-align:left;background:#ececdd;color:#40513b}.prayer-slot:disabled{opacity:1;cursor:default;color:#78806c}.prayer-slot b{font-size:14px}.prayer-slot small{font-size:10px}.prayer-slot span{font-size:11px}.prayer-slot.current{background:#244e43;color:#f9f4e5;border-color:#244e43}.prayer-times .secondary{margin:0;background:#e5e7d5;min-height:54px;padding:10px}
+@media(orientation:landscape) and (max-height:500px){.prayer-times{gap:6px}.prayer-slot{min-height:72px;padding:8px 10px;gap:3px}.prayer-slot b{font-size:12px}.prayer-slot span{font-size:10px}}
+
+.prayer-modal #counter-body{grid-template-columns:1fr}.prayer-modal{max-width:520px}.prayer-modal h2{margin:5px 0 10px}.prayer-modal #counter-text{font-size:12px;line-height:1.5;margin:6px 0 10px}
+@media(orientation:landscape) and (max-height:500px){.prayer-modal{padding:16px}.prayer-modal h2{font-size:24px;margin:4px 0 8px}.prayer-modal #counter-text{font-size:11px;line-height:1.4}.prayer-slot{min-height:62px;padding:7px 10px}.prayer-times .secondary{font-size:12px}}
+@media(orientation:landscape) and (max-height:350px){.prayer-modal{padding:12px}.prayer-modal h2{font-size:21px}.prayer-slot{min-height:55px;padding:5px 9px;gap:2px}}

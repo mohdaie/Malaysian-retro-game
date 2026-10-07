@@ -7,6 +7,7 @@ import { createProps } from './props.js?v=2.0.0';
 import { ROUTINES, createRoutine } from './routines.js?v=2.0.0';
 import { ACTIONS } from './actions.js?v=2.0.0';
 import { createWalkability } from './collision.js?v=2.0.0';
+import { createStorefronts } from './storefronts.js?v=2.0.0';
 import { createLandmarks } from './landmarks.js?v=2.0.0';
 import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.0.0';
 import { createTrees } from './trees.js?v=2.0.0';
@@ -288,6 +289,7 @@ export async function makeWorld(canvas) {
     for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
   }
   const landmarks=createLandmarks({parent:()=>root,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
+  const storefronts=await createStorefronts(renderer);
   const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
   const timberColors=[0xc7ad75,0xa8b4a0,0xe0c39b,0xc9bd92,0xb28272];
@@ -308,7 +310,7 @@ export async function makeWorld(canvas) {
     house(u){const id=u.places[0].id,[,,w,d]=u.def.places[0];house(0,0,timberColors[id%5],w,d,placeName(id).toUpperCase());},
     wakaf(u){pavilion(7,6,placeName(u.places[0].id));},
     pondok(u){pavilion(4,5,placeName(u.places[0].id));},
-    canteen(u){pavilion(10,6,placeName(u.places[0].id),true);},
+    canteen(u){pavilion(10,6,placeName(u.places[0].id),true);storefronts.add(30,root,{panels:[{x:0,y:1.55,z:3.1,w:8.4,h:2.2}],badge:{x:3.4,y:1.9,z:3.55}});},
     terrace(u){
       const id=u.places[0].id,color=[0xe5a88c,0x9fc8ba,0xf0d18d,0x89b0ca][(id-11)%4];
       box(6.8,3.4,7,textured(color,'plaster'),0,1.8,0);roof(7.1,8,0,3.6,0,0xab6046);
@@ -320,7 +322,7 @@ export async function makeWorld(canvas) {
       const name=sign(placeName(id).toUpperCase(),0,3.1,-3.68,3.7);name.rotation.y=Math.PI;
       box(6.8,.12,.2,0xe6dcca,0,3.3,-3.6);
     },
-    minishop(u){civic(9,8,placeName(19),civicColors[19]);},
+    minishop(u){civic(9,8,placeName(19),civicColors[19]);storefronts.add(19,root,{panels:[{x:0,y:1.55,z:4.26,w:7.6,h:2.6}],badge:{x:2.7,y:2.8,z:4.3}});},
     hall(u){civic(13,8,placeName(32),civicColors[32]);},
     library(u){civic(12,8,placeName(33),civicColors[33]);},
     nursery(u){civic(9,10,placeName(20),civicColors[20]);for(let i=0;i<3;i++)box(.6,.2,.6,[0xe5a88c,0xf0d18d,0x89b0ca][i],-2+i*1.1,.18,7);},
@@ -342,6 +344,7 @@ export async function makeWorld(canvas) {
       for(const z of [4.35,6.45]){box(.5,.08,.5,0xa77a4b,-3,.44,z);box(.14,.4,.14,0x6e482e,-3,.2,z);collider(-3,z,.5,.5,'seat');}
       cylinder(.08,.065,.18,0xbd8c51,-2.43,.93,5.88,undefined,10);
       sign('DAM HAJI · PAK DIN',-3,.6,6.035,1.2);
+      storefronts.add(37,root,{panels:[{x:0,y:1.55,z:4.26,w:6.8,h:2.6}],badge:{x:2.7,y:2.8,z:4.3}});
     },
     warung(u){
       // Warung has an open social space facing the lane.
@@ -363,11 +366,13 @@ export async function makeWorld(canvas) {
       for(let i=0;i<4;i++){cylinder(.3,.27,.6,0x839987,-1.8+i*.85,1.35,-2.2,undefined,12);cylinder(.33,.33,.035,0xc4c7b3,-1.8+i*.85,1.67,-2.2,undefined,12);}
       softBox(.65,1.0,.35,0x667d6e,5.5,.65,-1.7,undefined,.06);sign('TEH TARIK · RM1',0,2.04,-2.94,3.2);
       pot(-6,3.5);pot(6,3.5);
+      storefronts.add(21,root,{panels:[{x:0,y:1.5,z:3.32,w:10.2,h:2.5}],badge:{x:4.1,y:1.8,z:4.45}});
     },
     shophouses(u){
       // A Straits terrace with salmon five-foot-way pillars, arched louvred
       // windows, a scalloped valance and a hipped clay roof.
       landmarks.shophouseRow(u.places.map(p=>placeName(p.id).toUpperCase()),-27,0);
+      for(let i=0;i<u.places.length;i++){const x=-27+i*9;storefronts.add(u.places[i].id,root,{panels:[{x:x-2.25,y:1.42,z:5.15,w:3.35,h:2.3,half:0},{x:x+2.25,y:1.42,z:5.15,w:3.35,h:2.3,half:1}],badge:{x:x+2.25,y:2.85,z:8.16}});}
       // Sacks outside the sundry shop and the barber's sandwich board.
       for(let j=0;j<3;j++)box(.65,.6,.65,0x9e7954,-29.6+j*.72,.56,5.6);collider(-28.9,5.6,2.2,.7,'goods');
       softBox(.7,.95,.08,0x34584b,-15.3,1.05,6.8,undefined,.07);sign('GUNTING',-15.3,1.05,6.86,.65);
@@ -434,6 +439,7 @@ export async function makeWorld(canvas) {
       for(const side of [-1,1]){box(.3,3.8,10,0xcbbd99,side*4.85,2,0);collider(side*4.85,0,.3,10,'wall');}
       const label=sign(placeName(36).toUpperCase(),0,3.4,-5.1,8);label.rotation.y=Math.PI;
       for(const x of [-3,3]){for(let j=0;j<3;j++)cylinder(.65,.65,.35,0x414b3f,x,.3+j*.35,2,undefined,12);roundCollider(x,2,.65,'tyres');}
+      storefronts.add(36,root,{panels:[{x:0,y:1.65,z:-5.17,w:9.2,h:2.9,turn:Math.PI}],badge:{x:3.2,y:2.7,z:-5.23,turn:Math.PI}});
     },
     market(u){
       const colors=[0xe5a88c,0xf0d18d,0x89b0ca,0xd99cb6,0x71967a,0xc79959];
@@ -567,7 +573,7 @@ export async function makeWorld(canvas) {
   const staticMeshes = [];
   const inkCells=new Map();
   scene.traverse(object => {
-    if (object.isMesh && staticMaterials.has(object.material)) {
+    if (object.isMesh && !object.userData.dynamic && staticMaterials.has(object.material)) {
       // Trees are 'land': never culled with distance, unlike small props.
       const pos=new T.Vector3().setFromMatrixPosition(object.matrixWorld),kind=object.userData.cameraOccluder?'solid':object.userData.landscape?'land':'detail',key=object.material.uuid+':'+Math.floor(pos.x/24)+':'+Math.floor(pos.z/24)+':'+kind;
       if (!buckets.has(key)) buckets.set(key,{material:object.material,geometries:[],occluder:kind==='solid',landscape:kind==='land'});
@@ -685,5 +691,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
