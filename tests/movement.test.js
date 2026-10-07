@@ -15,7 +15,7 @@ test('walking covers the same distance at 60, 10 and 5 frames per second', () =>
   for (const frames of [5, 10, 60]) {
     const position = { x: 0, z: 0 };
     for (let frame = 0; frame < frames; frame++) moveWithCollision(position, 1, 0, WALK_SPEED, 1 / frames, () => true);
-    assert.ok(Math.abs(position.x - 7.2) < 1e-10);
+    assert.ok(Math.abs(position.x - WALK_SPEED) < 1e-10);
     assert.equal(position.z, 0);
   }
 });
@@ -24,5 +24,5 @@ test('running through a long frame respects a thin wall and slides along it', ()
   const position = { x: 0, z: 0 };
   moveWithCollision(position, 1, 1, RUN_SPEED, .1, x => x < .4 || x > .9);
   assert.ok(position.x < .4, 'must not jump to the other side of the wall');
-  assert.ok(Math.abs(position.z - 1.1) < 1e-12, 'unblocked axis should keep moving');
+  assert.ok(Math.abs(position.z - RUN_SPEED * .1) < 1e-12, 'unblocked axis should keep moving');
 });

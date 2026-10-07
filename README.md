@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.10.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.0.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -59,7 +59,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Landmarks modelled from the concept sheets: a Straits shophouse terrace (salmon five-foot-way pillars over a terracotta-and-cream tiled walkway, arched louvred windows, scalloped valance, weathered plaster, hipped clay roof), a Kuala Kangsar-style mosque (gilded onion dome, four striped minarets with open galleries, cusped red-and-cream arcades) and boxy 1990s family sedans.
 - Kampung trees c. 2001, low-poly: leaning kelapa, tattered pisang with jantung, rambutan and mangga in season, jambu air, nangka in its sack, pinang, durian, bamboo, the pekan's rain trees, the school's ketapang and bunga raya hedge, kemboja at the mosque, kebun dapur herbs, and an old beringin by Warung Kak Ita. A dense dusun and rubber smallholding (with tapping cups) rings the town; roads leave through gaps in it. Leaves sway in the breeze. Planting follows the town plan, so it moves with the map editor.
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
-- Walking at 7.2 world metres/second and running at 11, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
+- A full push on the stick jogs at 4.3 m/s and Run sprints at 6.3 m/s (a light push walks), the speeds the kids' motion-captured jog and sprint cover the ground, with rounded body collisions, wall sliding, gated fences, solid props and bridge-only river crossings.
 - Every one of the 38 places has a contact and an interaction point (door, counter or gate) that follows the map editor. The quest card shows the chapter step, the next stop and its distance; the map shows the story diamond and job stops.
 - The Beg (bag and Koleksi), the Buku (story, jobs with cancel, totals and Kawan-kawan) and the wallet save with your progress.
 - Larger 144 px phone joystick with a 60 px thumb grip (128 px on very short screens); desktop keyboard support.
@@ -69,6 +69,18 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## Real movement for Amir and Nur (v2.0)
+
+Amir and Nur now move like real children. Their walk, jog, sprint, standing idle and talking gestures are **motion-captured** clips from Quaternius' [Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html) (CC0), played on its 53-bone human skeleton.
+
+- **Bodies that bend.** Each child is one continuous mesh with smooth skin weights, so knees, elbows, hips and shoulders bend instead of hinging like toy blocks. Clothes are painted onto the same surface: Amir's ringer tee, cargo pants with side pockets, shell-toe sneakers and watch; Nur's hoodie, cargo pants with a pink side stripe and sneakers. Backpack straps ride with the shoulders.
+- **Real proportions.** A 1.50 m twelve-year-old with a head about 1/6.5 of their height, instead of the old one-quarter chibi head.
+- **Their own faces.** The faces, Nur's hijab and hood, and Amir's new soft, layered hair (no more cone spikes) come from the original character designs.
+- **No foot sliding.** The game measures how fast each clip's planted foot moves, blends walk → jog → sprint by your actual speed and plays each one at the matching rate. A light push on the stick walks, a full push jogs and Run sprints. In conversations and at counters the kids use the talking idle.
+- The skeleton and clips are a 838 KB file (`assets/models/kids-mocap.glb`, 8 of the library's clips). If it can't load, the kids fall back to the hand-animated bodies.
+
+The 14 townsfolk still use the earlier hand-animated bodies; moving them to the same skeleton is the next step.
 
 ## Open storefronts and solat (v1.10)
 
@@ -260,6 +272,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/landmarks.js`: low-poly shophouse terrace, mosque and sedan built from the concept sheets.
 - `src/routines.js`, `src/actions.js`: each NPC's editable loop and the idle action poses.
 - `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.
+- `src/actor.js`: Amir and Nur on the motion-capture skeleton: the smoothly weighted body and clothes, their heads, backpacks, and the speed-matched walk/jog/sprint blend.
+- `assets/models/kids-mocap.glb`: the CC0 skeleton and 8 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
 - `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
@@ -304,6 +318,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ![Gasing rope winding and release sequence, v1.6.1](docs/gasing-rope-v161.webp)
 
 ![Dam Haji at Pak Din’s table, landscape phone](docs/dam-haji-v150.webp)
+
+![Amir and Nur, before and after motion capture](docs/kids-mocap-v200.webp)
 
 ![The kampung at 21:30, windows lit](docs/night-v140.webp)
 

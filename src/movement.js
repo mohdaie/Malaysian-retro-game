@@ -1,5 +1,7 @@
-export const WALK_SPEED = 7.2;
-export const RUN_SPEED = 11;
+// A full push on the stick jogs and Run sprints, at the speeds the kids'
+// motion-captured jog and sprint cover the ground (v2.0); a light push walks.
+export const WALK_SPEED = 4.3;
+export const RUN_SPEED = 6.3;
 
 // Normalize against the rendered control, so CSS sizing and thumb travel agree.
 export function stickInput(x, y, radius) {

@@ -6,7 +6,9 @@
 - `textures/kampung-timber.webp`: generated specifically for this game with the built-in image-generation tool, October 2026. Prompt requested seamless horizontal aged kampung timber boards without scene objects or text.
 - Both are WebP encodings of the original generated outputs, with no compositing or external photographic source.
 - Roof, plaster, earth, road, sign, flag, sky and contact-shadow textures are original canvas art in `src/world.js` and `src/characters.js`.
-- All building, vegetation, vehicle, prop and character meshes are original code-authored geometry. Character animation and sound synthesis are implemented in the repository.
+- All building, vegetation, vehicle, prop and character meshes are original code-authored geometry. Sound synthesis and the townsfolk's animation are implemented in the repository.
+- `models/kids-mocap.glb` (v2.0): the skeleton and 8 motion-captured clips (Idle, Walk, Jog, Sprint, Idle Talking, Interact, Pick Up, Sitting Idle) from the **Universal Animation Library** by Quaternius, CC0 1.0 public domain (https://quaternius.com/packs/universalanimationlibrary.html, OpenGameArt mirror). Pruned from the Godot GLB with glTF-Transform. The library's mannequin mesh is not rendered; Amir's and Nur's bodies are generated in `src/actor.js`.
+- `vendor/addons/`: three.js GLTFLoader, SkeletonUtils and BufferGeometryUtils (MIT, same license as three.js).
 - Three.js is the only external runtime dependency; its MIT license is in `vendor/THREE-LICENSE.txt`.
 
 - `textures/illustrated-horizon.webp`: generated with the built-in imagegen tool, October 2026, and encoded as WebP for the actual game's surrounding scenery. Prompt: "Painted panoramic distant scenery for a playable Malaysian kampung game circa 2001; warm ink outlines, cel colour blocks, subtle paper grain and comic halftone; mostly warm blue sky/cream clouds above layered blue-green hills, palms, trees and small terracotta-roof houses; compatible wrap edges; no foreground ground, people, UI, lettering or watermark." This is a horizon texture, not a gameplay screenshot.

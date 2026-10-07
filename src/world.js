@@ -1,18 +1,22 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.8.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.8.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.8.0';
-import { createProps } from './props.js?v=1.8.0';
-import { ROUTINES, createRoutine } from './routines.js?v=1.8.0';
-import { ACTIONS } from './actions.js?v=1.8.0';
-import { createWalkability } from './collision.js?v=1.8.0';
-import { createStorefronts } from './storefronts.js?v=1.10.0';
-import { createLandmarks } from './landmarks.js?v=1.8.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.8.0';
-import { createTrees } from './trees.js?v=1.8.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.8.0';
+import { createCharacter } from './characters.js?v=2.0.0';
+import { loadRig, createActor } from './actor.js?v=2.0.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.0.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.0.0';
+import { createProps } from './props.js?v=2.0.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.0.0';
+import { ACTIONS } from './actions.js?v=2.0.0';
+import { createWalkability } from './collision.js?v=2.0.0';
+import { createStorefronts } from './storefronts.js?v=2.0.0';
+import { createLandmarks } from './landmarks.js?v=2.0.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.0.0';
+import { createTrees } from './trees.js?v=2.0.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.0.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
+  // The kids' motion-capture skeleton loads alongside the town; without it
+  // they fall back to the hand-animated bodies.
+  const rigLoad = loadRig().catch(error => { console.warn('Motion capture unavailable', error); return null; });
   // Wait for the local fallback font before painting permanent sign textures.
   await document.fonts.load('bold 35px sans-serif');
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -620,7 +624,8 @@ export async function makeWorld(canvas) {
     return height;
   }
   const characters=[];
-  function character(x,z,kind='amir'){const model=createCharacter(scene,x,z,kind);model.group.position.y=groundHeight(x,z)-.065;characters.push(model);return model;}
+  const rig=await rigLoad;
+  function character(x,z,kind='amir'){const model=rig&&(kind==='amir'||kind==='nur')?createActor(scene,x,z,kind,rig):createCharacter(scene,x,z,kind);model.group.position.y=groundHeight(x,z)-.065;characters.push(model);return model;}
   // Amir and Nur are both playable; each waits at home until chosen.
   const spawns={amir:SPOTS.spawn,nur:SPOTS.spawnNur},bodies={};
   for(const who of ['amir','nur']){const s=spawns[who];bodies[who]=character(s.x,s.z,who);bodies[who].group.rotation.y=s.heading;}

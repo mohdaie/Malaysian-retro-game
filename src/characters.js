@@ -1,7 +1,7 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=1.8.0';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=1.8.0';
-import { ACTIONS } from './actions.js?v=1.8.0';
+import { toon, outline } from './illustration.js?v=2.0.0';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.0.0';
+import { ACTIONS } from './actions.js?v=2.0.0';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map(), fabrics = new Map();
@@ -101,7 +101,7 @@ const MAN = { adult: true }, LADY = { adult: true, lashes: true, eyeW: 38, eyeH:
 // short|long|rolled and `tuck`, `legs` trousers|overalls|sarong|kain, `feet`
 // sandal|shoes|boots, `hair` short|tudung, `hat` songkok|cap|straw, `props`.
 const LOOKS = {
-  amir: { plan: PLANS.amir, pants: 0x2d4f86, seam: 0x22396a, legs: 'cargo', feet: 'sneaker', top: 0xf8f4ec, trim: 0x223a63, shirt: 'ringer', hem: .035, motif: 'alien', hair: 'spiky', bag: 'red', watch: true, face: {} },
+  amir: { plan: PLANS.amir, pants: 0x2d4f86, seam: 0x22396a, legs: 'cargo', feet: 'sneaker', top: 0xf8f4ec, trim: 0x223a63, shirt: 'ringer', hem: .035, motif: 'alien', hair: 'soft', bag: 'red', watch: true, face: {} },
   nur: { plan: PLANS.nur, girl: true, pants: 0x8db3cf, seam: 0x6b92b3, stripe: 0xe48ea3, legs: 'cargo', feet: 'sneaker', top: 0xf0b5c0, trim: 0xd98a9d, shirt: 'hoodie', sleeve: 'long', hem: -.045, hair: 'hijab', bag: 'black', face: { lashes: true } },
   faiz: { plan: PLANS.teen, pants: 0xa48d62, seam: 0x857048, legs: 'shorts', feet: 'slipper', sole: 0xf0ece2, strap: 0x2f6fb0, top: 0x2b2d35, trim: 0x474b57, shirt: 'tee', hem: -.03, motif: 'car', hair: 'curtains', hairColour: 0x2a1e19, sheen: 0x46342b, watch: true, props: ['car'], face: { eyeH: 52, eyeY: 280 } },
   meiling: { plan: PLANS.teenGirl, girl: true, pants: 0xcdbb98, seam: 0xab9875, stripe: 0x2f3d68, legs: 'slacks', feet: 'sneaker', top: 0xc9cbd6, print: 'stripes', trim: 0x2f3d68, shirt: 'tee', hem: -.005, hair: 'bob', bag: 'sling', face: { lashes: true, eyeH: 54, iris: '#6e4428' } },
@@ -174,7 +174,7 @@ function face(kind, f, size) {
     }
   }, size);
 }
-function motif(kind) {
+export function motif(kind) {
   return drawing('motif-' + kind, c => {
     if (kind === 'alien') {
       c.fillStyle = '#26365a'; const rows = ['00100000100', '00010001000', '00111111100', '01101110110', '11111111111', '10111111101', '10100000101', '00011011000'];
@@ -201,7 +201,9 @@ function motif(kind) {
   });
 }
 
-export function createCharacter(scene, x, z, kind = 'amir') {
+// `options.parts` stops before the body is merged and returns the authored
+// head (face, hair, scarf, hood) for the motion-captured kids in actor.js.
+export function createCharacter(scene, x, z, kind = 'amir', options = {}) {
   if (!LOOKS[kind]) kind = 'amir';
   const look = LOOKS[kind], plan = look.plan, adult = !!look.adult, girl = !!look.girl;
   const leg = plan.upper + plan.lower, hipY = plan.ankle + leg, waistY = hipY + .06;
@@ -529,6 +531,42 @@ export function createCharacter(scene, x, z, kind = 'amir') {
     const hairline = look.hairline ?? .42;
     shell(rx * 1.05, ry * 1.06, rz * 1.07, (x, y, z) => !(z > .15 && y < hairline + .2 * Math.abs(x)) && !(Math.abs(x) > .55 && y < .12 && z > -.5) && y > -.45, material(look.hairColour), 0, headY + .01, -.006, head, null, 28, 20);
     if (look.quiff) ball(rx * .62, ry * .2, rz * .5, material(look.hairColour), 0, headY + ry * .9, rz * .28, head, 12, 6);
+  } else if (hairStyle === 'soft') {
+    // Amir (v2.0): a full, soft crop of rounded clumps combed down and
+    // forward, a side-swept fringe and a tapered nape. No cones, no spikes.
+    const hair = material(look.hairColour ?? 0x221f26), sheen = material(look.sheen ?? 0x3a3a48), radii = [rx * 1.07, ry * 1.08, rz * 1.09];
+    shell(...radii, (x, y, z) => {
+      const faceCut = z > .12 && y < .4 - .12 * Math.abs(x) && Math.abs(x) < .82, earCut = Math.abs(x) > .7 && y < .08 && z > -.4 && y > -.6;
+      return !faceCut && !earCut && y > -.42;
+    }, hair, center.x, center.y, center.z, head);
+    const petal = new T.SphereGeometry(1, 9, 6), up = new T.Vector3(0, 1, 0), basis = new T.Matrix4();
+    function tuft(theta, phi, length, width, comb, lift, mat) {
+      theta *= deg; phi *= deg;
+      const d = new T.Vector3(Math.sin(theta) * Math.cos(phi), Math.sin(phi), Math.cos(theta) * Math.cos(phi));
+      const base = new T.Vector3(d.x * radii[0], d.y * radii[1], d.z * radii[2]).multiplyScalar(.97).add(center);
+      const normal = new T.Vector3(d.x / radii[0], d.y / radii[1], d.z / radii[2]).normalize();
+      // Down the scalp, turned by `comb`; lifted off the head by `lift`.
+      let along = up.clone().negate().addScaledVector(normal, normal.y);
+      if (along.lengthSq() < 1e-4) along.set(-Math.sin(theta), 0, -Math.cos(theta));
+      along.normalize().applyAxisAngle(normal, comb * deg);
+      const axis = along.multiplyScalar(Math.cos(lift)).addScaledVector(normal, Math.sin(lift)).normalize();
+      const side = new T.Vector3().crossVectors(axis, normal).normalize(), flat = new T.Vector3().crossVectors(side, axis);
+      const g = petal.clone(); g.scale(width, length / 2, width * .42); g.translate(0, length * .42, 0);
+      const m = part(g, mat, base.x, base.y, base.z, head); m.quaternion.setFromRotationMatrix(basis.makeBasis(side, axis, flat));
+    }
+    // Crown and back: rows of clumps lying down the head, alternating tone.
+    let n = 0;
+    for (const [phi, count, length, width, lift] of [[82, 3, .085, .05, .5], [64, 9, .09, .048, .32], [42, 11, .085, .046, .2], [20, 11, .075, .042, .12], [-2, 9, .06, .038, .06]]) {
+      for (let i = 0; i < count; i++) {
+        const theta = 180 + (i - (count - 1) / 2) * (300 / Math.max(count, 2)) * (phi > 70 ? .5 : 1);
+        if (Math.cos(theta * deg) > .3 && phi < 40) continue; // keep the forehead for the fringe
+        tuft(theta, phi, length, width, (i % 3 - 1) * 14, lift, n++ % 4 === 1 ? sheen : hair);
+      }
+    }
+    // Fringe: soft clumps falling over the forehead, swept to Amir's left.
+    for (const [theta, phi, length, width, comb] of [[-46, 46, .085, .04, 28], [-30, 50, .1, .044, 22], [-14, 53, .108, .046, 18], [2, 54, .11, .046, 14], [18, 53, .104, .045, 10], [34, 50, .094, .042, 6], [50, 46, .08, .04, 2], [-20, 64, .09, .044, 20], [12, 66, .09, .044, 14]])
+      tuft(theta, phi, length, width, comb, .18, n++ % 4 === 1 ? sheen : hair);
+    petal.dispose();
   } else if (hairStyle === 'bob') {
     // A blunt bob: fringe to the brows, sides to the jaw, a slight flare.
     const flare = (x, y, z) => { const t = Math.max(0, -.05 - y); return [x * (1 + .22 * t), y, z * (1 + .22 * t)]; };
@@ -560,6 +598,7 @@ export function createCharacter(scene, x, z, kind = 'amir') {
     }
   }
 
+  if (options.parts) return { head, look, plan, headY, neckTop, radii: [rx, ry, rz] };
   // Arms: loose sleeves, bare or covered forearms, mitten hands with thumbs.
   const hand = adult ? 1.15 : 1, sleeve = adult ? look.top.sleeve : look.sleeve ?? 'short';
   for (const side of [-1, 1]) {
