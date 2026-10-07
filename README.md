@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.1.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.2.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -364,3 +364,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ![Comic shopfronts](docs/comic-shops-v060.webp)
 
 The overhead review camera postpones distant fog to show the entire layout. Gameplay keeps its normal fog and the chase camera. All screenshots are renders of the actual game modules.
+
+## Town sedans (v2.2)
+
+The parked red and white cars use the supplied textured 3D sedan. Both share one geometry and 1024px texture (1.42 MB GLB); the white variant repaints body panels while retaining glass, tyres, trim and rear lamps. Cars keep their original positions, headings and collision footprints. If the optional model fails to load, the original procedural sedans remain. Mini 4WD racing is unchanged.

@@ -212,3 +212,13 @@ A side-view check of the rider measured the hands on the grips (0.25, 0.93, 0.25
 Multi-touch was checked with two simulated fingers in Chromium on an 844×390 touch screen. Finger 1 held the joystick forward while finger 2 tapped Jalan (on, then off), Cangkung (on, then off), Lompat and Hai. Every tap registered and the player kept moving throughout. In v2.1.0 these buttons acted on `click`, which phones do not send during a second touch.
 
 In play, a bike pushed against an obstacle backed out 1.4–1.8 m when pulled back, then turned and rode off. The home parking spot now faces at least 4 m of clear ground.
+
+## v2.2.0 — textured town sedans
+
+- `npm test`: 136 passing; `npm run build`: self-contained dist produced.
+- Chromium/SwiftShader browser QA against built output: both configured sedans use the GLB, one car-model download per load, white body paint retains dark glass/tyres/trim and red rear lamps. No page or shader errors on the successful asset path.
+- Rendered 1280×720 desktop and 844×390 touch landscape views. Actual game captures: `docs/town-cars-v220.webp`. Physical Samsung performance is not measured by these browser checks.
+- Runtime bounds: 1.86 m wide, 3.899 m long, 1.381 m high. Geometry and the embedded texture are shared across variants; material instances differ. Ground placement follows the existing terrain height.
+- The two existing 4.5×1.9 m rotated vehicle colliders remain at (-35, 6) and (35.5, 3); centre points remain unwalkable. Wallet and Mini 4WD ownership survive loading.
+- Intercepting the model with HTTP 404 or corrupt GLB bytes still boots the game, renders the original procedural sedans, and leaves the fatal error panel hidden. Download has an eight-second timeout.
+- `town-sedan.glb` is byte-identical to the supplied `sample (1).glb`. No GPU job or asset regeneration was needed.

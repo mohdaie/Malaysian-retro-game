@@ -6,7 +6,7 @@
 - `textures/kampung-timber.webp`: generated specifically for this game with the built-in image-generation tool, October 2026. Prompt requested seamless horizontal aged kampung timber boards without scene objects or text.
 - Both are WebP encodings of the original generated outputs, with no compositing or external photographic source.
 - Roof, plaster, earth, road, sign, flag, sky and contact-shadow textures are original canvas art in `src/world.js` and `src/characters.js`.
-- All building, vegetation, vehicle, prop and character meshes are original code-authored geometry. Sound synthesis and the townsfolk's animation are implemented in the repository.
+- Building, vegetation, prop, bicycle and procedural fallback vehicle meshes are original code-authored geometry. Sound synthesis and the townsfolk's animation are implemented in the repository.
 - `models/kids-mocap.glb` (v2.0): the skeleton and 14 motion-captured clips (Idle, Walk, Jog, Sprint, Idle Talking, Interact, Pick Up, Sitting Idle; from v2.1 also Jump Start, Jump Loop, Jump Land, Crouch Idle, Crouch Forward and Driving, the seated base for the bicycle) from the **Universal Animation Library** by Quaternius, CC0 1.0 public domain (https://quaternius.com/packs/universalanimationlibrary.html, OpenGameArt mirror). Pruned from the Godot GLB with glTF-Transform. The library's mannequin mesh is not rendered; Amir's and Nur's bodies are generated in `src/actor.js`.
 - `vendor/addons/`: three.js GLTFLoader, SkeletonUtils and BufferGeometryUtils (MIT, same license as three.js).
 - Three.js is the only external runtime dependency; its MIT license is in `vendor/THREE-LICENSE.txt`.
@@ -16,3 +16,5 @@
 
 - `textures/illustrated-grass-patch.webp`: generated using built-in imagegen, October 2026, with genuine transparency preserved in WebP. Prompt: "Transparent ground-cover decal for a Malaysian kampung game: an irregular organic island of short tropical lawn grass viewed perfectly top-down, hand-painted comic illustration with layered leaf strokes, clover, dry straw, olive/fresh green tones and tiny cream wildflowers; ragged transparent edge, no perspective, shadow, soil slab, tall plants, people, buildings, lettering or watermark." Integrated as rotated instanced overlays on the actual lawn.
 - `docs/walking-preview-v050.mp4` is a recording of the actual Three.js character module animating, encoded to MP4. It is not an imagegen animation or concept mockup.
+
+- `models/town-sedan.glb` (v2.2): user-supplied `sample (1).glb`, used with its embedded texture for the two parked town cars. 8,451 vertices / 10,639 triangles, one 1024×1024 texture, 1,421,876 bytes. Source file preserved byte-for-byte; normals, fit, silhouette and the white body-paint variant are applied at runtime. No new generation job was run.
