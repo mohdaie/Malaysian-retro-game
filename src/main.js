@@ -78,7 +78,7 @@ function storyTarget() {
 function refreshQuest() {
   const step = STEPS[state.story];
   const gone = step.target && step.target !== 'job' && !atPost(npcBody(step.target));
-  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = step.title; $('quest-description').textContent = gone ? `${step.text} ${NPCS[step.target].name} ${isNight(time.minute)?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[step.target]||HOURS.default)[0])}.`}` : step.text;
+  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = step.title; $('quest-description').textContent = gone ? `${step.text} ${NPCS[step.target].name} ${time.minute>=(HOURS[step.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[step.target]||HOURS.default)[0])}.`}` : step.text;
   $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `0${state.story + 1} / 0${DONE}`;
   $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;
   storySpot = storyTarget(); world.setStoryMarker(storySpot && !storySpot.job ? storySpot : null);
@@ -619,6 +619,7 @@ function tick(){
     cameraTarget.sub(look).multiplyScalar(lensDistance/distance).add(look);
   }
   // Shadows cover the street ahead of the lens rather than behind it.
+  world.updateLampLight(p.x,p.z);
   if(mode==='title')world.updateSun(look.x,look.z);else world.updateSun(look.x-Math.sin(yaw)*16,look.z-Math.cos(yaw)*16);
   const fov=mode==='title'?43:CAMERA_FOV;if(Math.abs(camera.fov-fov)>.01){camera.fov=T.MathUtils.lerp(camera.fov,fov,1-Math.exp(-dt*5));camera.updateProjectionMatrix();}
   // A slow glide down from the title view, then a tight follow while exploring.
@@ -636,4 +637,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

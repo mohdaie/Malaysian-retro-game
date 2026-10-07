@@ -454,15 +454,47 @@ export async function makeWorld(canvas) {
     const def=PROPS[p.name];if(def.hit)roundCollider(p.x,p.z,def.hit,'prop');
     if(p.name==='banner')for(const lx of [-2.2,2.2])roundCollider(p.x+lx*Math.cos(p.heading),p.z-lx*Math.sin(p.heading),.07,'pole');
   }
-  // Street lamps follow every asphalt road on one verge, facing the road.
+  // Street lamps follow every asphalt road on one verge, facing the road:
+  // sodium heads on steel poles. The kampung lanes get timber poles with a
+  // fluorescent tube under a tin hood. Both light up after dark (setSky).
+  const sodium=toon(0xf3d9a0),tube=toon(0xeef4ea);mats.set('lamp-sodium',sodium);mats.set('lamp-tube',tube);
+  const lamps=[];
   for(const r of asphalt){
     const alongX=r.w>=r.d,length=alongX?r.w:r.d,half=(alongX?r.d:r.w)/2;
     for(let t=-length/2+12;t<length/2-4;t+=24){
       const x=alongX?r.x+t:r.x+half+2,z=alongX?r.z+half+2:r.z+t;
       if(!inside(x,z,-1)||inRiver(x,2)||onBridge(x,z,3)||inRoad(x,z,1.5)||unitNear(x,z,1)||solidNear(x,z,1))continue;
-      roundCollider(x,z,.13,'lamp');cylinder(.09,.13,5.2,0x7b8270,x,2.6,z);box(alongX?.4:.9,.18,alongX?.9:.4,0xd9c596,alongX?x:x-.4,5.1,alongX?z-.4:z);
+      const hx=alongX?x:x-.4,hz=alongX?z-.4:z;
+      roundCollider(x,z,.13,'lamp');cylinder(.09,.13,5.2,0x7b8270,x,2.6,z);box(alongX?.4:.9,.18,alongX?.9:.4,0xd9c596,hx,5.1,hz);
+      box(alongX?.28:.7,.05,alongX?.7:.28,sodium,hx,4.99,hz);lamps.push({x:hx,z:alongX?hz-.6:hz,y:4.95,warm:true});
     }
   }
+  for(const r of ROADS.filter(r=>r.kind==='dirt')){
+    const alongX=r.w>=r.d,length=alongX?r.w:r.d,half=(alongX?r.d:r.w)/2;
+    for(let t=-length/2+8;t<length/2-3;t+=22){
+      // Either verge, whichever is clear; the tube leans out over the lane.
+      for(const side of [1,-1]){
+        const x=alongX?r.x+t:r.x+side*(half+.8),z=alongX?r.z+side*(half+.8):r.z+t;
+        if(!inside(x,z,-1)||inRiver(x,2)||onBridge(x,z,3)||inRoad(x,z,.5)||unitNear(x,z,.4)||solidNear(x,z,.8)||BUILDINGS.some(b=>Math.hypot(x-b.door.x,z-b.door.z)<3))continue;
+        const ox=alongX?0:-side*.7,oz=alongX?-side*.7:0;
+        roundCollider(x,z,.1,'lamp');cylinder(.07,.1,4.4,0x6b5a45,x,2.2,z);box(alongX?.08:.8,.08,alongX?.8:.08,0x6b5a45,x+ox/2,4.25,z+oz/2);
+        box(alongX?.7:.22,.06,alongX?.22:.7,0x677b69,x+ox,4.2,z+oz);box(alongX?.6:.07,.06,alongX?.07:.6,tube,x+ox,4.13,z+oz);
+        lamps.push({x:x+ox,z:z+oz,y:4.1,warm:false});break;
+      }
+    }
+  }
+  // Each lamp throws a soft pool on the ground: one instanced draw, fading in
+  // at dusk. A single real light follows the lamp nearest the view, so the
+  // children are lit as they walk under it.
+  const poolCanvas=document.createElement('canvas');poolCanvas.width=poolCanvas.height=128;
+  {const g=poolCanvas.getContext('2d'),grad=g.createRadialGradient(64,64,0,64,64,64);grad.addColorStop(0,'rgba(255,255,255,1)');grad.addColorStop(.45,'rgba(255,255,255,.45)');grad.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=grad;g.fillRect(0,0,128,128);}
+  const poolMap=new T.CanvasTexture(poolCanvas);poolMap.colorSpace=T.SRGBColorSpace;
+  const pools=new T.InstancedMesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:poolMap,transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}),Math.max(1,lamps.length));
+  {const o=new T.Object3D(),warm=new T.Color(0xffb35c),cool=new T.Color(0xcfe6ff);
+   lamps.forEach((l,i)=>{const r=l.warm?9:6;o.position.set(l.x,groundHeight(l.x,l.z)+.03,l.z);o.rotation.set(-Math.PI/2,0,0);o.scale.set(r,r,1);o.updateMatrix();pools.setMatrixAt(i,o.matrix);pools.setColorAt(i,l.warm?warm:cool);});}
+  pools.count=lamps.length;pools.instanceMatrix.needsUpdate=true;if(pools.instanceColor)pools.instanceColor.needsUpdate=true;pools.computeBoundingSphere();pools.visible=false;pools.renderOrder=1;scene.add(pools);
+  const lampLight=new T.PointLight(0xffb35c,0,13,1.6);lampLight.position.set(0,-50,0);scene.add(lampLight);
+  let lampsOn=0;
   // Timber utility poles carry sagging phone and power lines along whichever
   // verge has more room; a pole is left out in a yard or a doorway, and the
   // line runs on over one missing pole.
@@ -606,6 +638,11 @@ export async function makeWorld(canvas) {
   const canWalk=createWalkability(colliders);
   function resize(){inkViewport.set(innerWidth,innerHeight);renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   resize();
+  function updateLampLight(x,z){
+    let near=null,best=18;if(lampsOn>.01)for(const l of lamps){const d=Math.hypot(l.x-x,l.z-z);if(d<best){best=d;near=l;}}
+    if(!near){lampLight.intensity=0;return;}
+    lampLight.position.set(near.x,groundHeight(near.x,near.z)+near.y-.4,near.z);lampLight.color.setHex(near.warm?0xffb35c:0xd8ecff);lampLight.intensity=lampsOn*(near.warm?14:9);
+  }
   // The town clock's light (clock.js skyAt): sun or moon, sky fill, fog, the
   // painted horizon's tint and warm window glow after dark.
   let sunOffset=[-35,70,30];
@@ -614,6 +651,10 @@ export async function makeWorld(canvas) {
     sun.color.setHex(sky.sun);sun.intensity=sky.sunI;hemi.color.setHex(sky.sky);hemi.groundColor.setHex(sky.ground);hemi.intensity=sky.fill;
     scene.fog.color.setHex(sky.fog);scene.background.setHex(sky.bg);horizon.material.color.setHex(sky.horizon);
     windowGlass.emissive.setHex(0xffc66b);windowGlass.emissiveIntensity=sky.glow*.9;sunOffset=sky.sunOffset;
+    // Lamps switch on through dusk and are fully lit by night.
+    lampsOn=T.MathUtils.clamp((sky.glow-.15)/.6,0,1);
+    sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
+    pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

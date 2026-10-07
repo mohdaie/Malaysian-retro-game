@@ -75,6 +75,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 Time passes while you explore: one game minute per real second. Menus, conversations and congkak stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
 
 - **Light through the day.** A warm dawn, full afternoon sun, a golden hour from 17:00, a purple Maghrib at 19:30 and a moonlit night. The sun crosses from east to west and its shadows follow. After dark the house windows glow and the cengkerik replace the birds.
+- **Street lights.** Lamps come on through dusk and are fully lit by night. The roads have 8 sodium lamps on steel poles, each with a warm orange pool. The kampung lanes and paths have 19 timber poles, each with a fluorescent tube under a tin hood and a cool white pool. The lamp nearest you also lights the children as they walk under it. The pools are one instanced draw, with only one real light, so phones stay fast.
 - **The town closes.** Most townsfolk are at their posts from 07:00 to 19:15. Kak Ita's warung stays open until 22:00, Pak Din's kiosk until 21:00, Ustaz Hassan stays at the masjid from Subuh to Isyak and Nenek sits on her veranda until 21:30. Off duty, a shop takes parcels at the door but hands nothing out. Faiz, Mei Ling and Atuk leave the padang and answer at their own front doors.
 - **Tidur.** From Maghrib (19:30), go to your own front door and choose **Tidur** to sleep through to **06:00 Subuh** the next day. Past midnight the clock waits at 23:59 until you go home.
 - Friendship from talking counts once per game day, not once per real day.
@@ -167,6 +168,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ## Preview
 
 ![The kampung at 21:30, windows lit](docs/night-v140.webp)
+
+![A sodium street lamp on the west road at 22:00](docs/street-lights-v140.webp)
 
 ![Shophouse terrace](docs/shophouses-v080.webp)
 
