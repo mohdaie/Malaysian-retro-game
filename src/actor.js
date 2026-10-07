@@ -2,8 +2,8 @@ import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.1.2';
-import { createCharacter, motif } from './characters.js?v=2.1.2';
+import { toon, outline } from './illustration.js?v=2.3.0';
+import { createCharacter, motif } from './characters.js?v=2.3.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -15,6 +15,11 @@ import { createCharacter, motif } from './characters.js?v=2.1.2';
 export const RIG_URL = new URL('../assets/models/kids-mocap.glb', import.meta.url).href;
 let loading = null;
 export function loadRig(url = RIG_URL) { return loading ??= new GLTFLoader().loadAsync(url).then(prepareRig); }
+// Characters modelled outside the code (an image-to-3D export prepared by
+// scripts/bake-model.mjs): a textured mesh, its weights and fitted joints.
+export const MODELS = { amir: new URL('../assets/models/amir.glb', import.meta.url).href };
+const models = new Map();
+export function loadModel(url) { if (!models.has(url)) models.set(url, new GLTFLoader().loadAsync(url)); return models.get(url); }
 
 const CLIPS = {
   idle: 'Idle_Loop', walk: 'Walk_Loop', jog: 'Jog_Fwd_Loop', sprint: 'Sprint_Loop', talk: 'Idle_Talking_Loop', interact: 'Interact', pickup: 'PickUp_Table', sit: 'Sitting_Idle_Loop',
@@ -140,7 +145,8 @@ const shadowTexture = (() => {
   return new T.CanvasTexture(c);
 })();
 
-export function createActor(scene, x, z, kind, rig) {
+export function createActor(scene, x, z, kind, rig, model = null) {
+  if (model) return createModelActor(scene, x, z, kind, rig, model);
   const look = DESIGNS[kind] || DESIGNS.amir;
   const root = new T.Group(); root.position.set(x, 0, z); scene.add(root);
   const skeletonRoot = cloneRig(rig.scene); root.add(skeletonRoot);
@@ -333,6 +339,16 @@ export function createActor(scene, x, z, kind, rig) {
   const shadow = new T.Mesh(new T.PlaneGeometry(.62, .62), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = .075; root.add(shadow);
 
+  const { animate, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips: rig.clips, scale });
+  animate(0);
+  root.userData.design = kind; root.userData.height = look.height;
+  return { group: root, figure, head: headBone, height: look.height, animate, wave, mixer, scale, native, bikeScale: 1, actor: true };
+}
+
+// The shared motion for every motion-captured body: gait blending on one
+// stride phase, crouch, jump, talking idle, the rider's IK and the wave.
+// `clips` may be retargeted to another body (see createModelActor).
+function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock = null }) {
   // Motion: idle, walk, jog and sprint share one stride phase, blended by
   // the speed the player actually moved, each played at the rate that keeps
   // its planted foot still on the ground. Crouching swaps in the crouch idle
@@ -340,7 +356,7 @@ export function createActor(scene, x, z, kind, rig) {
   // the talking idle; riding plays the seated clip under the bike IK below.
   const mixer = new T.AnimationMixer(skeletonRoot), actions = {};
   const LAYERS = ['idle', 'talk', ...GAITS, 'crouch', 'crouchWalk', 'jumpStart', 'jumpAir', 'jumpLand', 'ride'];
-  for (const key of LAYERS) { const a = mixer.clipAction(rig.clips[key]); a.play(); a.setEffectiveWeight(0); actions[key] = a; }
+  for (const key of LAYERS) { const a = mixer.clipAction(clips[key]); a.play(); a.setEffectiveWeight(0); actions[key] = a; }
   for (const key of ['jumpStart', 'jumpLand']) { actions[key].setLoop(T.LoopOnce); actions[key].clampWhenFinished = true; }
   const native = Object.fromEntries(MEASURED.map(k => [k, rig.gait[k].speed * scale]));
   const weights = Object.fromEntries(LAYERS.map(k => [k, k === 'idle' ? 1 : 0]));
@@ -377,15 +393,17 @@ export function createActor(scene, x, z, kind, rig) {
     // One stride phase, advanced at the blend of each gait's own cadence.
     const moveWeight = weights.walk + weights.jog + weights.sprint;
     if (moveWeight > .001) {
-      let rate = 0; for (const g of GAITS) rate += weights[g] / moveWeight * Math.max(speed, .3) / native[g] / rig.clips[g].duration;
+      let rate = 0; for (const g of GAITS) rate += weights[g] / moveWeight * Math.max(speed, .3) / native[g] / clips[g].duration;
       phase = (phase + dt * Math.min(rate, 2.4)) % 1;
     }
-    for (const g of GAITS) { const a = actions[g]; a.time = ((phase + rig.gait[g].strike) % 1) * rig.clips[g].duration; a.timeScale = 0; }
-    if (weights.crouchWalk > .001) crouchPhase = (crouchPhase + dt * Math.min(Math.max(speed, .2) / native.crouchWalk / rig.clips.crouchWalk.duration, 2)) % 1;
-    actions.crouchWalk.time = crouchPhase * rig.clips.crouchWalk.duration; actions.crouchWalk.timeScale = 0;
+    for (const g of GAITS) { const a = actions[g]; a.time = ((phase + rig.gait[g].strike) % 1) * clips[g].duration; a.timeScale = 0; }
+    if (weights.crouchWalk > .001) crouchPhase = (crouchPhase + dt * Math.min(Math.max(speed, .2) / native.crouchWalk / clips.crouchWalk.duration, 2)) % 1;
+    actions.crouchWalk.time = crouchPhase * clips.crouchWalk.duration; actions.crouchWalk.timeScale = 0;
     skeletonRoot.position.set(0, .065, 0);
     mixer.update(dt);
     root.updateMatrixWorld(true);
+    // Bodies with other proportions keep their feet on the ground.
+    if (groundLock && !riding) groundLock(dt, !!state.air || (jumpClock >= 0 && jumpClock < .2));
     // Overlays on top of the clips: the rider's seat, feet and hands, then the wave.
     if (riding) ride(state.ride);
     if (waveClock >= 0) { waveClock += dt; waveArm(waveClock); if (waveClock > 2.1) waveClock = -1; }
@@ -452,6 +470,79 @@ export function createActor(scene, x, z, kind, rig) {
   }
   const wave = () => { if (waveClock < 0 || waveClock > 1.6) waveClock = 0; };
   animate(0);
-  root.userData.design = kind; root.userData.height = look.height;
-  return { group: root, figure, head: headBone, height: look.height, animate, wave, mixer, scale, native, actor: true };
+  return { animate, wave, mixer, native };
+}
+
+// A modelled character on the same skeleton (v2.2). The skeleton is fitted to
+// the model's joints in its rest frames, the arms are lowered into the
+// model's A-pose and the mesh is bound there. The clips are retargeted: joint
+// rotations as recorded, hip travel scaled to the shorter legs, no baked bone
+// lengths. A ground lock keeps the feet on the floor.
+const STAND = .065, LEG = .673;
+function createModelActor(scene, x, z, kind, rig, model) {
+  const { joints: J, bones: order } = model.parser.json.extras;
+  const root = new T.Group(); root.position.set(x, 0, z); scene.add(root);
+  const skeletonRoot = cloneRig(rig.scene); root.add(skeletonRoot);
+  const sourceMeshes = []; skeletonRoot.traverse(o => { if (o.isMesh) sourceMeshes.push(o); }); sourceMeshes.forEach(o => o.removeFromParent());
+  skeletonRoot.position.y = STAND; root.updateMatrixWorld(true);
+  const bone = name => skeletonRoot.getObjectByName('DEF-' + name);
+  const target = name => root.localToWorld(new T.Vector3(J[name][0], J[name][1] + STAND, J[name][2]));
+  const placeAt = (name, world) => { const b = bone(name); b.position.copy(b.parent.worldToLocal(world)); b.updateMatrixWorld(true); };
+  for (const name of ['hips', 'spine001', 'spine002', 'spine003', 'neck', 'head']) placeAt(name, target(name));
+  for (const s of ['L', 'R']) {
+    for (const name of ['shoulder', 'upper_arm', 'thigh', 'shin', 'foot', 'toe']) placeAt(name + s, target(name + s));
+    // Forearm and hand keep the rest direction with the model's lengths, then
+    // the arm swings down into the model's pose.
+    for (const [name, from] of [['forearm', 'upper_arm'], ['hand', 'forearm']]) bone(name + s).position.setLength(new T.Vector3(...J[name + s]).distanceTo(new T.Vector3(...J[from + s])) / bone(from + s).getWorldScale(new T.Vector3()).x);
+    root.updateMatrixWorld(true);
+    aimBone(bone('upper_arm' + s), bone('forearm' + s), target('forearm' + s));
+    aimBone(bone('forearm' + s), bone('hand' + s), target('hand' + s));
+  }
+  root.updateMatrixWorld(true);
+  const bones = []; skeletonRoot.traverse(o => { if (o.isBone) bones.push(o); });
+  const mesh = model.scene.getObjectByProperty('isMesh', true), geometry = mesh.geometry.clone();
+  geometry.translate(0, STAND, 0);
+  const remap = order.map(name => bones.indexOf(bone(name))), source = geometry.attributes.skinIndex, indices = new Uint16Array(source.count * 4);
+  for (let i = 0; i < source.count; i++) for (let k = 0; k < 4; k++) indices[i * 4 + k] = remap[source.getComponent(i, k)];
+  geometry.setAttribute('skinIndex', new T.Uint16BufferAttribute(indices, 4));
+  const material = toon(0xffffff, { map: mesh.material.map });
+  const figure = new T.SkinnedMesh(geometry, material); figure.castShadow = figure.receiveShadow = true; figure.frustumCulled = false;
+  root.add(figure); root.updateMatrixWorld(true); figure.bind(new T.Skeleton(bones), figure.matrixWorld);
+  outline(figure, 1.6);
+  const shadow = new T.Mesh(new T.PlaneGeometry(.62, .62), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = .075; root.add(shadow);
+
+  // Leg length against the source rig sets the hip travel and the gait speeds.
+  const rigBone = name => rig.scene.getObjectByName('DEF-' + name), w = o => o.getWorldPosition(new T.Vector3());
+  rig.scene.updateMatrixWorld(true);
+  const rigLeg = w(rigBone('thighL')).distanceTo(w(rigBone('shinL'))) + w(rigBone('shinL')).distanceTo(w(rigBone('footL')));
+  const leg = new T.Vector3(...J.thighL).distanceTo(new T.Vector3(...J.shinL)) + new T.Vector3(...J.shinL).distanceTo(new T.Vector3(...J.footL));
+  const k = leg / rigLeg, hipsRest = rigBone('hips').position, hipsOurs = bone('hips').position.clone();
+  const clips = Object.fromEntries(Object.entries(rig.clips).map(([key, clip]) => {
+    const tracks = clip.tracks.filter(t => t.name.endsWith('.quaternion')).map(t => t.clone());
+    const hips = clip.tracks.find(t => t.name === 'DEF-hips.position');
+    if (hips) { const t = hips.clone(); for (let i = 0; i < t.values.length; i += 3) for (let c = 0; c < 3; c++) t.values[i + c] = hipsOurs.getComponent(c) + (t.values[i + c] - hipsRest.getComponent(c)) * k; tracks.push(t); }
+    return [key, new T.AnimationClip(clip.name, clip.duration, tracks)];
+  }));
+  // Feet on the floor: the lower ankle rests at its bind height while on the
+  // ground, eased so a jog keeps a little of its bounce.
+  const ankle = J.footL[1] + STAND, footL = bone('footL'), footR = bone('footR'), probe = new T.Vector3();
+  let lift = 0;
+  function groundLock(dt, air) {
+    if (air) { lift = T.MathUtils.lerp(lift, 0, 1 - Math.exp(-dt * 6)); }
+    else {
+      const low = Math.min(root.worldToLocal(footL.getWorldPosition(probe)).y, root.worldToLocal(footR.getWorldPosition(probe)).y);
+      lift = T.MathUtils.lerp(lift, ankle - low, dt > 0 ? 1 - Math.exp(-dt * 14) : 1);
+    }
+    skeletonRoot.position.y = STAND + lift; root.updateMatrixWorld(true);
+  }
+  const { animate, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips, scale: k, groundLock });
+  root.userData.design = kind; root.userData.height = 1.5;
+  return { group: root, figure, head: bone('head'), height: 1.5, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true };
+}
+// Turn a bone so its child points at a world target (bind-time fitting).
+function aimBone(b, child, target) {
+  const from = child.getWorldPosition(new T.Vector3()).sub(b.getWorldPosition(new T.Vector3())).normalize(), to = target.clone().sub(b.getWorldPosition(new T.Vector3())).normalize();
+  const q = new T.Quaternion().setFromUnitVectors(from, to), world = b.getWorldQuaternion(new T.Quaternion()), parent = b.parent.getWorldQuaternion(new T.Quaternion()).invert();
+  b.quaternion.copy(parent.multiply(q.multiply(world))); b.updateMatrixWorld(true);
 }

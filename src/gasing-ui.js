@@ -1,6 +1,6 @@
-import { GASING_MODES, windString, startCharge, lockPower, releaseTop, advanceGasing, roundDuration } from './gasing.js?v=2.1.2';
-import { GASING_QUESTS, startGasing, recordGasing } from './gasing-progress.js?v=2.1.2';
-import { drawGasingArena } from './gasing-arena.js?v=2.1.2';
+import { GASING_MODES, windString, startCharge, lockPower, releaseTop, advanceGasing, roundDuration } from './gasing.js?v=2.3.0';
+import { GASING_QUESTS, startGasing, recordGasing } from './gasing-progress.js?v=2.3.0';
+import { drawGasingArena } from './gasing-arena.js?v=2.3.0';
 
 export function createGasingUI({ getEco, getName, isPaused, onOpen, onClose, onChange }) {
   const $ = id => document.getElementById(id), panel = $('gasing-panel');
