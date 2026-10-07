@@ -1,17 +1,19 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.4.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.4.0';
-import { readSave, writeSave } from './save.js?v=1.4.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.4.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.4.0';
-import { createSoundscape } from './soundscape.js?v=1.4.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.4.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.4.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.4.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.4.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.4.0';
-import { ITEM_KINDS } from './item-art.js?v=1.4.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.4.0';
+import { makeWorld } from './world.js?v=1.5.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.5.0';
+import { readSave, writeSave } from './save.js?v=1.5.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.5.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.5.0';
+import { createSoundscape } from './soundscape.js?v=1.5.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.5.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.5.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.5.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.5.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.5.0';
+import { ITEM_KINDS } from './item-art.js?v=1.5.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.5.0';
+import { createDamUI } from './dam-ui.js?v=1.5.0';
+import { DAM_QUESTS } from './dam-progress.js?v=1.5.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -39,6 +41,9 @@ let storage;
 try { storage = localStorage; } catch { storage = null; }
 let saved = readSave(storage);
 $('continue-button').hidden = !saved;
+const damUI = createDamUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
+  onOpen: () => { $('hud').inert=true; setMode('dam'); }, onClose: () => { $('hud').inert=false; setMode('explore'); $('interact-button').focus(); },
+  onChange: () => { refreshEconomy(); persist(); } });
 // Play as Amir or Nur. The name field follows the choice until it is edited.
 let chosen = 'amir';
 function choose(who) {
@@ -240,6 +245,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
       if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
       if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
       if(npc)add('Talk',()=>talk(person.key,place,npcKey));
+      if(person.key==='din'&&!away)add('Main Dam Haji',()=>{closeCounter();damUI.open();});
       if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
     }
     if(place===myHome())add(canSleep(time.minute)?'Tidur · sleep until Subuh':`Tidur · from Maghrib (now ${timeLabel(time.minute)})`,goToSleep,'primary',!canSleep(time.minute));
@@ -333,6 +339,7 @@ function openBag(){
   if(!entries.length)listItem(list,'Your bag is empty.','');
   for(const [item,qty] of entries){const job=eco.jobs.find(j=>j.item===item&&j.status==='carrying');listItem(list,ITEMS[item].title,`× ${qty}${job?` · for ${placeName(nextStop(job))}`:''}`,null,item);}
   const album=$('bag-collection');album.replaceChildren();
+  $('dam-badge').hidden=!eco.dam.claimed.includes('jaguh');
   const owned=Object.entries(eco.collection);
   if(!owned.length)listItem(album,'Nothing yet. Uncle Lim sells cards, comics, gasing, wau, guli and Tamiya.','');
   album.classList.toggle('catalogue-grid',owned.length>0);
@@ -349,6 +356,9 @@ function openBook(){
   }
   if(!eco.jobs.length)listItem(jobs,'No delivery in progress. Ask at any shop (Delivery work) or house (Requests).','');
   $('book-summary').textContent=`Deliveries completed: ${eco.done.length} · Jobs ${eco.jobs.length}/${MAX_JOBS} · Duit Poket: ${rm(eco.wallet)} · Congkak: ${eco.congkak.won} won of ${eco.congkak.played}`;
+  const damQuests=$('book-dam');damQuests.replaceChildren();
+  for(const q of DAM_QUESTS)listItem(damQuests,`${eco.dam.claimed.includes(q.id)?'✓ ':'○ '}${q.title}`,`${q.text} · ${eco.dam.claimed.includes(q.id)?'Collected':rm(q.sen)}`);
+  listItem(damQuests,'Pak Din · Kiosk Petrol Retro',`${eco.dam.won} wins / ${eco.dam.played} matches${eco.dam.match&&!eco.dam.match.over?' · Saved match to resume':''}`);
   const friends=$('book-friends');friends.replaceChildren();
   for(const key of NPC_KEYS){const pts=eco.friends[key]||0;listItem(friends,`${NPCS[key].name} · ${NPCS[key].role}`,`${level(pts)} · ${pts}`);}
 }
@@ -401,7 +411,7 @@ window.addEventListener('keydown',event=>{
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
-  if(key==='escape'){if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
+  if(key==='escape'){if(mode==='dam')damUI.close();else if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur',clearControls);
@@ -630,7 +640,7 @@ function tick(){
   aimDrop=T.MathUtils.lerp(aimDrop,talkingTo?.85:0,1-Math.exp(-dt*4));camera.lookAt(look.x,look.y-aimDrop,look.z);
   world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
-  if (!orientationBlocked && !['board','map','pause','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
+  if (!orientationBlocked && !['board','dam','map','pause','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }
