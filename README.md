@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.8.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.9.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -69,6 +69,12 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## Interactive map (v1.9)
+
+Tap **Map** or the mini-map to open a large, north-up map. Drag to pan, pinch or use **+ / −** to zoom, **Aku** to locate yourself, and **Semua** to fit the town. **Lokasi** toggles the location browser so the map can fill the screen. Overview highlights landmarks; zoom reveals individual house/shop numbers. Tap a pin or building, or search by place, person or game (for example Uncle Lim, Faiz or Tamiya). Filters cover shops, homes, games, NPCs and active delivery stops. Quest and work shortcuts use the current save.
+
+Choose **Tunjuk jalan** to return to the town with a destination card, remaining walking distance, a direction arrow and a blue route on the local mini-map. Routes use the game's walkability checks, avoiding buildings, fences, props and the river except at bridges. Guidance replans when needed and follows moving NPC destinations. It ends at a clear interaction spot; close the card to stop guidance. The map pauses the town, supports keyboard zoom/pan and focus trapping, and leaves progress and inventory unchanged. Navigation is session-only.
 
 ## Tamiya · Jom Dash! (v1.8)
 

@@ -21,6 +21,9 @@ import { createTamiyaUI } from './tamiya-ui.js?v=1.8.0';
 import { TAMIYA_QUESTS } from './tamiya-progress.js?v=1.8.0';
 import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
 import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.8.0';
+import { createTownMap } from './town-map-ui.js?v=1.9.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=1.9.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=1.8.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -37,6 +40,7 @@ const state = { who: 'amir', name: 'Amir', story: 0 };
 let time = newClock(), shownMinute = -1, lateNudge = 0, sleeping = false;
 let eco = newEconomy(), counter = null, storySpot = null, opponent = 'Nenek';
 let mode = 'title', yaw = .55, distance = CAMERA_DEFAULT, elapsed = 0, lastSave = 0, nearby = null;
+let navigation = null, lastNavigationUpdate = -1;
 let dialogue = [], dialogueDone = null, joystick = { x: 0, y: 0 }, running = false, board = null, boardBusy = false, boardToken = 0;
 // Pitch above the shoulders; a recent swipe pauses the automatic follow.
 let cameraPitch = CAMERA_PITCH, lastLook = -10, cameraSettle = 1, lensDistance = CAMERA_DEFAULT, talkingTo = null, aimDrop = 0;
@@ -121,7 +125,7 @@ function syncOrientation() {
 }
 $('landscape-button').onclick = () => enterLandscape($('game'));
 function setMode(next) {
-  mode = next; clearControls(); $('interaction').hidden = true;
+  mode = next; $('navigation-hud').hidden=next!=='explore'||!navigation; clearControls(); $('interaction').hidden = true;
   $('touch-controls').style.visibility = next === 'explore' ? '' : 'hidden';
 }
 function persist() {
@@ -131,6 +135,7 @@ function persist() {
   return ok;
 }
 function begin(value = null) {
+  navigation=null;$('navigation-hud').hidden=true;
   if (value) Object.assign(state, { who: value.who, name: value.name, story: value.story });
   else Object.assign(state, { who: chosen, name: $('player-name').value.trim().slice(0, 20) || PLAYERS[chosen].name, story: 0 });
   eco = value ? cleanEconomy(value) : newEconomy();
@@ -424,9 +429,11 @@ for(const [kind,label] of Object.entries({all:'Semua',...ITEM_KINDS})){
 }
 $('catalogue-button').onclick=()=>{$('bag-panel').hidden=true;$('catalogue-panel').hidden=false;setMode('catalogue');renderCatalogue();$('catalogue-close').focus();};
 $('catalogue-close').onclick=()=>{$('catalogue-panel').hidden=true;setMode('explore');openBag();$('catalogue-button').focus();};
-function openMap(){if(mode!=='explore')return;setMode('map');$('map-panel').hidden=false;drawMap($('town-map'),true);}
+function openMap(){if(mode!=='explore')return;setMode('map');$('hud').inert=true;townMap.open();}
 $('map-button').onclick=openMap;
-$('map-close').onclick=()=>{$('map-panel').hidden=true;setMode('explore');};
+$('minimap-button').onclick=openMap;
+$('navigation-open').onclick=openMap;
+$('navigation-stop').onclick=()=>{navigation=null;$('navigation-hud').hidden=true;drawMap($('minimap'));};
 function pause(){if(mode!=='explore')return;persist();setMode('pause');$('pause-settings').hidden=false;$('dev-cheats').hidden=true;$('pause-panel').hidden=false;}
 $('pause-button').onclick=pause;
 let versionTaps=0,lastVersionTap=0;
@@ -559,38 +566,51 @@ async function runMove(index){
   }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
 function zoneAt(x,z){return districtAt(x,z).name;}
-const directory=document.getElementById('town-directory');
-for(const zone of DISTRICTS){
-  const details=document.createElement('details'), summary=document.createElement('summary'), list=document.createElement('ol');
-  summary.textContent=`${zone.name} · ${BUILDINGS.filter(b=>b.zone===zone.id).length}`;
-  summary.style.color=zone.color;details.append(summary);
-  for(const b of BUILDINGS.filter(b=>b.zone===zone.id)){const item=document.createElement('li');item.value=b.id;item.dataset.building=b.id;item.textContent=b.name;list.append(item);}
-  details.append(list);directory.append(details);
+function mapEntries(){
+  const jobs=new Set(eco.jobs.map(j=>j.status==='accepted'?j.from:nextStop(j)));
+  const aliases={2:'Nenek congkak',8:'Atuk',15:'Faiz',14:'Mei Ling',25:'Uncle Lim tamiya mini 4wd toys parts accessories katalog',34:'Padang Faiz Mei Ling Atuk gasing tamiya mini 4wd race',37:'Pak Din dam haji petrol'};
+  const shorts={2:'Rumah Tok',21:'Warung Kak Ita',22:'Runcit 99',25:'Uncle Lim',29:'Sekolah',31:'Masjid',34:'Padang · games',35:'Stesen bas',37:'Petrol · dam',38:'Pasar malam'};
+  const places=BUILDINGS.map(b=>{
+    const contact=personAt(b.id)?.name||contactAt(b.id)?.name||'',zone=DISTRICTS.find(d=>d.id===b.zone);
+    return {id:`place:${b.id}`,type:'place',place:b.id,name:placeName(b.id),short:shorts[b.id],subtitle:[contact,zone.name].filter(Boolean).join(' · '),search:aliases[b.id]||'',badge:String(b.id),color:zone.color,mapX:b.x,mapZ:b.z,x:b.door.x,z:b.door.z,tags:[...(b.zone==='pekan'||['petrol','workshop','mini-shop','canteen','warung'].includes(b.kind)?['shops']:[]),...(['house','home','terrace'].includes(b.kind)?['homes']:[]),...([2,25,34,37].includes(b.id)?['games']:[]),...(jobs.has(b.id)?['jobs']:[])]};
+  });
+  const npcs=NPC_KEYS.map(key=>{
+    const n=npcBody(key),info=NPCS[key],active=atPost(n),b=placeOf(active?n.post:info.place),p=active?n:b.door;
+    return {id:`npc:${key}`,type:'npc',place:b.id,name:info.name,subtitle:`${placeName(b.id)}${active?'':' · Di rumah'}`,search:info.role+(['faiz','meiling','lim'].includes(key)?' Tamiya mini 4wd race':''),badge:info.name.charAt(0),color:'#30634d',mapX:p.x,mapZ:p.z,x:p.x,z:p.z,tags:['npc',...(['nenek','atuk','faiz','meiling','din','lim'].includes(key)?['games']:[]),...(jobs.has(b.id)?['jobs']:[])]};
+  });
+  return [...places,...npcs];
 }
-// District labels sit on the emptiest ground inside each district, so they
-// stay readable wherever the plan moves buildings.
-const overlapArea=(a,b)=>Math.max(0,Math.min(a[0]+a[2]/2,b[0]+b[2]/2)-Math.max(a[0]-a[2]/2,b[0]-b[2]/2))*Math.max(0,Math.min(a[1]+a[3]/2,b[1]+b[3]/2)-Math.max(a[1]-a[3]/2,b[1]-b[3]/2));
-// Districts can be spread across town, so each label looks for open ground
-// near its own places, preferring the biggest cluster of them.
-const mapLabels=DISTRICTS.map(d=>{
-  const members=BUILDINGS.filter(b=>b.zone===d.id);
-  const crowd=b=>members.filter(o=>Math.hypot(o.x-b.x,o.z-b.z)<25).length,anchor=members.reduce((a,b)=>crowd(b)>crowd(a)?b:a,members[0]);
-  const w=d.short.length*1.9+2,h=4;let best={x:anchor.x,z:anchor.z,cost:Infinity};
-  for(let x=anchor.x-24;x<=anchor.x+24;x+=2)for(let z=anchor.z-24;z<=anchor.z+24;z+=2){
-    if(x-w/2<-80||x+w/2>78||z-h/2<-68||z+h/2>68)continue;
-    const box=[x,z,w,h];let cost=Math.hypot(x-anchor.x,z-anchor.z)*.4;
-    for(const b of BUILDINGS)cost+=overlapArea(box,[b.x,b.z,b.w,b.d])*4;
-    for(const r of ROADS)cost+=overlapArea(box,[r.x,r.z,r.w,r.d]);
-    for(const c of world.colliders)if(c.w!==undefined)cost+=overlapArea(box,[c.x,c.z,c.w,c.d])*2;
-    if(cost<best.cost)best={x,z,cost};
-  }
-  return [best.x,best.z,d.short];
+const mapPlayer=()=>({x:player.group.position.x,z:player.group.position.z,heading:player.group.rotation.y});
+const planMapRoute=entry=>findWalkRoute(mapPlayer(),entry,world.canWalk,TOWN_BOUNDS);
+const townMap=createTownMap({buildings:BUILDINGS,districts:DISTRICTS,roads:ROADS,bridges:BRIDGES,
+  getEntries:mapEntries,getPlayer:mapPlayer,getQuest:()=>storyTarget(),getJobs:jobStops,getNavigation:()=>navigation,planRoute:planMapRoute,
+  onNavigate:(entry,route)=>{navigation={entry,route,planned:{x:entry.x,z:entry.z},arrived:false};lastNavigationUpdate=-1;updateNavigation();},
+  onClose:()=>{$('hud').inert=false;setMode('explore');$('map-button').focus();}
 });
-function drawMap(canvas,full=false){
+function updateNavigation(){
+  if(!navigation)return;
+  const p=mapPlayer(),current=mapEntries().find(e=>e.id===navigation.entry.id);
+  if(!current){navigation=null;$('navigation-hud').hidden=true;return;}
+  const moved=Math.hypot(current.x-navigation.planned.x,current.z-navigation.planned.z)>2;
+  navigation.entry=current;
+  const gap=Math.hypot(p.x-current.x,p.z-current.z);navigation.arrived=gap<2.4;
+  if(navigation.arrived)navigation.route=[p];
+  else{
+    // Advance only to a reachable waypoint; an off-route walk replans from here.
+    let next=navigation.route.length-1;
+    while(next>0&&!clearSegment(p,navigation.route[next],world.canWalk))next--;
+    if(!moved&&next>0)navigation.route=[p,...navigation.route.slice(next)];
+    else {navigation.route=planMapRoute(current)||[];navigation.planned={x:current.x,z:current.z};}
+  }
+  $('navigation-hud').hidden=false;$('navigation-name').textContent=current.name;
+  $('navigation-distance').textContent=navigation.arrived?'Dah sampai · boleh berinteraksi':navigation.route.length?`${Math.round(routeLength(navigation.route))} m · ikut garis biru di map`:'Buka map · laluan belum ditemui';
+}
+function drawMap(canvas){
   const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-  const px=x=>(x+82)/164*w,pz=z=>(z+70)/140*h;
+  const position=player.group.position;
+  const px=x=>w/2+(x-position.x)/76*w,pz=z=>h/2+(z-position.z)/76*h;
   ctx.fillStyle='#dce3c2';ctx.fillRect(0,0,w,h);
-  const rect=(x,z,rw,rh,color)=>{ctx.fillStyle=color;ctx.fillRect(px(x-rw/2),pz(z-rh/2),rw/164*w,rh/140*h);};
+  const rect=(x,z,rw,rh,color)=>{ctx.fillStyle=color;ctx.fillRect(px(x-rw/2),pz(z-rh/2),rw/76*w,rh/76*h);};
   // A soft halo of district colour around each place, wherever it stands.
   for(const b of BUILDINGS)rect(b.x,b.z,b.w+8,b.d+8,DISTRICTS.find(d=>d.id===b.zone).color+'1c');
   rect(-65,0,9,140,'#82aaa2');
@@ -598,23 +618,20 @@ function drawMap(canvas,full=false){
   for(const b of BRIDGES)rect(b.x,b.z,b.w,b.d,'#c7bd9e');
   for(const c of world.colliders){
     if(c.kind==='npc')continue;
-    if(c.r!==undefined){ctx.fillStyle='#66745b';ctx.beginPath();ctx.arc(px(c.x),pz(c.z),Math.max(1,c.r*w/164),0,Math.PI*2);ctx.fill();}
+    if(c.r!==undefined){ctx.fillStyle='#66745b';ctx.beginPath();ctx.arc(px(c.x),pz(c.z),Math.max(1,c.r*w/76),0,Math.PI*2);ctx.fill();}
     else rect(c.x,c.z,c.w,c.d,c.kind==='fence'?'#384b3f':'#827765');
   }
   for(const b of BUILDINGS){const color=DISTRICTS.find(d=>d.id===b.zone).color;rect(b.x,b.z,b.w,b.d,color+'95');}
-  if(full){
-    for(const b of BUILDINGS){
-      const x=px(b.x),y=pz(b.z);ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fillStyle='#fff8e6';ctx.fill();ctx.strokeStyle='#272630';ctx.lineWidth=1.4;ctx.stroke();
-      ctx.fillStyle='#272630';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(b.id),x,y+.5);
-    }
-    ctx.font='bold 11px system-ui';ctx.textAlign='center';for(const [x,z,label]of mapLabels){ctx.strokeStyle='#fff8e6';ctx.lineWidth=4;ctx.strokeText(label,px(x),pz(z));ctx.fillStyle='#272630';ctx.fillText(label,px(x),pz(z));}
-  }
   if(storySpot&&!storySpot.job){const q=storySpot;ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
-  for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=full?6:4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
-  world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),full?4:2.5,0,Math.PI*2);ctx.fill();});
-  const p=player.group.position;ctx.fillStyle='#b15c33';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),full?6:4,0,Math.PI*2);ctx.fill();ctx.stroke();
-  ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#b15c33';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
-  if(full){ctx.textAlign='center';ctx.font='bold 11px system-ui';ctx.fillStyle='#272630';ctx.fillText('N ↑',w-25,20);}
+  for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
+  world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),2.5,0,Math.PI*2);ctx.fill();});
+  const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
+  if(navigation?.route.length){ctx.beginPath();navigation.route.forEach((p,i)=>{i?ctx.lineTo(px(p.x),pz(p.z)):ctx.moveTo(px(p.x),pz(p.z));});ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#175fd0';ctx.lineWidth=3;ctx.stroke();}
+  if(navigation){const d=navigation.entry,x=px(d.x),y=pz(d.z);ctx.fillStyle='#175fd0';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  // Redraw the player over the route and show north on the local mini-map.
+  ctx.fillStyle='#175fd0';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),5,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#243f37';ctx.font='bold 12px system-ui';ctx.textAlign='right';ctx.fillText('N ↑',w-8,17);
 }
 const clock=new T.Clock();
 const cameraTarget=new T.Vector3(),look=new T.Vector3();
@@ -650,6 +667,8 @@ function tick(){
     const firstStop=jobStops()[0];$('job-distance').textContent=firstStop?`${Math.round(Math.hypot(p.x-firstStop.x,p.z-firstStop.z))} m away`:'';
     $('location-name').textContent=zoneAt(p.x,p.z);
     $('quest-distance').textContent=storySpot?`${Math.round(Math.hypot(p.x-storySpot.x,p.z-storySpot.z))} m away`:'';
+    if(navigation&&elapsed-lastNavigationUpdate>.8){updateNavigation();lastNavigationUpdate=elapsed;}
+    if(navigation){const next=navigation.route[1]||navigation.entry,angle=Math.atan2(next.x-p.x,-(next.z-p.z))+yaw;$('navigation-arrow').textContent=navigation.arrived?'✓':'↑';$('navigation-arrow').style.transform=`rotate(${navigation.arrived?0:angle}rad)`;$('navigation-hud').hidden=false;}
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
   } else player.animate(dt,0);
@@ -700,4 +719,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
