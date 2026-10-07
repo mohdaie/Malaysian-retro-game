@@ -1,15 +1,15 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.6.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.6.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.6.0';
-import { createProps } from './props.js?v=1.6.0';
-import { ROUTINES, createRoutine } from './routines.js?v=1.6.0';
-import { ACTIONS } from './actions.js?v=1.6.0';
-import { createWalkability } from './collision.js?v=1.6.0';
-import { createLandmarks } from './landmarks.js?v=1.6.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.6.0';
-import { createTrees } from './trees.js?v=1.6.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=1.6.0';
+import { createCharacter } from './characters.js?v=1.6.1';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.6.1';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.6.1';
+import { createProps } from './props.js?v=1.6.1';
+import { ROUTINES, createRoutine } from './routines.js?v=1.6.1';
+import { ACTIONS } from './actions.js?v=1.6.1';
+import { createWalkability } from './collision.js?v=1.6.1';
+import { createLandmarks } from './landmarks.js?v=1.6.1';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.6.1';
+import { createTrees } from './trees.js?v=1.6.1';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.6.1';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
