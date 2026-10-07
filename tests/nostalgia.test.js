@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, STOCK, ITEMS } from '../src/economy.js';
 import { NOSTALGIA_ITEMS } from '../src/nostalgia-items.js';
-import { NOSTALGIA_QUESTS as QUESTS, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaStatus, nostalgiaAt, cleanNostalgia } from '../src/nostalgia-quests.js';
+import { NOSTALGIA_QUESTS as QUESTS, startNostalgia as startRaw, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaStatus, nostalgiaAt, cleanNostalgia } from '../src/nostalgia-quests.js';
 import { recordDam } from '../src/dam-progress.js';
 import { newMatch } from '../src/dam-haji.js';
 import { startTamiya, recordTamiya } from '../src/tamiya-progress.js';
 import { prepareTamiya, launchTamiya, advanceTamiya } from '../src/tamiya.js';
 import { ownedCars } from '../src/tamiya-cars.js';
 import { readSave, writeSave } from '../src/save.js';
+import { unlockLater } from './quest-helpers.js';
+const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
 const context=id=>({place:QUESTS[id].place,npc:QUESTS[id].npc});
 function errand(eco,n,route=90,to=1+n%18,stops=[to]) {
  const offer={id:'test-'+n,kind:'parcel',requester:22,from:22,to:stops.at(-1),stops,item:'gula',qty:stops.length,cost:0,upah:100,route};
@@ -27,7 +29,7 @@ function winAll(eco,id){for(const c of QUESTS[id].challenges)for(let i=0;i<c.cou
 test('all 28 photographed keepsakes have stories and cannot be bought; six paths use actual town stops',()=>{
  assert.equal(Object.keys(NOSTALGIA_ITEMS).length,28);assert.equal(Object.keys(QUESTS).length,6);
  for(const [id,item] of Object.entries(NOSTALGIA_ITEMS)){assert.ok(item.storyTitle&&item.story&&item.source&&item.photoSource);assert.ok(!Object.values(STOCK).some(s=>s.includes(id)));assert.equal(buy(newEconomy(),25,id).reason,'quest-only');assert.ok(ITEMS[id].rewardOnly);}
- for(const q of Object.values(QUESTS)){assert.ok(q.grind.deliveries>=10&&q.trail.length>=5);assert.ok(q.trail.every(s=>Number.isInteger(s.place)&&s.place>=1&&s.place<=38&&s.clue));}
+ for(const q of Object.values(QUESTS)){assert.ok(q.grind.deliveries>=3&&q.grind.deliveries<=12&&q.trail.length>=3);assert.ok(q.trail.every(s=>Number.isInteger(s.place)&&s.place>=1&&s.place<=38&&s.clue));}
 });
 test('progress starts at acceptance, paid deliveries count once and cancelled work counts zero',()=>{
  const eco=newEconomy(),id='nostalgia_M01';errand(eco,90);assert.deepEqual(eco.nostalgia.quests,{});
@@ -52,8 +54,8 @@ test('short repetitive jobs cannot skip variety, long-route gates or ordered clu
  assert.ok(followNostalgiaClue(eco,id,33).ok);assert.equal(followNostalgiaClue(eco,id,33).ok,false);assert.equal(eco.nostalgia.quests[id].trail,1);
  assert.ok(nostalgiaAt(eco,{place:29,npc:'farid'}).includes(id));
 });
-test('early wins and easier or wrong-opponent wins cannot satisfy the final challenge',()=>{
- const eco=newEconomy(),id='nostalgia_G01';startNostalgia(eco,id,context(id));recordNostalgiaWin(eco,{game:'dam',level:'jaguh'});assert.deepEqual(eco.nostalgia.quests[id].wins,{});trail(eco,id);
+test('easier or wrong-opponent wins cannot satisfy the final challenge',()=>{
+ const eco=newEconomy(),id='nostalgia_G01';startNostalgia(eco,id,context(id));trail(eco,id);
  recordNostalgiaWin(eco,{game:'dam',level:'santai'});recordNostalgiaWin(eco,{game:'congkak'});assert.equal(eco.nostalgia.quests[id].wins[0]||0,0);
  eco.dam.match={...newMatch('jaguh'),over:true,winner:0,settled:false};recordDam(eco);recordDam(eco);assert.equal(eco.nostalgia.quests[id].wins[0],1);
  const walkman=newEconomy();startNostalgia(walkman,'nostalgia_G04',context('nostalgia_G04'));trail(walkman,'nostalgia_G04');recordNostalgiaWin(walkman,{game:'gasing',opponent:'faiz'});assert.equal(walkman.nostalgia.quests.nostalgia_G04.wins[0]||0,0);

@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newEconomy, accept, collect, deliver } from '../src/economy.js';
-import { NOSTALGIA_QUESTS, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from '../src/nostalgia-quests.js';
+import { NOSTALGIA_QUESTS, startNostalgia as startRaw, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from '../src/nostalgia-quests.js';
 import { DONE, advance, syncChapter, chapterGuide, chapterKeepsake, cleanExhibition, shareKeepsake, EXHIBITION_LINKS } from '../src/story.js';
 import { validateSave, readSave, writeSave } from '../src/save.js';
 
+import { unlockLater } from './quest-helpers.js';
+const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
 const context = id => ({ place: NOSTALGIA_QUESTS[id].place, npc: NOSTALGIA_QUESTS[id].npc });
 function deliveries(eco, id) {
   for (let n=0;n<NOSTALGIA_QUESTS[id].grind.deliveries;n++) {
@@ -28,18 +30,18 @@ test('buying the first toy leads to Pak Salleh; empty or unrelated events cannot
   for(const step of [7,8,9,10,11,DONE])assert.equal(advance(step,null),step);
 });
 test('the chapter follows real delivery, clue, challenge, claim and exhibition gates',()=>{
-  const eco=newEconomy(),id='nostalgia_M01';assert.equal(syncChapter(7,eco),7);
+  const eco=newEconomy(),id='nostalgia_P02';assert.equal(syncChapter(7,eco),7);
   startNostalgia(eco,id,context(id));assert.equal(syncChapter(7,eco),8);assert.equal(chapterGuide(8,eco).target,'rahman');
   const {job}=accept(eco,{id:'pending',kind:'parcel',requester:22,from:22,to:2,stops:[2],item:'gula',qty:1,cost:0,upah:100,route:90});
   assert.deepEqual(chapterGuide(8,eco).target,{place:22,job:true});collect(eco,job.id,22);
   assert.deepEqual(chapterGuide(8,eco).target,{place:2,job:true});deliver(eco,job.id,2);
   assert.equal(syncChapter(8,eco),8);deliveries(eco,id);assert.equal(syncChapter(8,eco),9);
-  assert.deepEqual(chapterGuide(9,eco).target,{place:33});
+  assert.deepEqual(chapterGuide(9,eco).target,{place:25});
   for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
-  assert.equal(syncChapter(9,eco),10);assert.equal(chapterGuide(10,eco).target,'faiz');
+  assert.equal(syncChapter(9,eco),10);assert.equal(chapterGuide(10,eco).target,'nenek');
   assert.equal(shareKeepsake(eco,10,id,4).ok,false);
-  for(let i=0;i<4;i++)recordNostalgiaWin(eco,{game:'tamiya',track:'oval'});
-  assert.equal(syncChapter(10,eco),11);assert.equal(chapterGuide(11,eco).target,'faiz');
+  for(let i=0;i<4;i++)recordNostalgiaWin(eco,{game:'congkak'});
+  assert.equal(syncChapter(10,eco),11);assert.equal(chapterGuide(11,eco).target,'farid');
   assert.ok(claimNostalgia(eco,id,context(id),1,'Aie',4).ok);assert.equal(syncChapter(11,eco),12);
   assert.equal(chapterGuide(12,eco).target,'salleh');assert.equal(syncChapter(12,eco),12,'owning it still requires the exhibition return');
   const before=structuredClone(eco),result=shareKeepsake(eco,12,id,4);assert.ok(result.ok);assert.deepEqual(eco,before,'sharing neither sells nor removes the keepsake');
@@ -51,23 +53,19 @@ test('any of the six stories can complete Chapter 1; the remaining stories stay 
   for(const id of Object.keys(NOSTALGIA_QUESTS)){
     const eco=newEconomy();earn(eco,id);assert.equal(syncChapter(7,eco),12);
     assert.ok(shareKeepsake(eco,12,id,4).ok);
-    const other=Object.keys(NOSTALGIA_QUESTS).find(k=>k!==id);assert.ok(startNostalgia(eco,other,context(other)).ok);
-    assert.equal(chapterKeepsake(eco),id);assert.equal(eco.nostalgia.quests[other].stage,'grind');
+    const other=Object.keys(NOSTALGIA_QUESTS).find(k=>!eco.nostalgia.quests[k]);assert.ok(startNostalgia(eco,other,context(other)).ok);
+    assert.ok(eco.nostalgia.earned[chapterKeepsake(eco)]);assert.equal(eco.nostalgia.quests[other].stage,'grind');
   }
 });
-test('challenge guidance includes missing Tamiya tracks and each required KLCC opponent',()=>{
-  const eco=newEconomy(),id='nostalgia_I01';startNostalgia(eco,id,context(id));deliveries(eco,id);
-  for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
-  assert.equal(chapterGuide(10,eco).target,'nenek');
-  for(const [game,host,next] of [['congkak','nenek','din'],['dam','din','atuk'],['gasing','atuk','faiz']]){
-    assert.equal(chapterGuide(10,eco).target,host);
-    for(let i=0;i<2;i++)recordNostalgiaWin(eco,{game,level:'jaguh',opponent:'atuk'});
-    assert.equal(chapterGuide(10,eco).target,next);
-  }
-  const race=newEconomy();startNostalgia(race,'nostalgia_T01',context('nostalgia_T01'));deliveries(race,'nostalgia_T01');
-  for(const stop of NOSTALGIA_QUESTS.nostalgia_T01.trail)followNostalgiaClue(race,'nostalgia_T01',stop.place);
-  for(let i=0;i<6;i++)recordNostalgiaWin(race,{game:'tamiya',track:'oval'});
-  assert.equal(chapterGuide(10,race).target,'faiz');assert.equal(syncChapter(10,race),10);
+test('starter guidance asks for one congkak win; later Tamiya requires every track',()=>{
+ const eco=newEconomy(),id='nostalgia_I01';startNostalgia(eco,id,context(id));deliveries(eco,id);
+ for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
+ assert.equal(chapterGuide(10,eco).target,'nenek');
+ recordNostalgiaWin(eco,{game:'congkak'});assert.equal(syncChapter(10,eco),11);
+ const race=newEconomy();startNostalgia(race,'nostalgia_T01',context('nostalgia_T01'));deliveries(race,'nostalgia_T01');
+ for(const stop of NOSTALGIA_QUESTS.nostalgia_T01.trail)followNostalgiaClue(race,'nostalgia_T01',stop.place);
+ for(let i=0;i<3;i++)recordNostalgiaWin(race,{game:'tamiya',track:'oval'});
+ assert.equal(race.nostalgia.quests.nostalgia_T01.stage,'challenge');
 });
 test('old completed saves resume at the invitation without resetting earned keepsakes or money',()=>{
   const eco=newEconomy();earn(eco,'nostalgia_P02');eco.wallet=1900;

@@ -1,28 +1,30 @@
-# Nostalgic keepsakes — v2.6.0
+# Nostalgic keepsakes — v2.7.1
 
-Six long-term collectible quests use the existing delivery and four game systems. The full 28-item collection has local reference images; 22 entries are reserved for later chapters.
+Six progressively unlocked collectible quests use the existing delivery and four game systems. The full 28-item collection has local reference images; 22 entries are reserved for later chapters.
 
-## Earning paths
+## Earning paths (v2.7.1)
 
-| Keepsake | Start with | Deliveries | Destinations | Long jobs (60 m+) | Ordered clues | Final wins |
-|---|---|---:|---:|---:|---:|---|
-| Too Phat — Plan B | Faiz | 12 | 6 | 4 | 5 | 4 Tamiya wins |
-| Ujang No.111 | Cikgu Farid | 10 | 5 | 3 | 5 | 3 congkak wins against Nenek |
-| Nokia 3310 | Kak Lina | 18 | 8 | 6 | 5 | 3 Jaguh Dam Haji wins |
-| Sony Walkman WM-EX9 | Abang Kamal | 16 | 7 | 5 | 5 | 3 gasing wins against Atuk |
-| Lightning Magnum | Uncle Lim | 20 | 10 | 6 | 5 | 6 Tamiya wins covering all 3 tracks |
-| KLCC miniature | Nenek | 24 | 10 | 8 | 6 | 2 wins each: congkak, Jaguh dam, Atuk gasing, Tamiya |
+The first story jobs with Pak Rahman and Nenek remain single, quick errands. New players can discover two short keepsake stories. Earning either unlocks the later stories through NPC conversations; future rewards remain hidden until earned. Already accepted quests remain available in older saves.
+
+| Keepsake | Start with | Available | Deliveries | Destinations | Long jobs (60 m+) | Ordered clues | Final wins |
+|---|---|---|---:|---:|---:|---:|---|
+| Ujang No.111 | Cikgu Farid | Starter | 3 | 3 | 1 | 3 | 1 congkak win against Nenek |
+| KLCC miniature | Nenek | Starter | 4 | 3 | 1 | 3 | 1 congkak win against Nenek |
+| Nokia 3310 | Kak Lina | After first earned keepsake | 6 | 4 | 2 | 3 | 1 Jaguh Dam Haji win |
+| Sony Walkman WM-EX9 | Abang Kamal | After first earned keepsake | 6 | 4 | 2 | 3 | 1 gasing win against Atuk |
+| Too Phat — Plan B | Faiz | After first earned keepsake | 8 | 5 | 3 | 4 | 1 Tamiya win |
+| Lightning Magnum | Uncle Lim | After first earned keepsake | 12 | 6 | 4 | 5 | 1 Tamiya win on each of the 3 tracks |
 
 ## Progress and ownership
 
-- Start a story at its giver. Previously completed errands and wins are not backfilled.
-- A paid job counts once after its final stop. Accepted or cancelled jobs do not count. The quoted distance is saved at acceptance; legacy jobs without a distance remain safe and do not count as long jobs.
-- Active quests can share qualifying errands. Deliveries, different destinations and long-route counts are separate gates.
-- Story clues must be read at the indicated place, in order. The quest book can route to the next stop. Existing NPC hours still apply.
-- Challenge wins count after the trail. Easier Dam levels and Faiz gasing do not satisfy Jaguh/Atuk goals. Losses preserve progress. Existing settled-round guards prevent repeated win credit.
-- Return to the giver, choose one of two personal dedications and earn the keepsake once. Its player name, giver and game day survive reloads in that character's save.
-- Keepsakes cannot be bought. Lightning Magnum becomes usable in the existing Tamiya garage/races after earning it; its arcade statistics are game tuning.
-- The catalogue has a keepsake filter, locked previews, status and inspection. The 22 future stories remain locked.
+- Deliveries count from story acceptance. Previously completed work is not backfilled.
+- Destinations and long jobs overlap with the delivery total; they are not additional jobs. Accepted quests share qualifying completed errands.
+- A paid multi-stop job counts once at its final stop; cancelled jobs do not count.
+- Qualifying wins now count from acceptance, including during errands and clues, and survive reloads. Difficulty, opponent and championship track requirements still apply.
+- Complete errands and read the ordered clues before claiming, even if the game challenge is already complete. Losses keep progress.
+- Shortened clue routes keep the discovered stops from old saves, migrate once, and preserve accepted later quests, earned items, dedications, wallet and separate character saves.
+- Return to the giver to choose a dedication and claim once. Lightning Magnum is playable in the Tamiya garage.
+- One earned keepsake and sharing its story with Pak Salleh still complete Chapter 1. The larger quests stay optional. The Siti Nurhaliza album remains a future catalogue story.
 
 ## Image references
 
@@ -65,3 +67,7 @@ Images are resized WebP copies of researched original photographs or cover art, 
 - Production build passes and remains self-contained.
 - Headless Chrome at 932 × 430 validates quest acceptance, six quest-book cards, reward choices, item inspection, all 28 catalogue entries and earned reward restoration after reload, with no runtime exceptions. Reward progress is seeded through the real economy/quest functions for this UI check; full physical gameplay duration has not been measured.
 - Phone landscape previews: [quest progress](nostalgia-quest-preview.png) and [catalogue](nostalgia-catalogue-preview.png).
+
+## v2.7.1 validation
+
+All 160 existing tests and five new pacing regressions pass. The production build passes. New checks cover starter-only discovery, real first-keepsake unlocks, early win and track persistence, ordered-story gates, one-time clue migration, existing accepted later stories and all six old earned rewards. Physical playthrough duration has not been measured.

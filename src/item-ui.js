@@ -1,7 +1,7 @@
-import { TAMIYA_PARTS, partEffect } from './tamiya-parts.js?v=2.7.0';
-import { ITEMS, rm } from './economy.js?v=2.7.0';
-import { ITEM_KINDS } from './item-art.js?v=2.7.0';
-import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=2.7.0';
+import { TAMIYA_PARTS, partEffect } from './tamiya-parts.js?v=2.7.1';
+import { ITEMS, rm } from './economy.js?v=2.7.1';
+import { ITEM_KINDS } from './item-art.js?v=2.7.1';
+import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=2.7.1';
 
 // Reused by shops, the bag, jobs and the catalogue. Browsing never buys an item.
 export function itemThumbnail(id, onInspect, large = false) {
