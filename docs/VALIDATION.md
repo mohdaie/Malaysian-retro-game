@@ -247,3 +247,17 @@ In the town (headless Chromium, 1280×720) he stands, jogs, sprints, jumps, wave
 `npm test`: **137 tests passed**, and the build succeeds.
 
 Known limits: the recorded idle and jog lean and bend the knees, which reads as a slight crouch on Amir's short-legged, big-headed proportions. The pants crease at the crotch when he crouches. Emulated checks only.
+
+## v2.4.0 · Nur from a TRELLIS.2 model
+
+`scripts/bake-model.mjs` prepared the user's export (7,169 vertices, 9,478 triangles, an A-pose, one connected surface) into `assets/models/nur.glb` (656 KB, 1.48 m). The bone colour map from four sides shows:
+- the hood and head on the head bone;
+- the hood's drape on the neck;
+- the hoodie, backpack and the water bottle under it graded up the spine;
+- arms and legs split into their segments.
+
+A new rule keeps anything well behind the hips below the crotch line (the bottle) with the torso instead of a leg. Re-running the script for Amir with the new rule produced a byte-identical `amir.glb`.
+
+In the browser, Nur's idle, walk, jog and crouch play beside Amir's. In the town she stands, jogs, sprints, jumps, waves and rides her mint basikal, sized to her legs, with no page errors.
+
+`npm test`: all tests pass, and the build succeeds. Emulated checks only.

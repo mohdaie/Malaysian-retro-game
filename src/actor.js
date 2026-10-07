@@ -2,8 +2,8 @@ import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.3.0';
-import { createCharacter, motif } from './characters.js?v=2.3.0';
+import { toon, outline } from './illustration.js?v=2.4.0';
+import { createCharacter, motif } from './characters.js?v=2.4.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -17,7 +17,7 @@ let loading = null;
 export function loadRig(url = RIG_URL) { return loading ??= new GLTFLoader().loadAsync(url).then(prepareRig); }
 // Characters modelled outside the code (an image-to-3D export prepared by
 // scripts/bake-model.mjs): a textured mesh, its weights and fitted joints.
-export const MODELS = { amir: new URL('../assets/models/amir.glb', import.meta.url).href };
+export const MODELS = { amir: new URL('../assets/models/amir.glb', import.meta.url).href, nur: new URL('../assets/models/nur.glb', import.meta.url).href };
 const models = new Map();
 export function loadModel(url) { if (!models.has(url)) models.set(url, new GLTFLoader().loadAsync(url)); return models.get(url); }
 
@@ -480,7 +480,7 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
 // lengths. A ground lock keeps the feet on the floor.
 const STAND = .065, LEG = .673;
 function createModelActor(scene, x, z, kind, rig, model) {
-  const { joints: J, bones: order } = model.parser.json.extras;
+  const { joints: J, bones: order, height = 1.5 } = model.parser.json.extras;
   const root = new T.Group(); root.position.set(x, 0, z); scene.add(root);
   const skeletonRoot = cloneRig(rig.scene); root.add(skeletonRoot);
   const sourceMeshes = []; skeletonRoot.traverse(o => { if (o.isMesh) sourceMeshes.push(o); }); sourceMeshes.forEach(o => o.removeFromParent());
@@ -537,8 +537,8 @@ function createModelActor(scene, x, z, kind, rig, model) {
     skeletonRoot.position.y = STAND + lift; root.updateMatrixWorld(true);
   }
   const { animate, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips, scale: k, groundLock });
-  root.userData.design = kind; root.userData.height = 1.5;
-  return { group: root, figure, head: bone('head'), height: 1.5, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true };
+  root.userData.design = kind; root.userData.height = height;
+  return { group: root, figure, head: bone('head'), height, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true };
 }
 // Turn a bone so its child points at a world target (bind-time fitting).
 function aimBone(b, child, target) {
