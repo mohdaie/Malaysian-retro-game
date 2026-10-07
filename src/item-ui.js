@@ -1,7 +1,7 @@
-import { TAMIYA_PARTS, partEffect } from './tamiya-parts.js?v=2.6.0';
-import { ITEMS, rm } from './economy.js?v=2.6.0';
-import { ITEM_KINDS } from './item-art.js?v=2.6.0';
-import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=2.6.0';
+import { TAMIYA_PARTS, partEffect } from './tamiya-parts.js?v=2.7.0';
+import { ITEMS, rm } from './economy.js?v=2.7.0';
+import { ITEM_KINDS } from './item-art.js?v=2.7.0';
+import { TAMIYA_CARS, carRating } from './tamiya-cars.js?v=2.7.0';
 
 // Reused by shops, the bag, jobs and the catalogue. Browsing never buys an item.
 export function itemThumbnail(id, onInspect, large = false) {
@@ -26,10 +26,10 @@ export function itemIdentity(id, onInspect, description = '') {
 export function catalogueCard(id, onInspect, owned = 0) {
   const item = ITEMS[id], card = document.createElement('li'), name = document.createElement('b'), note = document.createElement('small');
   card.className = 'catalogue-card'; card.dataset.item = id;
-  name.textContent = item.title;
+  name.textContent = item.rewardOnly&&!owned?'Kenangan rahsia':item.title;
   note.textContent = item.rewardOnly ? owned ? 'Keepsake earned · Open its story' : 'Locked keepsake · Earn through its quest' : owned ? `Dalam koleksi · × ${owned}` : item.kind === 'cargo' ? 'Penghantaran sahaja' : `${ITEM_KINDS[item.kind]} · ${rm(item.price)}`;
   const picture=itemThumbnail(id, onInspect, true);
-  if(item.rewardOnly&&!owned){picture.querySelector('img').src='./assets/nostalgia-locked.svg';picture.querySelector('img').alt='Locked keepsake';card.classList.add('locked-keepsake');}
+  if(item.rewardOnly&&!owned){picture.querySelector('img').src='./assets/nostalgia-locked.svg';picture.querySelector('img').alt='Kenangan rahsia';picture.setAttribute('aria-label','Lihat kenangan rahsia');card.classList.add('locked-keepsake');}
   card.append(picture, name, note);
   return card;
 }

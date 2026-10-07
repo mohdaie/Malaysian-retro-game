@@ -1,31 +1,48 @@
-import { ITEMS } from './economy.js?v=2.6.0';
-import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.6.0';
-import { itemThumbnail } from './item-ui.js?v=2.6.0';
-export function memoryQuestCard(id, eco, { placeName, inspect, context, start, clue, claim, navigate }) {
-  const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id],s=nostalgiaStatus(eco,id);
-  const card=document.createElement('article');card.className='memory-quest';card.dataset.nostalgia=id;card.dataset.stage=s.stage;
-  const heading=document.createElement('div');heading.className='memory-heading';
-  const image=itemThumbnail(id,inspect),copy=document.createElement('div'),title=document.createElement('h3'),item=document.createElement('small');
-  title.textContent=q.title;item.textContent=ITEMS[id].title;copy.append(title,item);heading.append(image,copy);card.append(heading);
-  const intro=document.createElement('p');intro.textContent=q.intro;card.append(intro);
-  const steps=document.createElement('ol');steps.className='memory-requirements';
-  for(const label of [`${q.grind.deliveries} deliveries · ${q.grind.destinations} destinations · ${q.grind.long} long routes (60 m+)`,`${q.trail.length} story clues in order`,...q.challenges.map(c=>c.label)]){const li=document.createElement('li');li.textContent=label;steps.append(li);}card.append(steps);
-  const status=document.createElement('p');status.className='memory-status';status.setAttribute('role','status');status.textContent=s.place?`Story trail ${p.trail}/${q.trail.length} · Next: ${placeName(s.place)}`:s.text;card.append(status);
-  const progress=document.createElement('progress');progress.max=3;progress.setAttribute('aria-label',q.title+' progress');
-  progress.value=s.stage==='locked'?0:s.stage==='grind'?Math.min(1,(Math.min(1,p.deliveries/q.grind.deliveries)+Math.min(1,p.destinations.length/q.grind.destinations)+Math.min(1,p.long/q.grind.long))/3):s.stage==='trail'?1+p.trail/q.trail.length:s.stage==='challenge'?2+q.challenges.reduce((n,c,i)=>n+Math.min((p.wins[i]||0)/c.count,c.tracks?p.tracks.length/c.tracks.length:1),0)/q.challenges.length:3;card.append(progress);
-  const actions=document.createElement('div');actions.className='memory-actions';
-  const button=(label,fn,primary=false)=>{const b=document.createElement('button');b.type='button';b.className=primary?'primary':'secondary';b.textContent=label;b.onclick=fn;actions.append(b);};
-  const giverHere=context&&(q.npc?context.npc===q.npc:context.place===q.place&&!context.npc);
-  if(!p&&giverHere)button('Begin this keepsake quest',()=>start(id),true);
-  else if(!p)button(`Find ${q.giver}`,()=>navigate(q.npc?`npc:${q.npc}`:`place:${q.place}`));
-  if(s.stage==='trail') {
-    if(context?.place===s.place)button('Read the next story clue',()=>clue(id),true);
-    else button('Follow the next clue',()=>navigate(`place:${s.place}`));
-  }
-  if(s.stage==='ready') {
-    if(giverHere){const label=document.createElement('p');label.textContent='Choose the dedication your keepsake will remember:';card.append(label);q.choices.forEach((choice,i)=>button(choice.label,()=>claim(id,i),true));}
-    else button(`Return to ${q.giver}`,()=>navigate(q.npc?`npc:${q.npc}`:`place:${q.place}`));
-  }
-  if(s.stage==='earned'){const e=eco.nostalgia.earned[id],memory=document.createElement('p');memory.className='memory-dedication';memory.textContent=`“${e.inscription}” — ${e.giver}, for ${e.player}, game day ${e.day}`;card.append(memory);button('Inspect my keepsake',()=>inspect(id));}
-  card.append(actions);return card;
+import { ITEMS } from './economy.js?v=2.7.0';
+import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.7.0';
+import { itemThumbnail } from './item-ui.js?v=2.7.0';
+import { memoryJournal } from './journal.js?v=2.7.0';
+import { DONE } from './story.js?v=2.7.0';
+export const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+export function taskChecklist(tasks,placeName){
+ const list=el('ul','task-checklist');
+ for(const task of tasks){
+  const li=el('li',task.done?'task-done':'task-pending');li.dataset.task=task.id;
+  const mark=el('span','task-mark',task.done?'✓':'○');mark.setAttribute('role','checkbox');mark.setAttribute('aria-checked',String(task.done));mark.setAttribute('aria-readonly','true');mark.setAttribute('aria-label',task.label);
+  const label=el('span','task-label',task.place?`${task.label} · ${placeName(task.place)}`:task.label),count=el('small','task-count',task.total>1?`${task.current}/${task.total}`:task.done?'Siap':'');
+  li.append(mark,label,count);list.append(li);
+ }
+ return list;
+}
+export function memoryQuestCard(id,eco,{placeName,inspect,context,start,clue,claim,navigate,chapter}){
+ const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id],journal=memoryJournal(eco,id);
+ const giverHere=context&&(q.npc?context.npc===q.npc:context.place===q.place&&!context.npc);
+ if(!p&&!giverHere)return null;
+ const card=el('article','memory-quest journal-memory');card.dataset.nostalgia=id;card.dataset.stage=p?.stage||'conversation';
+ const heading=el('div','journal-heading'),copy=el('div','journal-copy');let image;
+ if(p?.stage==='earned')image=itemThumbnail(id,inspect);
+ else{image=el('div','journal-art');const img=el('img');img.src='./assets/items/notis.svg';img.alt='Catatan cerita';img.width=64;img.height=64;image.append(img);}
+ copy.append(el('small','journal-kicker',p?.stage==='earned'?q.giver:`Kisah ${q.giver}`),el('h3','',p?.stage==='earned'?ITEMS[id].title:q.title));heading.append(image,copy);card.append(heading);
+ const actions=el('div','memory-actions');
+ const button=(label,fn,primary=false)=>{const b=el('button',primary?'primary':'secondary',label);b.type='button';b.onclick=fn;actions.append(b);};
+ if(!p){card.append(el('p','conversation-intro',q.intro));button('Terima tugas',()=>start(id),true);card.append(actions);return card;}
+ if(chapter?.focus===id&&chapter.step>=7&&chapter.step<DONE){card.dataset.chapterFocus='true';card.append(el('small','journal-tag','Untuk pameran · Chapter 1'));}
+ card.append(el('p','journal-next',journal.nextPlace?`Petunjuk: ${placeName(journal.nextPlace)}`:journal.phase));
+ const progress=el('progress','journal-progress');progress.max=1;progress.value=journal.progress;progress.setAttribute('aria-label',journal.phase+' progress');card.append(progress);
+ const details=el('details','journal-details');details.append(el('summary','',`Task · ${journal.done}/${journal.tasks.length} siap`),taskChecklist(journal.tasks,placeName));card.append(details);
+ if(p.stage!=='earned'){const notes=el('details','journal-notes');notes.append(el('summary','','Catatan yang ditemui'),el('p','',journal.note));card.append(notes);}
+ if(p.stage==='trail'){
+  if(context?.place===journal.nextPlace)button('Baca petunjuk',()=>clue(id),true);
+  else button('Tunjuk arah',()=>navigate(`place:${journal.nextPlace}`));
+ }
+ if(p.stage==='ready'){
+  if(giverHere){card.append(el('p','journal-next','Pilih dedikasi keepsake:'));q.choices.forEach((choice,i)=>button(choice.label,()=>claim(id,i),true));}
+  else button(`Jumpa ${q.giver}`,()=>navigate(q.npc?`npc:${q.npc}`:`place:${q.place}`),true);
+ }
+ if(p.stage==='earned'){
+  button('Lihat kenangan',()=>inspect(id));
+  if(chapter?.exhibition?.id===id)card.append(el('small','journal-tag',`✓ Dikongsi di pameran · Hari ${chapter.exhibition.day}`));
+  else if(chapter?.step>=6&&chapter.step<DONE)button('Kongsi dengan Pak Salleh',()=>navigate('npc:salleh'),true);
+ }
+ card.append(actions);return card;
 }

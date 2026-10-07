@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateSave, readSave, readSaves, writeSave, SAVE_KEY, slotKey } from '../src/save.js';
 import { newEconomy } from '../src/economy.js';
+import { DONE } from '../src/story.js';
 const valid = { version: 3, who: 'nur', name: 'Nur', story: 2, x: 12, z: 0, ...newEconomy(), wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
   jobs: [{ id: 'J1', offer: 'S-first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], left: 1, item: 'gula', qty: 2, cost: 0, upah: 100, status: 'carrying', story: 'first-parcel' }], nextJob: 2,
   friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 }, bike: { x: 4, z: -6, heading: 1.2 } };
@@ -11,7 +12,7 @@ test('valid saves roundtrip and invalid/out-of-bounds saves are rejected', () =>
   const storage = memory();
   assert.equal(writeSave(storage, valid), true);
   assert.deepEqual(withoutStamp(readSave(storage)), valid);
-  for (const bad of [{ x: 400 }, { version: 4 }, { name: 7 }, { who: 'faiz' }, { story: 9 }]) assert.equal(validateSave({ ...valid, ...bad }), null, JSON.stringify(bad));
+  for (const bad of [{ x: 400 }, { version: 4 }, { name: 7 }, { who: 'faiz' }, { story: DONE + 1 }]) assert.equal(validateSave({ ...valid, ...bad }), null, JSON.stringify(bad));
 });
 test('unavailable storage and malformed JSON never block gameplay', () => {
   assert.equal(readSave(null), null); assert.equal(writeSave(null, valid), false); assert.equal(readSave({ getItem: () => '{broken' }), null);

@@ -106,7 +106,7 @@ test('chapter 1 moves on only with the right event and offers its own jobs', () 
   assert.equal(advance(0, 'bought-collectible'), 0); assert.equal(advance(0, 'met-friends'), 1);
   let step = 0;
   for (const event of ['met-friends', 'accepted-first-parcel', 'delivered-first-parcel', 'delivered-tea', 'played-congkak-nenek', 'bought-collectible']) step = advance(step, event);
-  assert.equal(step, DONE); assert.equal(advance(DONE, 'met-friends'), DONE);
+  assert.equal(step, 6); assert.ok(step < DONE, "the opening errands are not the chapter ending"); assert.equal(advance(DONE, 'met-friends'), DONE);
   const eco = newEconomy(), [parcel] = storyOffers(1, eco);
   assert.deepEqual([parcel.from, parcel.to, parcel.item, parcel.qty, parcel.upah, parcel.kind], [22, 2, 'gula', 2, 100, 'parcel']);
   const [tea] = storyOffers(3, eco);
