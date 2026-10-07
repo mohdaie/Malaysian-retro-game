@@ -2,9 +2,10 @@
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.5.0';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=1.5.0';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=1.5.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.6.0';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=1.6.0';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=1.6.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=1.6.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
@@ -143,7 +144,7 @@ export const itemLabel = (item, qty) => `${qty} × ${ITEMS[item].name}`;
 export const level = points => LEVELS.find(([min]) => points >= min)[1];
 
 export function newEconomy() {
-  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress() };
+  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress() };
 }
 const add = (bag, item, qty) => { bag[item] = (bag[item] || 0) + qty; if (bag[item] <= 0) delete bag[item]; };
 const space = (item, qty) => ITEMS[item].size * qty;
@@ -286,5 +287,6 @@ export function cleanEconomy(value) {
   for (const [key, day] of Object.entries(value.talked || {})) if (NPCS[key] && typeof day === 'string' && day.length <= 10) eco.talked[key] = day;
   if (value.congkak && int(value.congkak.played, 0, 1e6) && int(value.congkak.won, 0, value.congkak.played)) eco.congkak = { played: value.congkak.played, won: value.congkak.won };
   eco.dam = cleanDamProgress(value.dam);
+  eco.gasing = cleanGasingProgress(value.gasing);
   return eco;
 }
