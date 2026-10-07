@@ -2,8 +2,8 @@ import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.0.0';
-import { createCharacter, motif } from './characters.js?v=2.0.0';
+import { toon, outline } from './illustration.js?v=2.1.0';
+import { createCharacter, motif } from './characters.js?v=2.1.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -16,8 +16,11 @@ export const RIG_URL = new URL('../assets/models/kids-mocap.glb', import.meta.ur
 let loading = null;
 export function loadRig(url = RIG_URL) { return loading ??= new GLTFLoader().loadAsync(url).then(prepareRig); }
 
-const CLIPS = { idle: 'Idle_Loop', walk: 'Walk_Loop', jog: 'Jog_Fwd_Loop', sprint: 'Sprint_Loop', talk: 'Idle_Talking_Loop', interact: 'Interact', pickup: 'PickUp_Table', sit: 'Sitting_Idle_Loop' };
-const GAITS = ['walk', 'jog', 'sprint'];
+const CLIPS = {
+  idle: 'Idle_Loop', walk: 'Walk_Loop', jog: 'Jog_Fwd_Loop', sprint: 'Sprint_Loop', talk: 'Idle_Talking_Loop', interact: 'Interact', pickup: 'PickUp_Table', sit: 'Sitting_Idle_Loop',
+  jumpStart: 'Jump_Start', jumpAir: 'Jump_Loop', jumpLand: 'Jump_Land', crouch: 'Crouch_Idle_Loop', crouchWalk: 'Crouch_Fwd_Loop', ride: 'Driving_Loop'
+};
+const GAITS = ['walk', 'jog', 'sprint'], MEASURED = [...GAITS, 'crouchWalk'];
 
 // Measure each gait once on the source rig: how fast the planted foot slides
 // back under the hips (the speed the clip walks at) and when the left heel
@@ -28,7 +31,7 @@ function prepareRig(gltf) {
   for (const [key, name] of Object.entries(CLIPS)) clips[key] = gltf.animations.find(c => c.name === name);
   const mixer = new T.AnimationMixer(scene), feet = ['DEF-footL', 'DEF-footR'].map(n => scene.getObjectByName(n)), hips = scene.getObjectByName('DEF-hips');
   const f = new T.Vector3(), h = new T.Vector3();
-  for (const key of GAITS) {
+  for (const key of MEASURED) {
     const clip = clips[key], action = mixer.clipAction(clip).play(), n = 240, samples = [];
     for (let i = 0; i <= n; i++) {
       mixer.setTime(clip.duration * i / n); scene.updateMatrixWorld(true); hips.getWorldPosition(h);
@@ -332,22 +335,45 @@ export function createActor(scene, x, z, kind, rig) {
 
   // Motion: idle, walk, jog and sprint share one stride phase, blended by
   // the speed the player actually moved, each played at the rate that keeps
-  // its planted foot still on the ground. Talking swaps in the talking idle.
+  // its planted foot still on the ground. Crouching swaps in the crouch idle
+  // and crouch walk; a jump plays take-off, air and landing; talking swaps in
+  // the talking idle; riding plays the seated clip under the bike IK below.
   const mixer = new T.AnimationMixer(skeletonRoot), actions = {};
-  for (const key of ['idle', 'talk', ...GAITS]) { const a = mixer.clipAction(rig.clips[key]); a.play(); a.setEffectiveWeight(0); actions[key] = a; }
-  const native = Object.fromEntries(GAITS.map(k => [k, rig.gait[k].speed * scale]));
-  const weights = { idle: 1, walk: 0, jog: 0, sprint: 0, talk: 0 };
-  let speed = 0, phase = 0;
-  function animate(dt, moving = 0, running = false, travel = 0, action = null) {
+  const LAYERS = ['idle', 'talk', ...GAITS, 'crouch', 'crouchWalk', 'jumpStart', 'jumpAir', 'jumpLand', 'ride'];
+  for (const key of LAYERS) { const a = mixer.clipAction(rig.clips[key]); a.play(); a.setEffectiveWeight(0); actions[key] = a; }
+  for (const key of ['jumpStart', 'jumpLand']) { actions[key].setLoop(T.LoopOnce); actions[key].clampWhenFinished = true; }
+  const native = Object.fromEntries(MEASURED.map(k => [k, rig.gait[k].speed * scale]));
+  const weights = Object.fromEntries(LAYERS.map(k => [k, k === 'idle' ? 1 : 0]));
+  const R = name => bone(name);
+  let speed = 0, phase = 0, crouchPhase = 0, jumpClock = -1, landClock = -1, waveClock = -1;
+  function animate(dt, moving = 0, running = false, travel = 0, action = null, state = {}) {
     const measured = dt > 0 ? travel / dt : 0;
     speed = T.MathUtils.lerp(speed, measured, 1 - Math.exp(-dt * 10));
-    const go = smooth(.08, .5, speed), jog = smooth(native.walk * 1.2, native.jog * .8, speed), sprint = smooth(native.jog * 1.05, native.sprint * .95, speed);
-    const target = {
-      walk: go * (1 - jog), jog: go * jog * (1 - sprint), sprint: go * jog * sprint,
-      talk: (1 - go) * (action === 'talk' ? 1 : 0), idle: (1 - go) * (action === 'talk' ? 0 : 1)
-    };
-    const k = 1 - Math.exp(-dt * 9);
-    for (const key of Object.keys(weights)) { weights[key] += (target[key] - weights[key]) * k; actions[key].setEffectiveWeight(weights[key]); }
+    if (state.jumped) { jumpClock = 0; landClock = -1; actions.jumpStart.reset().play(); }
+    if (state.landed) { landClock = 0; jumpClock = -1; actions.jumpLand.reset().play(); actions.jumpLand.time = .04; }
+    if (jumpClock >= 0) jumpClock += dt;
+    if (landClock >= 0 && (landClock += dt) > 1.2) landClock = -1;
+    const riding = !!state.ride, crouching = !!state.crouch && !riding, go = smooth(.08, .5, speed);
+    const target = Object.fromEntries(LAYERS.map(k => [k, 0]));
+    if (riding) target.ride = 1;
+    else if (state.air || (jumpClock >= 0 && jumpClock < .2)) {
+      const start = jumpClock >= 0 ? 1 - smooth(.1, .32, jumpClock) : 0;
+      target.jumpStart = start; target.jumpAir = 1 - start;
+    } else {
+      if (crouching) { target.crouch = 1 - go; target.crouchWalk = go; }
+      else {
+        const jog = smooth(native.walk * 1.2, native.jog * .8, speed), sprint = smooth(native.jog * 1.05, native.sprint * .95, speed);
+        Object.assign(target, { walk: go * (1 - jog), jog: go * jog * (1 - sprint), sprint: go * jog * sprint, talk: (1 - go) * (action === 'talk' ? 1 : 0), idle: (1 - go) * (action === 'talk' ? 0 : 1) });
+      }
+      // Landing: knees take the weight, then hand back to standing or running.
+      if (landClock >= 0) {
+        const hold = 1 - (moving > .1 ? smooth(.12, .32, landClock) : smooth(.3, .7, landClock));
+        for (const key of LAYERS) target[key] *= 1 - hold;
+        target.jumpLand = hold;
+      }
+    }
+    const k = 1 - Math.exp(-dt * (state.jumped || state.landed || state.air ? 16 : 9));
+    for (const key of LAYERS) { weights[key] += (target[key] - weights[key]) * k; actions[key].setEffectiveWeight(weights[key]); }
     // One stride phase, advanced at the blend of each gait's own cadence.
     const moveWeight = weights.walk + weights.jog + weights.sprint;
     if (moveWeight > .001) {
@@ -355,10 +381,77 @@ export function createActor(scene, x, z, kind, rig) {
       phase = (phase + dt * Math.min(rate, 2.4)) % 1;
     }
     for (const g of GAITS) { const a = actions[g]; a.time = ((phase + rig.gait[g].strike) % 1) * rig.clips[g].duration; a.timeScale = 0; }
-    actions.idle.timeScale = actions.talk.timeScale = 1;
+    if (weights.crouchWalk > .001) crouchPhase = (crouchPhase + dt * Math.min(Math.max(speed, .2) / native.crouchWalk / rig.clips.crouchWalk.duration, 2)) % 1;
+    actions.crouchWalk.time = crouchPhase * rig.clips.crouchWalk.duration; actions.crouchWalk.timeScale = 0;
+    skeletonRoot.position.set(0, .065, 0);
     mixer.update(dt);
+    root.updateMatrixWorld(true);
+    // Overlays on top of the clips: the rider's seat, feet and hands, then the wave.
+    if (riding) ride(state.ride);
+    if (waveClock >= 0) { waveClock += dt; waveArm(waveClock); if (waveClock > 2.1) waveClock = -1; }
   }
+
+  // Turn a bone (in world space) so its child lands on a target; `weight`
+  // blends from the animated pose.
+  const va = new T.Vector3(), vb = new T.Vector3(), vc = new T.Vector3(), qa = new T.Quaternion(), qb = new T.Quaternion(), qp = new T.Quaternion();
+  function aim(b, child, target, weight = 1) {
+    b.getWorldPosition(va); child.getWorldPosition(vb);
+    qa.setFromUnitVectors(vb.sub(va).normalize(), vc.copy(target).sub(va).normalize());
+    b.getWorldQuaternion(qb); b.parent.getWorldQuaternion(qp).invert();
+    qb.premultiply(qa).premultiply(qp);
+    b.quaternion.slerp(qb, weight); b.updateMatrixWorld(true);
+  }
+  function turn(b, axis, angle) {
+    b.getWorldQuaternion(qb); b.parent.getWorldQuaternion(qp).invert();
+    qb.premultiply(qa.setFromAxisAngle(axis, angle)).premultiply(qp);
+    b.quaternion.copy(qb); b.updateMatrixWorld(true);
+  }
+  // Two-bone reach: the middle joint bends toward `pole`.
+  function reach(upper, lower, end, target, pole, weight = 1) {
+    const a = upper.getWorldPosition(new T.Vector3()), b = lower.getWorldPosition(new T.Vector3()), c = end.getWorldPosition(new T.Vector3());
+    const l1 = a.distanceTo(b), l2 = b.distanceTo(c), to = target.clone().sub(a);
+    const d = T.MathUtils.clamp(to.length(), Math.abs(l1 - l2) + .002, (l1 + l2) * .998), dir = to.normalize();
+    const x = (l1 * l1 - l2 * l2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, l1 * l1 - x * x));
+    const side = pole.clone().addScaledVector(dir, -pole.dot(dir)).normalize();
+    aim(upper, lower, a.clone().addScaledVector(dir, x).addScaledVector(side, h), weight);
+    aim(lower, end, a.clone().addScaledVector(dir, d), weight);
+  }
+  // On the bike: hips onto the saddle, a slight lean over the bars, feet on
+  // the pedals (knees forward), hands on the grips (elbows out and down).
+  function ride({ hips, pedals, grips, forward, up, right }) {
+    const now = R('hips').getWorldPosition(new T.Vector3());
+    skeletonRoot.position.add(root.worldToLocal(hips.clone()).sub(root.worldToLocal(now)));
+    skeletonRoot.updateMatrixWorld(true);
+    // The seated clip reclines; lean the back over the bar instead, keeping
+    // the head upright and looking ahead.
+    const pelvis = R('hips').getWorldPosition(new T.Vector3()), neck = R('neck').getWorldPosition(new T.Vector3()), back = neck.distanceTo(pelvis);
+    aim(R('hips'), R('neck'), pelvis.clone().addScaledVector(up, back * .88).addScaledVector(forward, back * .47));
+    const headAt = R('neck').getWorldPosition(new T.Vector3()), neckLength = R('head').getWorldPosition(new T.Vector3()).distanceTo(headAt);
+    aim(R('neck'), R('head'), headAt.addScaledVector(up, neckLength * .95).addScaledVector(forward, neckLength * .3));
+    const knee = forward.clone().addScaledVector(up, .35);
+    [['L', 0], ['R', 1]].forEach(([s, i]) => {
+      reach(R('thigh' + s), R('shin' + s), R('foot' + s), pedals[i], knee);
+      aim(R('foot' + s), R('toe' + s), pedals[i].clone().addScaledVector(forward, .12).addScaledVector(up, -.035));
+      const out = right.clone().multiplyScalar(s === 'L' ? -1 : 1);
+      reach(R('upper_arm' + s), R('forearm' + s), R('hand' + s), grips[i], out.multiplyScalar(.7).addScaledVector(up, -.5).addScaledVector(forward, -.2));
+    });
+  }
+  // Say hi: the right arm lifts out and up and the forearm waves, layered on
+  // whatever the body is doing.
+  const rootQ = new T.Quaternion();
+  function waveArm(t) {
+    const w = smooth(0, .25, t) * (1 - smooth(1.75, 2.1, t));
+    root.getWorldQuaternion(rootQ);
+    const shoulder = R('upper_armR').getWorldPosition(new T.Vector3()), elbow = R('forearmR').getWorldPosition(new T.Vector3()), hand = R('handR').getWorldPosition(new T.Vector3());
+    const l1 = shoulder.distanceTo(elbow), l2 = elbow.distanceTo(hand);
+    const upper = new T.Vector3(-.62, .62, .32).normalize().applyQuaternion(rootQ);
+    aim(R('upper_armR'), R('forearmR'), shoulder.clone().addScaledVector(upper, l1), w);
+    const fore = new T.Vector3(-.08, 1, .14).normalize().applyAxisAngle(new T.Vector3(0, 0, 1), Math.sin(t * Math.PI * 4.4) * .45).applyQuaternion(rootQ);
+    const at = R('forearmR').getWorldPosition(new T.Vector3());
+    aim(R('forearmR'), R('handR'), at.addScaledVector(fore, l2), w);
+  }
+  const wave = () => { if (waveClock < 0 || waveClock > 1.6) waveClock = 0; };
   animate(0);
   root.userData.design = kind; root.userData.height = look.height;
-  return { group: root, figure, head: headBone, height: look.height, animate, mixer, scale, actor: true };
+  return { group: root, figure, head: headBone, height: look.height, animate, wave, mixer, scale, native, actor: true };
 }

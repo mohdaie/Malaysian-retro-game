@@ -163,3 +163,14 @@
 .prayer-modal #counter-body{grid-template-columns:1fr}.prayer-modal{max-width:520px}.prayer-modal h2{margin:5px 0 10px}.prayer-modal #counter-text{font-size:12px;line-height:1.5;margin:6px 0 10px}
 @media(orientation:landscape) and (max-height:500px){.prayer-modal{padding:16px}.prayer-modal h2{font-size:24px;margin:4px 0 8px}.prayer-modal #counter-text{font-size:11px;line-height:1.4}.prayer-slot{min-height:62px;padding:7px 10px}.prayer-times .secondary{font-size:12px}}
 @media(orientation:landscape) and (max-height:350px){.prayer-modal{padding:12px}.prayer-modal h2{font-size:21px}.prayer-slot{min-height:55px;padding:5px 9px;gap:2px}}
+
+/* Moves (v2.1): Hai, Cangkung, Jalan and Basikal above Lompat and Run. */
+.touch-actions{flex-direction:column;align-items:flex-end}
+.touch-actions .move-buttons{display:flex;gap:6px}
+.touch-actions .move-buttons button{width:auto;height:34px;border-radius:17px;padding:0 11px;font-size:11px;font-weight:750;letter-spacing:.2px}
+.touch-actions .move-buttons button[aria-pressed=true]{background:var(--green);color:var(--cream)}
+.touch-actions .big-buttons{display:flex;gap:10px;align-items:flex-end}
+.touch-actions #jump-button{width:56px;height:56px;font-size:11px;font-weight:750}
+.touch-actions button:disabled{opacity:.4}
+@media(pointer:coarse){#interaction{bottom:136px}}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:340px){.touch-actions .move-buttons button{height:30px;padding:0 9px;font-size:10px}.touch-actions #jump-button,.touch-actions #run-button{width:50px;height:50px}#interaction{bottom:124px}}

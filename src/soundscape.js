@@ -28,5 +28,11 @@ export function createSoundscape(isActive, isNight = () => false) {
     travel+=distance;if(travel<.95)return;travel%=.95;
     const source=context.createBufferSource(),filter=context.createBiquadFilter(),gain=context.createGain();source.buffer=noise;filter.type='lowpass';filter.frequency.value=1100;const t=context.currentTime;gain.gain.setValueAtTime(.38,t);gain.gain.exponentialRampToValueAtTime(.001,t+.075);source.connect(filter);filter.connect(gain);gain.connect(master);source.start(t,travel);source.stop(t+.09);
   }
-  return {context,footsteps,shell:()=>click(),resume:()=>context.resume(),suspend:()=>context.suspend(),dispose:()=>{clearInterval(timer);context.close();}};
+  // Bicycle bell: two bright rings.
+  function bell(){
+    if(context.state!=='running')return;
+    const t=context.currentTime;
+    for(const at of [0,.16])for(const f of [2350,3520]){const osc=context.createOscillator(),gain=context.createGain();osc.type='sine';osc.frequency.value=f;gain.gain.setValueAtTime(0,t+at);gain.gain.linearRampToValueAtTime(f>3000?.05:.09,t+at+.005);gain.gain.exponentialRampToValueAtTime(.001,t+at+.5);osc.connect(gain);gain.connect(master);osc.start(t+at);osc.stop(t+at+.55);}
+  }
+  return {context,footsteps,bell,shell:()=>click(),resume:()=>context.resume(),suspend:()=>context.suspend(),dispose:()=>{clearInterval(timer);context.close();}};
 }
