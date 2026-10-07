@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
-import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=1.7.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
+import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=1.8.0';
 // Local low-poly track and cars. One small renderer is reused between races.
 export function createTamiyaView(canvas) {
   const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(900,540,false);renderer.setClearColor('#c6d5ac');renderer.outputColorSpace=T.SRGBColorSpace;
@@ -36,6 +36,7 @@ export function createTamiyaView(canvas) {
     if(track==='jaguh')for(let lane=0;lane<3;lane++)for(const side of [-.5,.5])rail(lane,side);else for(let lane=-.5;lane<3;lane++)rail(lane);
     // Bridges carry supports; the elevated upper route crosses over the lower.
     if(track==='eight')for(const u of [.42,.58]){const p=trackPoint(track,u);for(const side of [-1,1])box(world,.22,p.y,.22,'#696c76',p.x+Math.cos(p.heading)*side*1.5,p.y/2,p.z-Math.sin(p.heading)*side*1.5);}
+    box(world,2.1,.24,1.5,'#777360',-12,0,7);const pitSign=label('PIT',1.6,.55);pitSign.position.set(-12,1.3,7);world.add(pitSign);
     const start=trackPoint(track,0);const banner=label('JOM DASH! · 3 LAP',7,1.1);banner.position.set(-1,2,-8.4);world.add(banner);box(world,.15,2,.15,'#705b42',-4.4,1,-8.4);box(world,.15,2,.15,'#705b42',2.4,1,-8.4);
     const finish=new T.Group();finish.position.set(start.x,.15,start.z);finish.rotation.y=start.heading;world.add(finish);
     for(let x=0;x<6;x++)for(let z=0;z<2;z++)box(finish,.43,.025,.18,(x+z)%2?'#f8f0dd':'#292832',(x-2.5)*.43,.02,(z-.5)*.18);
@@ -47,9 +48,10 @@ export function createTamiyaView(canvas) {
     const next=`${s.track}:${s.car}`;if(next!==signature){build(s);signature=next;}const plans=racePlans(s),racing=['race','result'].includes(s.phase);
     cars.forEach((c,i)=>{const r=racerAt(plans[i],racing?s.elapsed:0,s.track),u=racing?r.fraction:0,lap=Math.floor(r.distance/TAMIYA_TRACKS[s.track].length),p=raceTrackPoint(s.track,u,i,lap);
       const next=u+.0001,q=raceTrackPoint(s.track,next>=1?next-1:next,i,lap+(next>=1?1:0)),dx=q.x-p.x,dz=q.z-p.z,heading=Math.atan2(dx,dz);
-      c.group.position.set(p.x,p.y+.14,p.z);c.group.rotation.y=heading;c.group.rotation.x=-Math.atan2(q.y-p.y,Math.hypot(dx,dz));
+      c.group.position.set(r.pitting?-12+i*2:p.x,r.pitting?.2:p.y+.14,r.pitting?7:p.z);c.group.rotation.y=r.pitting?0:heading;c.group.rotation.x=r.pitting?0:-Math.atan2(q.y-p.y,Math.hypot(dx,dz));
       if(r.derailed&&!reduced){const sideways=Math.sin(r.recovery*Math.PI)*1.2;c.group.position.x+=Math.cos(p.heading)*sideways;c.group.position.z-=Math.sin(p.heading)*sideways;c.group.position.y+=Math.sin(r.recovery*Math.PI)*.45;c.group.rotation.z=Math.sin(r.recovery*Math.PI)*.65;}else c.group.rotation.z=0;
-      if(racing&&!r.finished&&!r.derailed&&!reduced)for(const w of c.wheels)w.rotation.x=s.elapsed*16;
+      if(racing&&!r.finished&&!r.derailed&&!r.pitting&&!reduced)for(const w of c.wheels)w.rotation.x=s.elapsed*16;
+      for(const w of c.wheels)w.material.color.set(r.loadout?.tyres==='mini_tyres_sponge'?'#807384':'#252633');
     });renderer.render(scene,camera);
   }
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;});canvas.addEventListener('webglcontextrestored',()=>{lost=false;signature='';renderer.setClearColor('#c6d5ac');if(lastState)draw(lastState,lastReduced);});

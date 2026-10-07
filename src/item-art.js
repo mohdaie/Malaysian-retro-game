@@ -1,6 +1,7 @@
 // Original illustrated objects from a Malaysian town around 2001.
 // Kept separate from the economy so descriptions never change item/save IDs.
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
 export const ITEM_ART = {
   beras: ['Beras kampung', 'Guni beras di kedai runcit. Mak pesan angkat elok-elok, jangan pecah di jalan.'],
   gula: ['Gula pasir', 'Plastik gula diikat getah, bekalan untuk teh panas dan kuih petang.'],
@@ -58,3 +59,5 @@ export const ITEM_ART = {
 export const ITEM_KINDS = { goods: 'Barang kedai', snack: 'Makanan & minuman', collect: 'Mainan & koleksi', cargo: 'Barang penghantaran' };
 for (const [id, car] of Object.entries(TAMIYA_CARS)) ITEM_ART[id] = [`${car.series} · ${car.name}`, car.memory];
 export const itemImagePath = id => `./assets/items/${id}.svg`;
+
+for (const [id, part] of Object.entries(TAMIYA_PARTS)) ITEM_ART[id]=[part.name,`${part.note} Parts dari kabinet Uncle Lim, pasang sendiri sebelum jom race.`];

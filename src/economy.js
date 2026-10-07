@@ -2,12 +2,13 @@
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.7.0';
-import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=1.7.0';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=1.7.0';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=1.7.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
-import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=1.7.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=1.8.0';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=1.8.0';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=1.8.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=1.8.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
+import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=1.8.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
@@ -67,6 +68,7 @@ export const ITEMS = {
   hidangan: { name: 'Bungkusan hidangan (meal parcel)', size: 1, kind: 'cargo' }
 };
 for (const [id, car] of Object.entries(TAMIYA_CARS)) ITEMS[id] = { name: `${car.series} · ${car.name}`, price: car.price, size: 0, kind: 'collect' };
+for (const [id, part] of Object.entries(TAMIYA_PARTS)) ITEMS[id] = { name: part.name, price: part.price, size: 0, kind: 'collect' };
 for (const [id, item] of Object.entries(ITEMS)) {
   const [title, memory] = ITEM_ART[id];
   Object.assign(item, { image: itemImagePath(id), title, memory });
@@ -75,7 +77,7 @@ for (const [id, item] of Object.entries(ITEMS)) {
 // What each place sells over the counter.
 export const STOCK = {
   22: ['beras', 'gula', 'teh', 'telur', 'minuman', 'sabun', 'pencuci', 'benih', 'kotak', 'kainlap', 'lampin', 'roti', 'aiskrim', 'keropok', 'sirap'],
-  25: ['guli', 'pelekat', 'komik', 'kad', 'gasing', 'wau', ...Object.keys(TAMIYA_CARS), 'begkertas', 'label', 'resit', 'bukulatihan', 'kapur', 'poster', 'taliwau', 'pensel', 'bukuskrap'],
+  25: ['guli', 'pelekat', 'komik', 'kad', 'gasing', 'wau', ...Object.keys(TAMIYA_CARS), ...Object.keys(TAMIYA_PARTS), 'begkertas', 'label', 'resit', 'bukulatihan', 'kapur', 'poster', 'taliwau', 'pensel', 'bukuskrap'],
   37: ['minuman', 'pelincir', 'keropok', 'sirap'],
   36: ['sarungkerja', 'sarungkebun', 'kainlap', 'sabun'],
   9: ['sayur'],
@@ -247,7 +249,7 @@ export function cancel(eco, id, place = null) {
 export function buy(eco, place, item) {
   if (!STOCK[place]?.includes(item)) return { ok: false, reason: 'not-sold' };
   const it = ITEMS[item];
-  if (TAMIYA_CARS[item] && eco.collection[item]) return { ok: false, reason: 'owned' };
+  if ((TAMIYA_CARS[item] || TAMIYA_PARTS[item]) && eco.collection[item]) return { ok: false, reason: 'owned' };
   if (eco.wallet < it.price) return { ok: false, reason: 'funds' };
   if (it.kind === 'goods' && freeSpace(eco) < it.size) return { ok: false, reason: 'space' };
   eco.wallet -= it.price;

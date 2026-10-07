@@ -1,4 +1,6 @@
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.7.0';
+import { STOCK_BUILD, validBuild } from './tamiya-parts.js?v=1.8.0';
+import { dynamicPlan, rivalPlan } from './tamiya-dynamics.js?v=1.8.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
 export const TAMIYA_TRACKS = {
   oval: { name: 'Oval Pekan', note: 'Beginner · lurus panjang, selekoh lebar', length: 78, segments: [[.25,'straight'],[.25,'bend'],[.25,'straight'],[.25,'bend']], faiz: 'tamiya_burning', meiling: 'tamiya', recommended: 'balanced' },
   eight: { name: 'Selekoh Lapan', note: 'Technical · selekoh rapat, jambatan silang', length: 98, segments: [[.15,'straight'],[.2,'tight'],[.15,'bridge'],[.15,'straight'],[.2,'tight'],[.15,'bend']], faiz: 'tamiya_cannon', faizSetup: 'stable', meiling: 'tamiya_star', recommended: 'stable' },
@@ -59,22 +61,27 @@ export function raceTrackPoint(track,u,lane,lap=0,side=0){
   if(from===2&&t>0&&t<1)p.y+=1.6*Math.sin(Math.PI*t)**2;
   return p;
 }
+const planCache=new Map();
 export function racePlans(s){
   const t=TAMIYA_TRACKS[s.track];
-  // Contacts near the centre give Faiz 78% and Mei Ling 95% launch quality.
-  return [racerPlan(s.track,s.car,s.setup,s.contact),racerPlan(s.track,t.faiz,t.faizSetup||(s.track==='oval'?'fast':'balanced'),.61,'faiz'),racerPlan(s.track,t.meiling,'stable',.525,'meiling')];
+  if(s.rules!==2)return [racerPlan(s.track,s.car,s.setup,s.contact),racerPlan(s.track,t.faiz,t.faizSetup||(s.track==='oval'?'fast':'balanced'),.61,'faiz'),racerPlan(s.track,t.meiling,'stable',.525,'meiling')];
+  const key=JSON.stringify([s.track,s.car,s.setup,s.contact,s.loadout,s.pits]);if(planCache.has(key))return planCache.get(key);
+  const plans=[dynamicPlan(t,s.car,s.setup,s.contact,'player',s.loadout,s.pits,TAMIYA_SETUPS),rivalPlan(t,t.faiz,'faiz',TAMIYA_SETUPS,s.track),rivalPlan(t,t.meiling,'meiling',TAMIYA_SETUPS,s.track)];
+  if(planCache.size>=16)planCache.delete(planCache.keys().next().value);planCache.set(key,plans);return plans;
 }
 export function racerAt(plan,seconds,track){
-  const total=TAMIYA_TRACKS[track].length*LAPS,t=Math.max(0,seconds),stage=plan.stages.find(v=>t<v.end);
-  const distance=stage?stage.from+(stage.to-stage.from)*clamp((t-stage.start)/(stage.end-stage.start)):total;
+  const total=TAMIYA_TRACKS[track].length*LAPS,t=Math.max(0,seconds),stage=plan.stages.find(v=>t<v.end),last=plan.stages.at(-1);
+  const f=stage?clamp((t-stage.start)/(stage.end-stage.start)):1;
+  const distance=stage?stage.from+(stage.to-stage.from)*f:total;
+  const energy=stage?.capacity?(stage.chargeStart+(stage.chargeEnd-stage.chargeStart)*f)/stage.capacity:last?.capacity?last.chargeEnd/last.capacity:null;
   return {distance,progress:distance/total,lap:Math.min(LAPS,1+Math.floor(distance/TAMIYA_TRACKS[track].length)),fraction:(distance/TAMIYA_TRACKS[track].length)%1,
-    finished:t>=plan.duration,derailed:stage?.type==='derail',recovery:stage?.type==='derail'?clamp((t-stage.start)/(stage.end-stage.start)):0};
+    finished:t>=plan.duration,pitting:stage?.type==='pit',section:stage?.section||stage?.type||'finish',speed:stage?.speed||0,charge:energy,setup:stage?.setup||last?.setup||plan.setup,loadout:stage?.loadout||last?.loadout,derailed:stage?.type==='derail',recovery:stage?.type==='derail'?f:0};
 }
 export function standings(s){return racePlans(s).map(p=>({...p,...racerAt(p,s.elapsed,s.track)})).sort((a,b)=>a.finished&&b.finished?a.duration-b.duration:b.distance-a.distance||a.duration-b.duration);}
 export const raceDuration=s=>Math.max(...racePlans(s).map(p=>p.duration))+.5;
-export function newTamiyaRound(track,car,setup,id){
-  if(!known(TAMIYA_TRACKS,track)||!known(TAMIYA_CARS,car)||!known(TAMIYA_SETUPS,setup)||!Number.isInteger(id)||id<1)throw new Error('Invalid race');
-  return {id,track,car,setup,phase:'ready',elapsed:0,contact:.5,settled:false};
+export function newTamiyaRound(track,car,setup,id,loadout=STOCK_BUILD){
+  if(!validBuild(loadout)||!known(TAMIYA_TRACKS,track)||!known(TAMIYA_CARS,car)||!known(TAMIYA_SETUPS,setup)||!Number.isInteger(id)||id<1)throw new Error('Invalid race');
+  return {id,track,car,setup,phase:'ready',elapsed:0,contact:.5,settled:false,rules:2,loadout:{...loadout},pits:[]};
 }
 export function prepareTamiya(s){if(s.phase!=='ready')throw new Error('Already started');return {...s,phase:'launch',elapsed:0};}
 export function launchTamiya(s,contact){if(s.phase!=='launch'||!Number.isFinite(contact)||contact<0||contact>1)throw new Error('Invalid launch');return {...s,phase:'countdown',elapsed:0,contact};}
@@ -84,10 +91,37 @@ export function advanceTamiya(s,seconds){
   else if(s.phase==='countdown'){const elapsed=s.elapsed+seconds;if(elapsed<3)n.elapsed=elapsed;else {n.phase='race';n.elapsed=Math.min(elapsed-3,raceDuration(s));if(n.elapsed>=raceDuration(s))n.phase='result';}}
   else if(s.phase==='race'){n.elapsed=Math.min(s.elapsed+seconds,raceDuration(s));if(n.elapsed>=raceDuration(s))n.phase='result';}return n;
 }
+export function activePit(s){return s.rules===2?s.pits.find(p=>p.release===null):null;}
+export function beginPit(s){
+  const r=racerAt(racePlans(s)[0],s.elapsed,s.track);
+  if(s.rules!==2||s.phase!=='race'||r.finished||r.derailed||activePit(s)||s.pits.length>=100)throw Error('Cannot pit now');
+  return {...s,pits:[...s.pits,{at:s.elapsed,release:null,setup:r.setup,loadout:{...r.loadout}}]};
+}
+export function editPit(s,setup,loadout,collection){
+  if(!activePit(s)||!known(TAMIYA_SETUPS,setup)||!validBuild(loadout,collection))throw Error('Invalid pit build');
+  return {...s,pits:s.pits.map(p=>p.release===null?{...p,setup,loadout:{...loadout}}:p)};
+}
+export function rejoinPit(s){
+  const p=activePit(s);if(s.phase!=='race'||!p||s.elapsed<p.at+2-1e-8)throw Error('Pit takes at least 2 seconds');
+  return {...s,pits:s.pits.map(v=>v===p?{...v,release:Math.max(p.at+2,s.elapsed)}:v)};
+}
 export function cleanTamiyaRound(v,collection={}){
   if(!v||!known(TAMIYA_TRACKS,v.track)||!known(TAMIYA_CARS,v.car)||!known(TAMIYA_SETUPS,v.setup)||v.car!=='tamiya'&&!collection[v.car])return null;
-  if(!Number.isInteger(v.id)||v.id<1||v.id>1e9||!['ready','launch','countdown','race','result'].includes(v.phase)||!Number.isFinite(v.elapsed)||v.elapsed<0||v.elapsed>180||!Number.isFinite(v.contact)||v.contact<0||v.contact>1||typeof v.settled!=='boolean')return null;
-  const s={...newTamiyaRound(v.track,v.car,v.setup,v.id),phase:v.phase,elapsed:v.elapsed,contact:v.contact,settled:v.settled};
+  if(!Number.isInteger(v.id)||v.id<1||v.id>1e9||!['ready','launch','countdown','race','result'].includes(v.phase)||!Number.isFinite(v.elapsed)||v.elapsed<0||v.elapsed>3600||!Number.isFinite(v.contact)||v.contact<0||v.contact>1||typeof v.settled!=='boolean')return null;
+  let s;
+  if(v.rules===undefined||v.rules===1)s={id:v.id,track:v.track,car:v.car,setup:v.setup,phase:v.phase,elapsed:v.elapsed,contact:v.contact,settled:v.settled};
+  else if(v.rules===2){
+    if(!validBuild(v.loadout,collection)||!Array.isArray(v.pits)||v.pits.length>100)return null;
+    s={...newTamiyaRound(v.track,v.car,v.setup,v.id,v.loadout),contact:v.contact};
+    for(const pit of v.pits){
+      if(!pit||!Number.isFinite(pit.at)||pit.at<0||pit.at>v.elapsed||!known(TAMIYA_SETUPS,pit.setup)||!validBuild(pit.loadout,collection)||activePit(s))return null;
+      const previous=s.pits.at(-1);if(previous&&pit.at<previous.release)return null;
+      const r=racerAt(racePlans(s)[0],pit.at,s.track);if(r.finished||r.derailed)return null;
+      if(pit.release!==null&&(!Number.isFinite(pit.release)||pit.release<pit.at+2-1e-8||pit.release>v.elapsed))return null;
+      s.pits.push({at:pit.at,release:pit.release,setup:pit.setup,loadout:{...pit.loadout}});
+    }
+    Object.assign(s,{phase:v.phase,elapsed:v.elapsed,settled:v.settled});if(s.pits.length&&!['race','result'].includes(s.phase)||activePit(s)&&s.phase!=='race')return null;
+  }else return null;
   if(s.phase==='ready'&&s.elapsed!==0||s.phase==='launch'&&s.elapsed>=2||s.phase==='countdown'&&s.elapsed>=3||s.phase==='race'&&s.elapsed>=raceDuration(s)||s.phase==='result'&&s.elapsed!==raceDuration(s)||s.phase!=='result'&&s.settled)return null;
   return s;
 }
