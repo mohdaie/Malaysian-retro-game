@@ -1,18 +1,18 @@
 import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.8.0';
+import { makeWorld } from './world.js?v=1.10.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.8.0';
-import { readSave, writeSave } from './save.js?v=1.8.0';
+import { readSave, writeSave } from './save.js?v=1.10.0';
 import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.8.0';
 import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.8.0';
 import { createSoundscape } from './soundscape.js?v=1.8.0';
 import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.8.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.8.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.10.0';
 import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.8.0';
 import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.8.0';
 import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.8.0';
 import { ITEM_KINDS } from './item-art.js?v=1.8.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.8.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.10.0';
 import { createGasingUI } from './gasing-ui.js?v=1.8.0';
 import { GASING_QUESTS } from './gasing-progress.js?v=1.8.0';
 import { createDamUI } from './dam-ui.js?v=1.8.0';
@@ -24,6 +24,8 @@ import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.8.0';
 import { createTownMap } from './town-map-ui.js?v=1.9.0';
 import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=1.9.0';
 import { TOWN_BOUNDS } from './town-layout.js?v=1.8.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=1.10.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=1.10.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -41,6 +43,7 @@ let time = newClock(), shownMinute = -1, lateNudge = 0, sleeping = false;
 let eco = newEconomy(), counter = null, storySpot = null, opponent = 'Nenek';
 let mode = 'title', yaw = .55, distance = CAMERA_DEFAULT, elapsed = 0, lastSave = 0, nearby = null;
 let navigation = null, lastNavigationUpdate = -1;
+let praying = false;
 let dialogue = [], dialogueDone = null, joystick = { x: 0, y: 0 }, running = false, board = null, boardBusy = false, boardToken = 0;
 // Pitch above the shoulders; a recent swipe pauses the automatic follow.
 let cameraPitch = CAMERA_PITCH, lastLook = -10, cameraSettle = 1, lensDistance = CAMERA_DEFAULT, talkingTo = null, aimDrop = 0;
@@ -160,6 +163,7 @@ function showTime(){
   const minute=Math.floor(time.minute);if(minute===shownMinute)return;
   const wasNight=shownMinute>=0&&!isNight(shownMinute)&&isNight(minute);shownMinute=minute;
   world.setSky(skyAt(minute));
+  world.setShopTime(minute);
   const label=`${weekday(time.day)} · ${timeLabel(minute)}`;
   if(!PREVIEW)$('day-label').textContent=label;$('day-icon').textContent=isNight(minute)?'☾':'☀';$('hud').classList.toggle('night',isNight(minute));
   $('clock-label').textContent=`HARI ${time.day} · ${label} · ${period(minute)}`.toUpperCase();
@@ -247,13 +251,15 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   const npc=person?.key?NPCS[person.key]:null,asker=npcKey||npcAt(place);
   $('counter-panel').hidden=false;$('counter-place').textContent=(away?`${NPCS[npcKey].role} · at the padang`:placeName(place)).toUpperCase();
   $('counter-panel').querySelector('.modal').classList.toggle('tamiya-shop-modal',view==='tamiya');
+  $('counter-panel').querySelector('.modal').classList.toggle('prayer-modal',view==='prayer');
   $('counter-name').textContent=person?.name||placeName(place);
-  const reception=!person;
-  $('counter-text').textContent=note||(reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
+  const closedShop=isShop(place)&&!isShopOpen(place,time.minute),reception=!person||closedShop;
+  const hours=shopHours(place);
+  $('counter-text').textContent=note||(closedShop?`${placeName(place)} tutup. Waktu operasi ${timeLabel(hours[0])}–${timeLabel(hours[1])}. Bungkusan masih boleh dihantar di pintu.`:place===31&&!person?'Masjid tetap dibuka untuk solat. Ustaz Hassan sedang berehat.':reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(contactAt(place).hello));
   const body=$('counter-body');body.replaceChildren();
   const add=(label,onclick,cls,disabled)=>counterButton(body,label,onclick,cls,disabled);
   // A closed shop takes parcels at the door but hands nothing out.
-  const shut=!away&&npcAt(place)&&!atPost(npcBody(npcAt(place)))&&npcBody(npcAt(place)).post===place;
+  const shut=closedShop||!away&&npcAt(place)&&!atPost(npcBody(npcAt(place)))&&npcBody(npcAt(place)).post===place;
   const here=away?{collect:[],deliver:[]}:jobsAt(eco,place);if(shut)here.collect=[];
   const merchant=!away&&(npc?.menu==='merchant'||(!npc&&STOCK[place]));
   if(view==='menu'){
@@ -271,7 +277,19 @@ function openCounter(place,npcKey=null,view='menu',note=''){
       if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
     }
     if(place===myHome())add(canSleep(time.minute)?'Tidur · sleep until Subuh':`Tidur · from Maghrib (now ${timeLabel(time.minute)})`,goToSleep,'primary',!canSleep(time.minute));
+    if(place===31)add('Solat · 5 waktu (+20 minit)',()=>openCounter(31,npcKey,'prayer'),'primary');
     add('Leave',closeCounter,'secondary');
+  }else if(view==='prayer'&&place===31){
+    $('counter-name').textContent='Solat di masjid';
+    $('counter-text').textContent=note||`Hari ${time.day} · ${timeLabel(time.minute)}. Jadual tetap dunia game. Setiap solat memajukan masa 20 minit, sekali bagi setiap waktu sehari.`;
+    const times=document.createElement('div');times.className='prayer-times';times.setAttribute('role','group');times.setAttribute('aria-label','Lima waktu solat');
+    for(const prayer of PRAYERS){
+      const status=prayerState(time,eco.prayer,prayer.id),button=document.createElement('button');button.type='button';button.dataset.prayer=prayer.id;button.className=`prayer-slot${status.available?' current':''}`;button.disabled=!status.available;
+      const title=document.createElement('b'),when=document.createElement('small'),stateLabel=document.createElement('span');title.textContent=prayer.name;when.textContent=`${timeLabel(prayer.from)}–${timeLabel(prayer.to)}${prayer.to<prayer.from?' (+1 hari)':''}`;
+      stateLabel.textContent=status.completed?'✓ Sudah solat':status.available?'Solat · +20 minit':prayer.id==='isyak'&&time.minute<prayer.from?'Belum masuk waktu':time.minute>=prayer.to&&prayer.to>prayer.from?'Waktu berakhir':'Belum masuk waktu';
+      button.setAttribute('aria-label',`${prayer.name} · ${when.textContent} · ${stateLabel.textContent}`);button.append(title,when,stateLabel);button.onclick=()=>pray(prayer.id);times.append(button);
+    }
+    counterButton(times,'Kembali',()=>openCounter(31,npcKey),'secondary');body.append(times);
   }else if(view==='buy'){
     for(const item of STOCK[place]){
       const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
@@ -355,6 +373,18 @@ function goToSleep(){
   },900);
 }
 function closeCounter(){$('counter-panel').hidden=true;counter=null;setMode('explore');}
+function pray(id){
+  if(praying||mode!=='counter'||counter?.place!==31)return;
+  const npcKey=counter.npc,oldDay=time.day,result=performPrayer(time,eco.prayer,id);
+  if(!result.ok){openCounter(31,npcKey,'prayer','Waktu ini belum tersedia atau sudah ditunaikan.');return;}
+  praying=true;closeCounter();setMode('prayer');if(time.day!==oldDay)lateNudge=0;
+  showTime();persist();
+  const fade=$('sleep-fade');fade.hidden=false;fade.classList.add('shown');$('sleep-text').textContent=`Solat ${result.prayer}…`;
+  setTimeout(()=>{
+    fade.classList.remove('shown');
+    setTimeout(()=>{fade.hidden=true;praying=false;if(!orientationBlocked)renderer.render(scene,camera);openCounter(31,atPost(npcBody('hassan'))?'hassan':null,'prayer',`Solat ${result.prayer} selesai. Masa +20 minit · Hari ${time.day}, ${timeLabel(time.minute)}.`);},700);
+  },900);
+}
 $('counter-close').onclick=closeCounter;
 function listItem(list,left,right,action,item){const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=left;b.textContent=right;if(action)b.append(action);if(item){li.className='illustrated-list-item';li.append(itemThumbnail(item,inspectItem));}li.append(a,b);list.append(li);}
 function openBag(){
@@ -712,11 +742,11 @@ function tick(){
   aimDrop=T.MathUtils.lerp(aimDrop,talkingTo?.85:0,1-Math.exp(-dt*4));camera.lookAt(look.x,look.y-aimDrop,look.z);
   world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
-  if (!orientationBlocked && !['board','dam','gasing','tamiya','map','pause','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
+  if (!orientationBlocked && !['board','dam','gasing','tamiya','map','pause','prayer','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
