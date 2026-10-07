@@ -9,6 +9,7 @@ import { ITEM_ART, itemImagePath } from './item-art.js?v=1.8.0';
 import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
 import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
 import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=1.8.0';
+import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=1.10.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
@@ -149,7 +150,7 @@ export const itemLabel = (item, qty) => `${qty} × ${ITEMS[item].name}`;
 export const level = points => LEVELS.find(([min]) => points >= min)[1];
 
 export function newEconomy() {
-  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress() };
+  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress(), prayer: newPrayerProgress() };
 }
 const add = (bag, item, qty) => { bag[item] = (bag[item] || 0) + qty; if (bag[item] <= 0) delete bag[item]; };
 const space = (item, qty) => ITEMS[item].size * qty;
@@ -277,6 +278,7 @@ export function befriend(eco, key, reason, today) {
 export function cleanEconomy(value) {
   const eco = newEconomy();
   if (!value || typeof value !== 'object') return eco;
+  eco.prayer = cleanPrayerProgress(value.prayer);
   const int = (n, lo, hi) => Number.isInteger(n) && n >= lo && n <= hi, place = n => int(n, 1, 38);
   if (int(value.wallet, 0, 1e7)) eco.wallet = value.wallet;
   for (const [item, qty] of Object.entries(value.bag || {})) if (ITEMS[item] && ITEMS[item].kind !== 'snack' && int(qty, 1, 999)) eco.bag[item] = qty;

@@ -31,8 +31,8 @@ export function tickClock(clock, seconds) {
   if (seconds > 0) clock.minute = Math.min(LATEST, clock.minute + seconds * MINUTES_PER_SECOND);
   return clock;
 }
-export const canSleep = minute => minute >= BEDTIME;
-export function sleep(clock) { clock.day += 1; clock.minute = WAKE; return clock; }
+export const canSleep = minute => minute >= BEDTIME || minute < 5 * 60 + 45;
+export function sleep(clock) { if (clock.minute >= BEDTIME) clock.day += 1; clock.minute = WAKE; return clock; }
 export const weekday = day => WEEKDAYS[(day - 1) % 7];
 export const timeLabel = minute => { const m = Math.floor(minute); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 export function period(minute) { let name = PERIODS[0][1]; for (const [from, label] of PERIODS) if (minute >= from) name = label; return name; }

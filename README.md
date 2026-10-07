@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.9.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.10.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -69,6 +69,22 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## Open storefronts and solat (v1.10)
+
+Twelve commercial places now show **BUKA / TUTUP** boards with their operating hours. The seven shophouses, neighbourhood shop and petrol kiosk use an original illustrated interior atlas while open; shutters cover the openings after closing. The warung, school canteen and workshop also change their service fronts. Graphics and counter availability share the same clock schedule, including resident-run shops. Ordinary shops run 07:00–19:15, petrol 06:30–21:00, and the warung 07:00–22:00. Delivering an existing parcel remains possible at a closed door.
+
+At **Masjid Seri Kenangan**, choose **Solat · 5 waktu (+20 minit)**. The mosque prayer menu stays available when Ustaz Hassan is off duty. Only the current prayer can be started, once per prayer window/day; completion is saved and grants no money or game rewards. Each action advances the game clock by exactly 20 minutes, with a short transition. Shop states, lighting and NPC duty status follow the new time.
+
+| Game prayer | Fixed game window |
+|---|---|
+| Subuh | 05:45–07:00 |
+| Zohor | 13:15–16:45 |
+| Asar | 16:45–19:15 |
+| Maghrib | 19:15–20:30 |
+| Isyak | 20:30–05:45 the next morning |
+
+This is the fictional town timetable. Late Isyak can cross midnight; its completion belongs to the previous evening until Subuh, preventing repeated use after reloading. After a midnight rollover, sleeping at home wakes at 06:00 that same morning. Older saves gain an empty prayer ledger and keep their existing story, money, collectibles, games and jobs.
 
 ## Interactive map (v1.9)
 
