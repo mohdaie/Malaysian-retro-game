@@ -36,7 +36,7 @@ test('fences block running and their authored 1.4-metre gates remain open', () =
   const walk=createWalkability([{x:-2.3,z:0,w:3.6,d:.12},{x:1.6,z:0,w:1.4,d:.12}]);
   const blocked={x:-2,z:2};moveWithCollision(blocked,0,-1,RUN_SPEED,1,walk);
   assert.ok(blocked.z>=.06+PLAYER_RADIUS-.12);
-  const gate={x:.2,z:2};moveWithCollision(gate,0,-1,RUN_SPEED,.4,walk);
+  const gate={x:.2,z:2};moveWithCollision(gate,0,-1,RUN_SPEED,3.5/RUN_SPEED,walk);
   assert.ok(gate.z<-1);
 });
 test('low-frame-rate movement cannot tunnel through thin posts or walls', () => {
@@ -44,7 +44,7 @@ test('low-frame-rate movement cannot tunnel through thin posts or walls', () => 
   for(const fps of [5,10,60]){
     const p={x:-2,z:0};for(let i=0;i<fps;i++)moveWithCollision(p,1,0,RUN_SPEED,1/fps,walk);
     assert.ok(p.x<=-.07-PLAYER_RADIUS);assert.ok(walk(p.x,p.z));
-    const slide={x:2,z:-2};moveWithCollision(slide,Math.SQRT1_2,Math.SQRT1_2,RUN_SPEED,.5,walk);
+    const slide={x:2,z:-2};moveWithCollision(slide,Math.SQRT1_2,Math.SQRT1_2,RUN_SPEED,5.5/RUN_SPEED,walk);
     assert.ok(slide.x<=3-.04-PLAYER_RADIUS);assert.ok(slide.z>1);
   }
 });

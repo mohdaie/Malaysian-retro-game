@@ -1,29 +1,29 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=1.8.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.0.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.8.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.8.0';
-import { readSave, writeSave } from './save.js?v=1.8.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.8.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.8.0';
-import { createSoundscape } from './soundscape.js?v=1.8.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.8.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.8.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.8.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.8.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.8.0';
-import { ITEM_KINDS } from './item-art.js?v=1.8.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=1.8.0';
-import { createGasingUI } from './gasing-ui.js?v=1.8.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=1.8.0';
-import { createDamUI } from './dam-ui.js?v=1.8.0';
-import { DAM_QUESTS } from './dam-progress.js?v=1.8.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=1.8.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=1.8.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=1.8.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=1.8.0';
-import { createTownMap } from './town-map-ui.js?v=1.9.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=1.9.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=1.8.0';
+import { makeWorld } from './world.js?v=2.0.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.0.0';
+import { readSave, writeSave } from './save.js?v=2.0.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.0.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.0.0';
+import { createSoundscape } from './soundscape.js?v=2.0.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.0.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.0.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.0.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.0.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.0.0';
+import { ITEM_KINDS } from './item-art.js?v=2.0.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.0.0';
+import { createGasingUI } from './gasing-ui.js?v=2.0.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.0.0';
+import { createDamUI } from './dam-ui.js?v=2.0.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.0.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.0.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.0.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.0.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.0.0';
+import { createTownMap } from './town-map-ui.js?v=2.0.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.0.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.0.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -671,7 +671,7 @@ function tick(){
     if(navigation){const next=navigation.route[1]||navigation.entry,angle=Math.atan2(next.x-p.x,-(next.z-p.z))+yaw;$('navigation-arrow').textContent=navigation.arrived?'✓':'↑';$('navigation-arrow').style.transform=`rotate(${navigation.arrived?0:angle}rad)`;$('navigation-hud').hidden=false;}
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
-  } else player.animate(dt,0);
+  } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null);
   // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
   for(const n of world.npcs){
     const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20;

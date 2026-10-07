@@ -186,3 +186,11 @@ Artwork and actual game UI screenshots: `item-art-sheet-v130.webp`, `catalogue-v
 In headless Chromium (desktop 1280×720 and phone landscape 844×390): a new game shows HARI 1 · SABTU · 14:00 · PETANG. A save resumed at 19:20 had only Pak Din, Kak Ita, Ustaz Hassan and Nenek out, and at 21:30 only Kak Ita. At the home door at night, Mak's counter offered *Tidur · sleep until Subuh*. Sleeping faded to night and woke on HARI 2 · AHAD · 06:00 · SUBUH at home. At 08:00 all 14 townsfolk were back at their posts. There were no page errors. The night HUD keeps the place name readable on a dark label. These are emulated checks, not a physical-device test.
 
 Street lights: 27 lamps are placed (8 sodium lamps on the asphalt roads, 19 timber tube lamps on the dirt lanes and paths). At 15:00 they are dark. At 19:25 they are coming on, and at 21:00–22:00 they are fully lit with their ground pools and the following lamp light. The draw-call count stayed in the same range as before (about 280–510 depending on the view). There were no page errors.
+
+## v2.0.0 · motion-captured Amir and Nur
+
+`npm test`: **125 tests passed**. The movement and collision tests now use the speed constants rather than the old 7.2 and 11 m/s literals. They still check frame-rate independence, thin-wall tunnelling, open gates and wall sliding.
+
+The skeleton file is 838 KB (about 370 KB gzipped), down from the library's 6.6 MB, keeping 8 clips. Speeds measured from the planted foot at the kids' scale (0.813 of the 1.83 m source rig): walk 0.85 m/s, jog 4.27 m/s, sprint 6.29 m/s. The game's full-stick speed is 4.3 m/s and Run is 6.3 m/s.
+
+In headless Chromium (1280×720 desktop and 844×390 phone landscape), Amir and Nur stand, jog, sprint and turn through the kampung with the chase camera. The new bodies measure 1.50 m tall. The view rendered 255 draw calls and about 199k triangles. No page errors; the three console warnings are the same as on v1.9. Side-view renders confirm knees and elbows bend continuously, with no gaps at the joints. These are emulated checks, not a physical-device test.
