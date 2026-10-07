@@ -1,15 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSave, readSave, writeSave } from '../src/save.js';
+import { validateSave, readSave, readSaves, writeSave, SAVE_KEY, slotKey } from '../src/save.js';
 import { newEconomy } from '../src/economy.js';
 const valid = { version: 3, who: 'nur', name: 'Nur', story: 2, x: 12, z: 0, ...newEconomy(), wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
   jobs: [{ id: 'J1', offer: 'S-first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], left: 1, item: 'gula', qty: 2, cost: 0, upah: 100, status: 'carrying', story: 'first-parcel' }], nextJob: 2,
   friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 }, bike: { x: 4, z: -6, heading: 1.2 } };
-const memory = () => { const data = new Map(); return { getItem: k => data.get(k), setItem: (k, v) => data.set(k, v) }; };
+const memory = () => { const data = new Map(); return { data, getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, v), removeItem: k => data.delete(k) }; };
+const withoutStamp = ({ savedAt, ...rest }) => rest;
 test('valid saves roundtrip and invalid/out-of-bounds saves are rejected', () => {
   const storage = memory();
   assert.equal(writeSave(storage, valid), true);
-  assert.deepEqual(readSave(storage), valid);
+  assert.deepEqual(withoutStamp(readSave(storage)), valid);
   for (const bad of [{ x: 400 }, { version: 4 }, { name: 7 }, { who: 'faiz' }, { story: 9 }]) assert.equal(validateSave({ ...valid, ...bad }), null, JSON.stringify(bad));
 });
 test('unavailable storage and malformed JSON never block gameplay', () => {
@@ -41,4 +42,27 @@ test('the bicycle is saved where it was left; a missing or broken spot parks it 
   assert.equal(validateSave(noBike).bike, null);
   for (const bad of [{ x: 200, z: 0, heading: 0 }, { x: 1, z: NaN, heading: 0 }, { x: 1, z: 2 }, 'shed']) assert.equal(validateSave({ ...valid, bike: bad }).bike, null);
   assert.deepEqual(validateSave(valid).bike, { x: 4, z: -6, heading: 1.2 });
+});
+
+test('Amir and Nur keep separate journeys: saving one never touches the other', () => {
+  const storage = memory(), amir = { ...valid, who: 'amir', name: 'Ali', wallet: 900, story: 5 };
+  writeSave(storage, amir); writeSave(storage, valid);
+  const both = readSaves(storage);
+  assert.equal(both.amir.name, 'Ali'); assert.equal(both.amir.wallet, 900); assert.equal(both.amir.story, 5);
+  assert.equal(both.nur.name, 'Nur'); assert.equal(both.nur.wallet, 350);
+  writeSave(storage, { ...valid, wallet: 10 });
+  assert.equal(readSave(storage, 'amir').wallet, 900, 'a new Nur save leaves Amir alone');
+  assert.equal(readSave(storage, 'nur').wallet, 10);
+  assert.equal(readSave(storage).who, 'nur', 'the most recently saved character is offered first');
+});
+test('the single save from earlier versions becomes its character\'s save, and the other starts empty', () => {
+  const storage = memory(), old = { ...valid, who: 'amir', name: 'Amir', wallet: 777 };
+  storage.setItem(SAVE_KEY, JSON.stringify(old));
+  assert.equal(readSave(storage, 'amir').wallet, 777);
+  assert.equal(readSave(storage, 'nur'), null);
+  writeSave(storage, { ...valid, who: 'nur' });
+  assert.equal(readSave(storage, 'amir').wallet, 777, 'starting Nur does not replace the old Amir save');
+  writeSave(storage, { ...old, wallet: 800 });
+  assert.equal(storage.data.has(SAVE_KEY), false, 'once Amir saves, the old key is retired');
+  assert.equal(JSON.parse(storage.getItem(slotKey('amir'))).wallet, 800);
 });

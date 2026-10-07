@@ -1,32 +1,32 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.4.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.5.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.4.0';
-import { createBicycle, stepBike } from './bicycle.js?v=2.4.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.4.0';
-import { readSave, writeSave } from './save.js?v=2.4.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.4.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.4.0';
-import { createSoundscape } from './soundscape.js?v=2.4.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.4.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.4.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.4.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.4.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.4.0';
-import { ITEM_KINDS } from './item-art.js?v=2.4.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.4.0';
-import { createGasingUI } from './gasing-ui.js?v=2.4.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.4.0';
-import { createDamUI } from './dam-ui.js?v=2.4.0';
-import { DAM_QUESTS } from './dam-progress.js?v=2.4.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.4.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.4.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.4.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.4.0';
-import { createTownMap } from './town-map-ui.js?v=2.4.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.4.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.4.0';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.4.0';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.4.0';
+import { makeWorld } from './world.js?v=2.5.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.5.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.5.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.5.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.5.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.5.0';
+import { createSoundscape } from './soundscape.js?v=2.5.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.5.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.5.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.5.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=2.5.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.5.0';
+import { ITEM_KINDS } from './item-art.js?v=2.5.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.5.0';
+import { createGasingUI } from './gasing-ui.js?v=2.5.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.5.0';
+import { createDamUI } from './dam-ui.js?v=2.5.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.5.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.5.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.5.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.5.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.5.0';
+import { createTownMap } from './town-map-ui.js?v=2.5.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.5.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.5.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.5.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.5.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -59,8 +59,8 @@ let orientationBlocked = needsLandscape(innerWidth, innerHeight);
 const keys = new Set();
 let storage;
 try { storage = localStorage; } catch { storage = null; }
-let saved = readSave(storage);
-$('continue-button').hidden = !saved;
+// Each character keeps their own saved journey.
+let saves = readSaves(storage), saved = null;
 const damUI = createDamUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
   onOpen: () => { $('hud').inert=true; setMode('dam'); }, onClose: () => { $('hud').inert=false; setMode('explore'); $('interact-button').focus(); },
   onChange: () => { refreshEconomy(); persist(); } });
@@ -73,13 +73,16 @@ const tamiyaUI = createTamiyaUI({ getEco: () => eco, getName: () => state.name, 
 // Play as Amir or Nur. The name field follows the choice until it is edited.
 let chosen = 'amir';
 function choose(who) {
-  chosen = who;
+  chosen = who; saved = saves[who];
   for (const b of document.querySelectorAll('[data-who]')) b.setAttribute('aria-pressed', String(b.dataset.who === who));
-  if (!$('player-name').dataset.edited) $('player-name').value = PLAYERS[who].name;
+  // Their saved name, or the default; Continue shows where their journey is.
+  $('player-name').value = saved?.name ?? PLAYERS[who].name; delete $('player-name').dataset.edited;
+  $('continue-button').hidden = !saved;
+  if (saved) $('continue-button').textContent = `Continue ${saved.name}'s story · Hari ${saved.clock?.day ?? 1} · ${rm(saved.wallet)} →`;
 }
 for (const b of document.querySelectorAll('[data-who]')) b.onclick = () => choose(b.dataset.who);
 $('player-name').addEventListener('input', () => { $('player-name').dataset.edited = '1'; });
-if (saved) { choose(saved.who); $('player-name').value = saved.name; $('player-name').dataset.edited = '1'; }
+choose(readSave(storage)?.who ?? 'amir');
 
 const today = () => dayKey(time);
 const placeOf = id => BUILDINGS.find(b => b.id === id);
@@ -140,7 +143,7 @@ function setMode(next) {
 function persist() {
   const ok = writeSave(storage, { version: 3, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
-  if(ok) { saved = readSave(storage); $('continue-button').hidden = false; }
+  if(ok) { saves[state.who] = readSave(storage, state.who); }
   return ok;
 }
 function begin(value = null) {
@@ -184,7 +187,8 @@ function showTime(){
   if(minute>=LATEST&&lateNudge<2){lateNudge=2;toast(`It is very late. Go home to ${placeName(myHome())} and sleep.`);}
 }
 $('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
-  showDialogue('A new afternoon', ['Starting a new story replaces the saved journey on this device.'], () => begin());
+  const other = Object.keys(PLAYERS).find(w => w !== chosen);
+  showDialogue('A new afternoon', [`Starting a new story as ${PLAYERS[chosen].name} replaces ${saved.name}'s saved journey on this device.${saves[other] ? ` ${saves[other].name}'s journey${saves[other].name === PLAYERS[other].name ? '' : ` as ${PLAYERS[other].name}`} is kept.` : ''}`], () => begin());
   $('dialogue-next').textContent = 'Start new story →';
   const cancelButton=document.createElement('button');cancelButton.textContent='Keep my saved journey';cancelButton.className='secondary';cancelButton.id='cancel-new';
   cancelButton.onclick=()=>{cancelButton.remove();$('dialogue-panel').hidden=true;setMode('title');};$('dialogue-panel').append(cancelButton);
@@ -499,7 +503,7 @@ $('dev-cheats').onsubmit=event=>{
 };
 $('resume-button').onclick=()=>{$('pause-panel').hidden=true;setMode('explore');};
 $('bike-reset-button').onclick=()=>{resetBike();$('pause-panel').hidden=true;setMode('explore');toast('Basikal parked beside you.');};
-$('home-button').onclick=()=>{persist();$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
+$('home-button').onclick=()=>{persist();choose(state.who);$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
   if(orientationBlocked)return;

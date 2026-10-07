@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.4.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.5.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -69,6 +69,15 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Optional original synthesized breeze, bird calls, footsteps and shell sounds.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
+
+## A saved journey for each character (v2.5)
+
+Amir and Nur each keep their own save. That covers the name, chapter step, Duit Poket, bag, collection, jobs, friendships, minigame records, the day and time, position, and where the bike is parked.
+
+- **Choosing a character:** on the title screen, picking Amir or Nur shows **Continue … · Hari N · RM x.xx →** for that character.
+- **Starting a new story:** this replaces only the chosen character's save. The confirmation says that the other character's journey is kept.
+- **Which character shows first:** the title screen opens on whoever was played last.
+- **Older saves:** the single save from earlier versions becomes its character's save, and the old storage key is retired the first time that character saves. Nothing is lost.
 
 ## Nur from a 3D model too (v2.4)
 

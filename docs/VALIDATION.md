@@ -261,3 +261,19 @@ A new rule keeps anything well behind the hips below the crotch line (the bottle
 In the browser, Nur's idle, walk, jog and crouch play beside Amir's. In the town she stands, jogs, sprints, jumps, waves and rides her mint basikal, sized to her legs, with no page errors.
 
 `npm test`: all tests pass, and the build succeeds. Emulated checks only.
+
+## v2.5.0 · a saved journey for each character
+
+`npm test`: **139 tests passed**. Two new save tests:
+- **Separate journeys:** Amir and Nur keep separate saves, and saving one never touches the other. The most recently saved character is offered first.
+- **Old saves:** an old single save becomes its character's save, the other character starts empty, and the old key is retired once that character saves.
+
+In the browser, starting from an old single save (Amir, RM 7.77, Hari 3):
+1. The title offered "Continue Amir's story · Hari 3 · RM 7.77".
+2. Choosing Nur hid Continue, and her new story started without a warning.
+3. Back at the title, Nur had her own Continue (Hari 1, RM 2.00).
+4. Switching to Amir still showed RM 7.77. Continuing restored Amir with RM 7.77, chapter step 3 and Hari 3.
+5. Storage then held only `retro-malaysia-save-amir` and `retro-malaysia-save-nur`.
+6. Starting another Nur story warned that it replaces Nur's journey and that Amir's is kept.
+
+No page errors.
