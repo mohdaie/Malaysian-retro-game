@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v1.0.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v1.1.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -53,6 +53,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Third-person chase camera low behind the shoulder with a wide lens: it swings in behind the runner, pulls in front of walls, frames conversations over the shoulder, and still allows swipe look, pinch and wheel zoom.
 - Amir and Nur follow the Jaguh Kampung sheet: heads about a quarter of their height with anime faces, Amir's spiked hair and ringer T-shirt, Nur's hijab under her hoodie hood, baggy cargo trousers, shell-toe sneakers and backpacks. A walk blends into a run with bent-arm pumping and a forward lean. The 14 townsfolk each have their own 3D body, outfit and face from the cast guide: teens in the same style, grown-ups with adult proportions, printed cloth (gingham, batik, florals, pelikat, stripes), tudung, songkok, caps and a straw hat, and the things they carry.
 - Generated grass/timber materials, tiled roofs, carved eaves, flowers, full shopfronts and detailed warung props.
+- Street props of around 2001 (v1.1): kapcai motorcycles, red and blue plastic warung chairs, LPG tong gas, an ais krim freezer, soft-drink crates, a red pillar post box, Telekom-style payphones, tempayan by kampung stairs, TV aerials on poles, Astro dishes and air-con boxes on the terraces, a kopitiam table, a prepaid-card board, an ais kacang cart, a mosque shoe rack, a gotong-royong banner and a Merdeka ke-44 banner, school warning signs, and timber utility poles with sagging lines. Each building kind places its own props, so they follow the map editor, and trees and paths keep clear of them.
 - Landmarks modelled from the concept sheets: a Straits shophouse terrace (salmon five-foot-way pillars over a terracotta-and-cream tiled walkway, arched louvred windows, scalloped valance, weathered plaster, hipped clay roof), a Kuala Kangsar-style mosque (gilded onion dome, four striped minarets with open galleries, cusped red-and-cream arcades) and boxy 1990s family sedans.
 - Kampung trees c. 2001, low-poly: leaning kelapa, tattered pisang with jantung, rambutan and mangga in season, jambu air, nangka in its sack, pinang, durian, bamboo, the pekan's rain trees, the school's ketapang and bunga raya hedge, kemboja at the mosque, kebun dapur herbs, and an old beringin by Warung Kak Ita. A dense dusun and rubber smallholding (with tapping cups) rings the town; roads leave through gaps in it. Leaves sway in the breeze. Planting follows the town plan, so it moves with the map editor.
 - Thick dark comic outlines, cel-shadow bands, pastel shopfronts, feathered palms and afternoon lighting. Buildings fade when they hide the player.
@@ -119,6 +120,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
 - `src/landmarks.js`: low-poly shophouse terrace, mosque and sedan built from the concept sheets.
+- `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
 - `src/illustration.js`: cel-light ramp, halftone shading, pixel-width character hulls (skinned) and town ink.
@@ -147,6 +149,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ![Mosque](docs/mosque-v080.webp)
 
 ![Chase camera running through the pekan](docs/chase-camera-v070.webp)
+
+![2001 street props](docs/props-v110.webp)
 
 ![The 14 townsfolk](docs/cast-v100.webp)
 

@@ -1,5 +1,5 @@
-import { TOWN_BOUNDS, RIVER } from './town-layout.js?v=1.0.0';
-import { npcPosts } from './cast.js?v=1.0.0';
+import { TOWN_BOUNDS, RIVER, PROPS } from './town-layout.js?v=1.1.0';
+import { npcPosts } from './cast.js?v=1.1.0';
 
 // Where every tree goes, worked out from the town plan alone so the tests can
 // check it and the planting follows the editor when buildings move.
@@ -33,8 +33,9 @@ function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 10139
 function hash(text) { let h = 2166136261; for (const c of String(text)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; }
 function pick(mix, r) { const total = mix.reduce((n, [, w]) => n + w, 0); let t = r * total; for (const [kind, w] of mix) if ((t -= w) < 0) return kind; return mix[0][0]; }
 
-export function plantTown(town) {
-  const B = TOWN_BOUNDS, plants = [], random = rng(2001);
+// Ground rules shared by the trees and the street props.
+function ground(town) {
+  const B = TOWN_BOUNDS;
   const roads = town.roads, units = town.units;
   const inside = (x, z, pad = 0) => x > B.minX + pad && x < B.maxX - pad && z > B.minZ + pad && z < B.maxZ - pad;
   const inRiver = (x, pad = 0) => Math.abs(x - RIVER.x) < RIVER.w / 2 + pad;
@@ -45,6 +46,31 @@ export function plantTown(town) {
   const posts = Object.values(npcPosts(town.buildings)).map(p => p.spots[0]);
   const people = [town.spots.spawn, town.spots.spawnNur, town.spots.stall, ...posts, ...town.passersby].filter(Boolean);
   const nearPeople = (x, z, pad) => people.some(p => Math.hypot(x - p.x, z - p.z) < pad);
+  return { inside, inRiver, onRoad, onBridge, inSolid, nearUnit, people, nearPeople };
+}
+
+// Street props that fit: clear of roads (unless they may park on one), the
+// river, bridges, other buildings, every door and everyone's spot. Wall props
+// hang on their own building and always fit.
+export function placeProps(town) {
+  const { inside, inRiver, onRoad, onBridge, inSolid, nearPeople } = ground(town), units = town.units;
+  return (town.props || []).filter(p => {
+    const def = PROPS[p.name];
+    if (!def) return false;
+    if (def.wall) return true;
+    const own = units.find(u => u.id === p.unit), r = def.r;
+    return inside(p.x, p.z, r) && !inRiver(p.x, r + .5) && !onBridge(p.x, p.z, r + 1) && (def.road === true || !onRoad(p.x, p.z, r + .2, def.road === 'dirt' ? -99 : r)) && !inSolid(p.x, p.z, r, own) &&
+      !town.buildings.some(b => Math.hypot(p.x - b.door.x, p.z - b.door.z) < r + 1.2) && !nearPeople(p.x, p.z, r + 1);
+  });
+}
+
+export function plantTown(town) {
+  const B = TOWN_BOUNDS, plants = [], random = rng(2001);
+  const roads = town.roads, units = town.units;
+  const { inside, inRiver, onRoad, onBridge, inSolid, nearUnit, people, nearPeople } = ground(town);
+  // Trees keep clear of the street props too.
+  const props = placeProps(town).filter(p => !PROPS[p.name].wall);
+  const nearProp = (x, z, pad) => props.some(p => Math.hypot(x - p.x, z - p.z) < PROPS[p.name].r + pad);
   const crowded = (x, z, gap) => plants.some(p => Math.hypot(x - p.x, z - p.z) < Math.max(gap, p.kind === 'beringin' ? 7 : 0));
   // Roads that meet the edge carry on out of town through a gap in the trees.
   const corridors = roads.filter(r => r.kind === 'asphalt').map(r => {
@@ -63,7 +89,7 @@ export function plantTown(town) {
   };
   const add = (kind, x, z, size, ring) => plants.push({ kind, x: +x.toFixed(2), z: +z.toFixed(2), size: +size.toFixed(2), seed: plants.length * 7919 + 13, ring });
   // A walkable spot: clear of roads, the river, bridges, buildings and people.
-  const clearIn = (x, z, r, except) => inside(x, z, r + .4) && !inRiver(x, r + 1) && !onBridge(x, z, r + 2) && !onRoad(x, z, r + .5, r + .3) && !inSolid(x, z, r + .5, except) && !nearPeople(x, z, r + 1.6);
+  const clearIn = (x, z, r, except) => inside(x, z, r + .4) && !inRiver(x, r + 1) && !onBridge(x, z, r + 2) && !onRoad(x, z, r + .5, r + .3) && !inSolid(x, z, r + .5, except) && !nearPeople(x, z, r + 1.6) && !nearProp(x, z, r + .6);
 
   // 0. One old beringin, in the most open lawn near the warung: the
   //    tree everyone meets under. It follows the warung when the plan moves.
@@ -104,7 +130,7 @@ export function plantTown(town) {
     const x = RIVER.x + side * (RIVER.w / 2 + 1.6 + random() * 1.2), jz = z + (random() - .5) * 2.5, kind = pick(BANK, random()), size = .85 + random() * .3;
     if (random() < .3) continue;
     const r = TRUNK[kind] * size;
-    if (inside(x, jz, r + .4) && !onBridge(x, jz, 4) && !onRoad(x, jz, 2, 1) && !inSolid(x, jz, r + .8) && !crowded(x, jz, 3.2)) add(kind, x, jz, size, 'in');
+    if (inside(x, jz, r + .4) && !onBridge(x, jz, 4) && !onRoad(x, jz, 2, 1) && !inSolid(x, jz, r + .8) && !nearProp(x, jz, r + .6) && !crowded(x, jz, 3.2)) add(kind, x, jz, size, 'in');
   }
   // 4. The edge: three or four rows deep past the wall, and the free pockets
   //    just inside it. Rubber rows stay on a straight grid; the dusun is loose.

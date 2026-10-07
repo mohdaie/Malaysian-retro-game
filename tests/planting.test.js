@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { TOWN_PLAN } from '../src/town-plan.js';
-import { derive, TOWN_BOUNDS as B, RIVER } from '../src/town-layout.js';
-import { plantTown, TRUNK, GROUND } from '../src/planting.js';
+import { derive, TOWN_BOUNDS as B, RIVER, PROPS } from '../src/town-layout.js';
+import { plantTown, placeProps, TRUNK, GROUND } from '../src/planting.js';
 import { createTrees } from '../src/trees.js';
 import { toon } from '../src/illustration.js';
 import { createWalkability } from '../src/collision.js';
 import { npcPosts } from '../src/cast.js';
 
-const town = derive(TOWN_PLAN), plants = plantTown(town);
+const town = derive(TOWN_PLAN), plants = plantTown(town), props = placeProps(town), ground = props.filter(p => !PROPS[p.name].wall);
 const inTown = plants.filter(p => p.ring === 'in'), past = plants.filter(p => p.ring !== 'in');
 const inRect = (x, z, [rx, rz, w, d], pad = 0) => Math.abs(x - rx) < w / 2 + pad && Math.abs(z - rz) < d / 2 + pad;
 
@@ -60,7 +60,7 @@ test('the old beringin stands by the warung and moves with it', () => {
   assert.ok(b.length <= 1 && b.every(t => Math.hypot(t.x - pak.x, t.z - pak.z) <= 24));
 });
 test('with the trees planted, every numbered place can still be reached on foot', () => {
-  const obstacles = [...town.units.flatMap(u => u.solids.map(([x, z, w, d]) => ({ x, z, w, d }))), ...inTown.map(p => ({ x: p.x, z: p.z, r: TRUNK[p.kind] * p.size }))];
+  const obstacles = [...town.units.flatMap(u => u.solids.map(([x, z, w, d]) => ({ x, z, w, d }))), ...inTown.map(p => ({ x: p.x, z: p.z, r: TRUNK[p.kind] * p.size })), ...ground.filter(p => PROPS[p.name].hit).map(p => ({ x: p.x, z: p.z, r: PROPS[p.name].hit }))];
   const walk = createWalkability(obstacles), step = .5, nx = Math.round((B.maxX - B.minX) / step), nz = Math.round((B.maxZ - B.minZ) / step);
   const seen = new Uint8Array((nx + 1) * (nz + 1)), at = (i, j) => j * (nx + 1) + i, cell = v => Math.round(v / step);
   const start = [cell(town.spots.spawn.x - B.minX), cell(town.spots.spawn.z - B.minZ)], queue = [start]; seen[at(...start)] = 1;
@@ -76,4 +76,17 @@ test('with the trees planted, every numbered place can still be reached on foot'
   }).map(b => b.name);
   assert.deepEqual(unreached, []);
   for (const s of [town.spots.spawnNur, town.spots.stall, ...Object.values(npcPosts(town.buildings)).map(p => p.spots[0])]) assert.ok([[0, 1.2], [1.2, 0], [0, -1.2], [-1.2, 0]].some(([dx, dz]) => reach(s.x + dx, s.z + dz)));
+});
+test('2001 street props stand clear of doors, people, the river and trees', () => {
+  assert.ok(props.length >= 70, `${props.length} props`);
+  assert.ok(town.props.every(p => PROPS[p.name]), 'every prop is known');
+  const people = [town.spots.spawn, town.spots.spawnNur, town.spots.stall, ...Object.values(npcPosts(town.buildings)).map(p => p.spots[0])];
+  for (const p of ground) {
+    const r = PROPS[p.name].r, where = `${p.name} at ${p.x.toFixed(1)},${p.z.toFixed(1)}`;
+    assert.ok(town.buildings.every(b => Math.hypot(p.x - b.door.x, p.z - b.door.z) >= r + 1.2), where + ' blocks a door');
+    assert.ok(people.every(s => Math.hypot(p.x - s.x, p.z - s.z) >= r + 1), where + ' stands on someone');
+    assert.ok(Math.abs(p.x - RIVER.x) > RIVER.w / 2 + r, where);
+    assert.ok(PROPS[p.name].road === true || !town.roads.some(road => road.kind === 'asphalt' && inRect(p.x, p.z, [road.x, road.z, road.w, road.d], r)), where + ' on asphalt');
+    assert.ok(inTown.every(t => Math.hypot(p.x - t.x, p.z - t.z) > r + TRUNK[t.kind] * t.size), where + ' inside a tree');
+  }
 });
