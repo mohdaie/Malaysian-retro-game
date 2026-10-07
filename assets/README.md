@@ -18,3 +18,5 @@
 - `docs/walking-preview-v050.mp4` is a recording of the actual Three.js character module animating, encoded to MP4. It is not an imagegen animation or concept mockup.
 
 - `models/town-sedan.glb` (v2.2): user-supplied `sample (1).glb`, used with its embedded texture for the two parked town cars. 8,451 vertices / 10,639 triangles, one 1024×1024 texture, 1,421,876 bytes. Source file preserved byte-for-byte; normals, fit, silhouette and the white body-paint variant are applied at runtime. No new generation job was run.
+
+- `models/amir.glb` (v2.3): Amir's 3D model. It was generated from the user-supplied Amir and Nur character art with **TRELLIS.2** (microsoft/TRELLIS.2-4B, MIT licence) and supplied by the user as `sample_3.glb`. `scripts/bake-model.mjs` scaled it to 1.5 m, smoothed its normals, re-encoded its 1024² texture as JPEG and weighted it to the motion-capture skeleton. The joint positions it was fitted to are in `models/amir.joints.json`.

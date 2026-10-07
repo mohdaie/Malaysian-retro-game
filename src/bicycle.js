@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.1.2';
+import { toon, outline } from './illustration.js?v=2.3.0';
 
 // A kid's bicycle of 2001 (v2.1): steel frame, 20-inch spoked wheels, a
 // chrome bar with rubber grips, a sprung saddle and a kickstand. It parks at
@@ -118,11 +118,11 @@ export function createBicycle(scene) {
   const shadow = new T.Mesh(new T.PlaneGeometry(.5, 1.4), new T.MeshBasicMaterial({ color: 0x2d2a38, transparent: true, opacity: .22, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.set(0, .012, .05); group.add(shadow);
 
-  let wheelAngle = 0, crankAngle = 0;
+  let wheelAngle = 0, crankAngle = 0, size = 1;
   // Spin the wheels by the distance travelled, the cranks only while pedalling.
   function roll(distance, pedalling) {
-    wheelAngle += distance / r; rearWheel.rotation.x = frontWheel.rotation.x = wheelAngle;
-    if (pedalling) crankAngle += distance / (r * BIKE.gear);
+    wheelAngle += distance / (r * size); rearWheel.rotation.x = frontWheel.rotation.x = wheelAngle;
+    if (pedalling) crankAngle += distance / (r * size * BIKE.gear);
     cranks.rotation.x = crankAngle; for (const p of pedals) p.rotation.x = -crankAngle;
   }
   function place(state, ground, parked = false) {
@@ -144,5 +144,7 @@ export function createBicycle(scene) {
     };
   }
   function setColour(hex) { frameMaterial.color.setHex(hex); }
-  return { group, roll, place, targets, setColour };
+  // A smaller frame for a rider with shorter legs.
+  function setSize(s) { size = s; group.scale.setScalar(s); }
+  return { group, roll, place, targets, setColour, setSize };
 }

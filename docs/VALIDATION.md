@@ -228,3 +228,22 @@ In play, the player walked about 3 m from the bike, opened the pause menu and ch
 - The two existing 4.5×1.9 m rotated vehicle colliders remain at (-35, 6) and (35.5, 3); centre points remain unwalkable. Wallet and Mini 4WD ownership survive loading.
 - Intercepting the model with HTTP 404 or corrupt GLB bytes still boots the game, renders the original procedural sedans, and leaves the fatal error panel hidden. Download has an eight-second timeout.
 - `town-sedan.glb` is byte-identical to the supplied `sample (1).glb`. No GPU job or asset regeneration was needed.
+
+## v2.3.0 · Amir from a TRELLIS.2 model
+
+`scripts/bake-model.mjs` prepared the user's TRELLIS.2 export (8,977 vertices, 10,769 triangles, no normals, no skeleton, an A-pose) into `assets/models/amir.glb` (791 KB). Colouring each vertex by its leading bone, from four sides, showed:
+- the head and hair on the head bone;
+- the neck on the neck;
+- the torso and backpack graded up the spine by height;
+- each arm split into shoulder, upper arm, forearm and hand;
+- each leg split into thigh, shin, foot and toe, with the cargo pockets on the legs rather than the hands beside them.
+
+An earlier pass that used plain nearest-bone distance put the chest on the shoulders and the hips on the thighs, and was rejected.
+
+In the browser, the fitted skeleton sits inside the mesh in the bind pose. Idle, walk, jog, sprint and crouch play on the model with the feet held to the floor. An earlier version of the ground lock accumulated its correction and sank him into the ground; it was fixed before this commit.
+
+In the town (headless Chromium, 1280×720) he stands, jogs, sprints, jumps, waves and rides a basikal scaled to his legs, with no page errors.
+
+`npm test`: **137 tests passed**, and the build succeeds.
+
+Known limits: the recorded idle and jog lean and bend the knees, which reads as a slight crouch on Amir's short-legged, big-headed proportions. The pants crease at the crotch when he crouches. Emulated checks only.
