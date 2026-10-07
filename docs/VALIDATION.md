@@ -218,3 +218,13 @@ In play, a bike pushed against an obstacle backed out 1.4–1.8 m when pulled ba
 `npm test`: **137 tests passed**. A new movement test checks that a body starting inside an obstacle can always move out. Before this, every step from inside an overlap was refused, so a bike or player that ended up overlapping something could not move in any direction. From outside, the body still stops at the obstacle.
 
 In play, the player walked about 3 m from the bike, opened the pause menu and chose **Reset basikal**. The bike was parked 1.7 m beside the player, then mounted and ridden with no errors. Riding with the stick held for two seconds without moving lifts the bike out to open ground.
+
+## v2.2.0 — textured town sedans
+
+- `npm test`: 137 passing; `npm run build`: self-contained dist produced.
+- Chromium/SwiftShader browser QA against built output: both configured sedans use the GLB, one car-model download per load, white body paint retains dark glass/tyres/trim and red rear lamps. No page or shader errors on the successful asset path.
+- Rendered 1280×720 desktop and 844×390 touch landscape views. Actual game captures: `docs/town-cars-v220.webp`. Physical Samsung performance is not measured by these browser checks.
+- Runtime bounds: 1.86 m wide, 3.899 m long, 1.381 m high. Geometry and the embedded texture are shared across variants; material instances differ. Ground placement follows the existing terrain height.
+- The two existing 4.5×1.9 m rotated vehicle colliders remain at (-35, 6) and (35.5, 3); centre points remain unwalkable. Wallet and Mini 4WD ownership survive loading.
+- Intercepting the model with HTTP 404 or corrupt GLB bytes still boots the game, renders the original procedural sedans, and leaves the fatal error panel hidden. Download has an eight-second timeout.
+- `town-sedan.glb` is byte-identical to the supplied `sample (1).glb`. No GPU job or asset regeneration was needed.

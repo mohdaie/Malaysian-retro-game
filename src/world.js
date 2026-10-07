@@ -9,6 +9,7 @@ import { ACTIONS } from './actions.js?v=2.1.2';
 import { createWalkability } from './collision.js?v=2.1.2';
 import { createStorefronts } from './storefronts.js?v=2.1.2';
 import { createLandmarks } from './landmarks.js?v=2.1.2';
+import { loadTownCars } from './town-cars.js?v=2.2.0';
 import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.1.2';
 import { createTrees } from './trees.js?v=2.1.2';
 import { plantTown, placeProps, TRUNK } from './planting.js?v=2.1.2';
@@ -20,6 +21,7 @@ export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
   await document.fonts.load('bold 35px sans-serif');
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  const carLoad = loadTownCars(renderer).catch(error => { console.warn('Town car model unavailable; using the original sedans', error); return null; });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
@@ -289,6 +291,7 @@ export async function makeWorld(canvas) {
     for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
   }
   const landmarks=createLandmarks({parent:()=>root,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
+  const townCars = await carLoad, cars = [];
   const storefronts=await createStorefronts(renderer);
   const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
@@ -463,7 +466,12 @@ export async function makeWorld(canvas) {
         box(5,.24,3.5,0x71967a,side*6,.17,10);collider(side*6,10,5,3.5,'planter');
       }
     },
-    sedan(u){landmarks.sedan(0,0,0,new T.Color(u.color||'#d4322c').getHex());collider(0,0,1.9,4.5,'vehicle');},
+    sedan(u){
+      const color=u.color||'#d4322c', car=townCars?townCars.create(color):landmarks.sedan(0,0,0,new T.Color(color).getHex());
+      if(townCars){root.add(car);car.position.y=groundHeight(u.x,u.z)+.015;}
+      cars.push({id:u.id,source:townCars?'glb':'procedural',paint:new T.Color(color).getHSL({}).l>.65?'white':'red',x:u.x,z:u.z});
+      collider(0,0,1.9,4.5,'vehicle');
+    },
     passerby(){}
   };
   const patchPositions=[];
@@ -691,5 +699,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
