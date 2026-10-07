@@ -1,4 +1,4 @@
-import { TOWN_PLAN } from './town-plan.js?v=1.0.0';
+import { TOWN_PLAN } from './town-plan.js?v=1.1.0';
 
 // Town plan geometry shared by the game, the tests and the map editor. The
 // editable positions live in town-plan.js; everything here is derived from
@@ -40,16 +40,31 @@ export const PLACES = {
 // Stilt houses: the verandah and four stair treads are raised floors.
 function stiltHouse(w, d, extra = {}) {
   const stairs = [0, 1, 2, 3].map(i => [0, d / 2 + 3.1 - i * .6, 2, .65, .25 + i * .28]);
-  return { label: 'Kampung house', places: [[0, 0, w, d]], doors: [[0, d / 2 + 4.4]], solids: [[0, 1.725, w + 1, d + 3.45]], floors: [[0, d / 2 + 1.125, w + 1, 2.25, 1.525], ...stairs], ...extra };
+  // Every kampung house has a TV aerial on a tall pole and a tempayan of water by the stairs.
+  const props = [['antenna', w / 2 + .45, -1.5], ['tempayan', -1.9, d / 2 + 2.7], ...(extra.props || [])];
+  return { label: 'Kampung house', places: [[0, 0, w, d]], doors: [[0, d / 2 + 4.4]], solids: [[0, 1.725, w + 1, d + 3.45]], floors: [[0, d / 2 + 1.125, w + 1, 2.25, 1.525], ...stairs], ...extra, props };
 }
 const pavilion = (label, w, d) => ({ label, places: [[0, 0, w, d]], doors: [[0, d / 2 + 1.6]], solids: [[0, .25, w + 1, d + 1.5]], floors: [[0, 0, w, d, .17]] });
 const civic = (label, w, d, extra = {}) => ({ label, places: [[0, 0, w, d]], doors: [[0, d / 2 + 1.4]], floors: [], ...extra, solids: [[0, 0, w + 1, d + 1], ...(extra.solids || [])] });
+
+// Street props from around 2001 (see props.js). `r` is the footprint kept clear
+// of doors, people and trees, `hit` the round collider at its centre. `wall`
+// props hang on their own building; `road` props may stand on a road
+// (`dirt`: on a dirt lane only).
+export const PROPS = {
+  motor: { r: .9, hit: .55, road: true }, chairs: { r: 1.1, hit: .9, road: 'dirt' }, kopitiam: { r: .8, hit: .65 }, gas: { r: .25, hit: .2 },
+  freezer: { r: .75, hit: .6 }, crates: { r: .55, hit: .5 }, postbox: { r: .35, hit: .26 }, phone: { r: .6, hit: .45 },
+  bin: { r: .35, hit: .3 }, tempayan: { r: .4, hit: .36 }, drum: { r: .35, hit: .32 }, cart: { r: 1, hit: .75 },
+  rack: { r: .8, hit: .6 }, board: { r: .45, hit: .3 }, ampaian: { r: 1.6, hit: 0 }, banner: { r: .5, hit: 0, road: 'dirt' },
+  roadsign: { r: .3, hit: .06, road: true }, antenna: { r: .1, hit: .07, wall: true }, dish: { wall: true }, aircon: { wall: true }, poster: { wall: true }
+};
 
 // Each kind lists, in its own frame: `places` (one rect per numbered place),
 // `solids` (what may not overlap another unit), `floors` ([x,z,w,d,height]
 // raised walkable ground), `spots` ([x,z,heading] for people) and `decor`
 // ([species, x, z, size] trees, planted only where they fit, see planting.js;
-// `decorVariants` offers several yards to pick from). `doors` gives one
+// `decorVariants` offers several yards to pick from), and `props`
+// ([name, x, z, quarter turns, height, print]). `doors` gives one
 // interaction point per place, where the player talks to its contact.
 // `open` kinds may sit on roads.
 export const KINDS = {
@@ -57,50 +72,59 @@ export const KINDS = {
     label: 'Rumah Amir and yard',
     solids: [[0, 1.725, 11, 11.45], [0, -7, 20, .12], [-10, 3.5, .12, 21], [-6.5, 14, 7, .12], [7.5, 14, 5, .12], [-7.5, -9, 7.5, .4], [9, 6, 2.4, .55]],
     spots: { spawn: [0, 11, 0] },
+    props: [['motor', 6.8, 9.8, 1], ['gas', 4.6, -4.6], ['drum', -4.8, -4.8]],
     decor: [['kelapa', -14, 4, 1.1], ['kelapa', 11.5, -4.5, .95], ['rambutan', -7.2, 10.5, .8], ['pisang', 7.8, -4.6, .95], ['pisang', -14, 11.5, .9], ['mangga', -13.5, 19, .9], ['serai', -8.6, -5.2], ['pandan', -6.6, -5.6], ['cili', -8.7, -2.6]],
     patches: [[-6, 8, 6], [-5, 12, 5], [6, 3, 4], [8, 13, 5], [-7, -4, 5]]
   }),
   // Every kampung house gets one of three yards, picked by its id.
-  house: stiltHouse(9, 7, { decorVariants: [
+  house: stiltHouse(9, 7, { props: [['motor', 5.6, 6.2, 1]], decorVariants: [
     [['kelapa', -6.8, -1.5, 1], ['pisang', 6.4, -3.2, .9], ['rambutan', 0, -7.8, .8], ['serai', -3.6, 8.2]],
     [['kelapa', 6.8, .5, 1.05], ['kelapa', -7, -4, .9], ['pisang', -6.6, 4.6, .9], ['mangga', .5, -8.4, .85]],
     [['nangka', -7, -1, .9], ['pisang', 6.4, -3, .95], ['pinang', 6.8, 3.6, 1], ['jambu', 0, -7.8, .8], ['pandan', -3.8, 8.4]]
   ] }),
-  wakaf: { ...pavilion('Wakaf (garden shelter)', 7, 6), decor: [['rambutan', -6.8, -1, .9], ['mangga', 6.8, 1.5, .85], ['pisang', -5.6, 4.8, .85]] },
+  wakaf: { ...pavilion('Wakaf (garden shelter)', 7, 6), props: [['tempayan', 4.3, 3.2], ['drum', -4.3, 3.4]], decor: [['rambutan', -6.8, -1, .9], ['mangga', 6.8, 1.5, .85], ['pisang', -5.6, 4.8, .85]] },
   pondok: { ...pavilion('Riverside hut', 4, 5), decor: [['kelapa', 0, -5.6, 1], ['buluh', 0, 6.4, .9], ['pisang', -4, 0, .85]] },
-  canteen: { ...pavilion('School canteen', 10, 6), decor: [['ketapang', 8, 1, .8]] },
-  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], doors: [[.9, -5]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]], decor: [['bungaraya', -2.8, -5.6, .8], ['bungaraya', 2.8, -5.6, .8]] },
-  minishop: civic('Corner shop', 9, 8, { decor: [['kelapa', -6.4, -2.5, .9], ['bungaraya', 6, 3.5, .8]] }),
+  canteen: { ...pavilion('School canteen', 10, 6), props: [['crates', -5.8, -1.6], ['gas', 5.7, -2.2]], decor: [['ketapang', 8, 1, .8]] },
+  terrace: { label: 'Terrace house', places: [[0, 0, 6.8, 7]], doors: [[.9, -5]], solids: [[0, 0, 6.8, 7], [-1.6, -6.5, 3.6, .12], [2.5, -6.5, 1.8, .12]], floors: [[0, -5.2, 6.8, 3.5, .16]],
+    props: [['dish', -2.9, -3.62, 2, 3], ['aircon', 2.6, -3.68, 2, 2.6], ['motor', -1.9, -5.1, 1]], decor: [['bungaraya', -2.8, -5.6, .8], ['bungaraya', 2.8, -5.6, .8]] },
+  minishop: civic('Corner shop', 9, 8, { props: [['freezer', 2.9, 4.75], ['phone', -3.6, 5]], decor: [['kelapa', -6.4, -2.5, .9], ['bungaraya', 6, 3.5, .8]] }),
   nursery: civic('Nursery', 9, 10, { doors: [[1.6, 6.2]], solids: [[-.9, 7, 3, .6]], decor: [['jambu', 6.6, -3, .8], ['bungaraya', 3.8, 7, .8], ['bungaraya', -4.4, 7, .8]] }),
-  hall: civic('Village hall', 13, 8, { decor: [['kelapa', -8.2, -2, .95]] }),
-  library: civic('Library', 12, 8, { decor: [['ketapang', 8, -2, .8]] }),
-  petrol: civic('Petrol kiosk and pumps', 9, 8, { solids: [[0, -10, 10, 7]], decor: [['kelapa', 6.6, 2.5, .95], ['kelapa', -6.4, 2, .9], ['pisang', 6.4, -4.5, .85]] }),
-  warung: { label: 'Warung Kak Ita', places: [[0, 0, 11, 6.5]], doors: [[0, 6]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { stall: [0, 6, .2] }, decor: [['kelapa', -7.8, -3, 1.05], ['pisang', 7.8, -3.2, .95], ['pisang', -8.2, 1.8, .85], ['serai', 7.6, 1.6]] },
+  hall: civic('Village hall', 13, 8, { props: [['banner', 0, 8.6, 0, 0, 'gotong']], decor: [['kelapa', -8.2, -2, .95]] }),
+  library: civic('Library', 12, 8, { props: [['bin', 4.6, 5.2]], decor: [['ketapang', 8, -2, .8]] }),
+  petrol: civic('Petrol kiosk and pumps', 9, 8, { props: [['gas', 4.5, 4.8], ['gas', 4.95, 4.55], ['drum', -4.6, 4.7]], solids: [[0, -10, 10, 7]], decor: [['kelapa', 6.6, 2.5, .95], ['kelapa', -6.4, 2, .9], ['pisang', 6.4, -4.5, .85]] }),
+  warung: { label: 'Warung Kak Ita', places: [[0, 0, 11, 6.5]], doors: [[0, 6]], solids: [[0, 0, 12.5, 8.4], [-6, 3.5, .62, .62], [6, 3.5, .62, .62]], floors: [[0, 0, 11, 6.5, .275]], spots: { stall: [0, 6, .2] },
+    props: [['chairs', -4.2, 6.9], ['chairs', 4.2, 6.9, 0, 0, 1], ['gas', -4.6, -2.75], ['crates', 4.8, -2.6], ['poster', -4.2, -2.98, 0, 1.7, 'menu']], decor: [['kelapa', -7.8, -3, 1.05], ['pisang', 7.8, -3.2, .95], ['pisang', -8.2, 1.8, .85], ['serai', 7.6, 1.6]] },
   shophouses: {
     label: 'Shophouse terrace (7 shops)',
     places: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 0, 8.8, 10]),
     doors: [0, 1, 2, 3, 4, 5, 6].map(i => [-27 + i * 9, 6.6]),
-    solids: [[0, 1.48, 63, 12.95], [-7, 9, 2.4, .55]], floors: [[0, 6.475, 63, 2.95, .26]]
+    solids: [[0, 1.48, 63, 12.95], [-7, 9, 2.4, .55]], floors: [[0, 6.475, 63, 2.95, .26]],
+    // On the five-foot way: Pak Rahman's ice-cream freezer and prepaid-card board,
+    // the photostat board at the stationers', bread crates and a kopitiam table.
+    props: [['freezer', -23.8, 5.45], ['board', -30.2, 5.6, 0, 0, 'prabayar'], ['board', 3.2, 5.6, 0, 0, 'photostat'], ['crates', 24, 5.4], ['kopitiam', 30.1, 6.4],
+      ['motor', -21.5, 9.5, 1], ['motor', 12.6, 9.5, 1, 0, 1], ['motor', 14, 9.5, 1, 0, 2]]
   },
   school: {
     label: 'School compound', yard: true,
     places: [[-5.5, -4, 38, 10]], doors: [[-5.5, 5.4]],
     solids: [[-5.5, -4, 38, 10], [19.5, -3, 9, 20], [0, -15, 51, .12], [-25.5, 0, .12, 30], [25.5, 0, .12, 30], [-17.5, 15, 16, .12], [12, 15, 27, .12], [-21.5, 14.3, .3, .3], [10.5, 14.3, .3, .3]],
     floors: [[-5.5, 2.5, 40, 3.5, .23], [-5.5, 10, 31, 9, .13]],
+    props: [['roadsign', -11, 15.5, 0, 0, 'sekolah'], ['roadsign', 0, 15.5, 0, 0, 'sekolah']],
     // A rain tree shades the assembly ground; bunga raya lines the front fence.
     decor: [['hujan', -22.6, 10.5, .75], ['ketapang', 13, 11, .8], ...[-24, -19, -16, -13, 1, 4, 7, 13, 16, 19, 22].map(x => ['bungaraya', x, 13.9, .8])]
   },
   court: { label: 'Sports court', open: true, places: [[0, 0, 14, 8]], doors: [[0, 5]], solids: [[0, 0, 14, 8]], floors: [[0, 0, 14, 8, .18]] },
   mosque: {
-    label: 'Mosque and plaza', places: [[0, 0, 12, 11]], doors: [[0, 8.9]], solids: [[0, .2, 16.7, 15.1]], floors: [[0, 0, 19, 19, .21]],
+    label: 'Mosque and plaza', places: [[0, 0, 12, 11]], doors: [[0, 8.9]], props: [['rack', 4.8, 9]], solids: [[0, .2, 16.7, 15.1]], floors: [[0, 0, 19, 19, .21]],
     decor: [['kelapa', -15, -5, 1], ['kelapa', 18, -4, 1], ['kemboja', -12, 7.5, .9], ['kemboja', 12, 7.5, .9], ['hujan', 20, 10, .8]]
   },
-  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], doors: [[0, 3.2]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]], decor: [['hujan', -1, -9, .9]] },
-  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], doors: [[0, -6.3]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['kelapa', 6, 8, .9], ['pisang', 7.6, 2.5, .9]] },
-  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], doors: [[0, -9.8]], solids: [[0, 0, 22, 17]], floors: [], decor: [['kelapa', -12.5, -11, .9], ['hujan', 14, 11.5, .85], ['kelapa', 14.5, -10, .9]] },
+  busstop: { label: 'Bus shelter', open: true, places: [[0, 0, 13, 9]], doors: [[0, 3.2]], props: [['phone', 7.4, 0, 3], ['bin', -7.2, 1.5]], solids: [[0, 0, 13, 9]], floors: [[0, 0, 13, 9, .18]], decor: [['hujan', -1, -9, .9]] },
+  workshop: { label: 'Tyre workshop', places: [[0, 0, 10, 10]], doors: [[0, -6.3]], props: [['drum', 4.2, -5.9], ['motor', -3.2, -6.6, 1, 0, 1]], solids: [[0, 0, 11, 11]], floors: [[0, 0, 10, 10, .19]], decor: [['kelapa', 6, 8, .9], ['pisang', 7.6, 2.5, .9]] },
+  market: { label: 'Night market', open: true, places: [[0, 0, 24, 20]], doors: [[0, -9.8]], props: [['cart', 11.5, 2, 1], ['gas', -11.8, 1.5]], solids: [[0, 0, 22, 17]], floors: [], decor: [['kelapa', -12.5, -11, .9], ['hujan', 14, 11.5, .85], ['kelapa', 14.5, -10, .9]] },
   square: {
     label: 'Town square', open: true, places: [],
     solids: [[0, 0, 22, 17]], floors: [[0, 0, 22, 17, .09]],
+    props: [['postbox', 2.6, 2.6], ['phone', -2.8, -2.8, 2], ['banner', 0, 7.2, 0, 0, 'merdeka']],
     decor: [['ketapang', -12, -6, .8], ['ketapang', 12, -6, .8], ['ketapang', -12, 7, .8], ['ketapang', 12, 7, .8]]
   },
   bus: { label: 'Town bus', vehicle: true, places: [], solids: [[0, 0, 4.3, 10.3]], floors: [] },
@@ -160,6 +184,9 @@ export function derive(plan) {
     units, buildings, districts, roads: plan.roads.map(r => ({ ...r })), bridges: bridgesFor(plan.roads),
     floors: units.flatMap(u => u.floors),
     spots: { spawn: spot('home', 'spawn'), spawnNur, stall: spot('warung', 'stall') },
+    props: units.flatMap(u => (u.def.props || []).map(([name, lx, lz, t = 0, y = 0, print = 0]) => {
+      const [x, z] = toWorld(u, lx, lz); return { name, x, z, heading: headingToWorld(u, t * Math.PI / 2), y, print, unit: u.id };
+    })),
     passersby: units.filter(u => u.kind === 'passerby').map(u => ({ x: u.x, z: u.z, heading: headingToWorld(u, 0), who: u.who || 'nur' }))
   };
 }
@@ -217,6 +244,7 @@ export const BRIDGES = TOWN.bridges;
 export const FLOORS = TOWN.floors;
 export const SPOTS = TOWN.spots;
 export const PASSERSBY = TOWN.passersby;
+export const STREET_PROPS = TOWN.props;
 // Name the district of the nearest numbered place, so labels follow edits.
 export function districtAt(x, z) {
   let best = BUILDINGS[0], distance = Infinity;

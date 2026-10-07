@@ -1,12 +1,13 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=1.0.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=1.0.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, toWorld } from './town-layout.js?v=1.0.0';
-import { createWalkability } from './collision.js?v=1.0.0';
-import { createLandmarks } from './landmarks.js?v=1.0.0';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.0.0';
-import { createTrees } from './trees.js?v=1.0.0';
-import { plantTown, TRUNK } from './planting.js?v=1.0.0';
+import { createCharacter } from './characters.js?v=1.1.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=1.1.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=1.1.0';
+import { createProps } from './props.js?v=1.1.0';
+import { createWalkability } from './collision.js?v=1.1.0';
+import { createLandmarks } from './landmarks.js?v=1.1.0';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=1.1.0';
+import { createTrees } from './trees.js?v=1.1.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=1.1.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // Wait for the local fallback font before painting permanent sign textures.
@@ -280,6 +281,7 @@ export async function makeWorld(canvas) {
     for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
   }
   const landmarks=createLandmarks({parent:()=>root,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
+  const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
   const timberColors=[0xc7ad75,0xa8b4a0,0xe0c39b,0xc9bd92,0xb28272];
   const civicColors={19:0xe5a88c,20:0xd99cb6,32:0xf0d18d,33:0x9fc8ba,37:0x9fc8ba};
@@ -434,14 +436,21 @@ export async function makeWorld(canvas) {
   });
   // Trees: planting.js works out the yards, lawns, river banks and the dense
   // orchard and rubber rows past the town edge; trees.js models each species.
+  const TOWN={units:UNITS,roads:ROADS,bridges:BRIDGES,buildings:BUILDINGS,spots:SPOTS,passersby:PASSERSBY,props:STREET_PROPS};
   const trees=createTrees({parent:()=>root,toon,register:(key,material)=>{mats.set(key,material);return material;}});
-  for(const p of plantTown({units:UNITS,roads:ROADS,bridges:BRIDGES,buildings:BUILDINGS,spots:SPOTS,passersby:PASSERSBY})){
+  for(const p of plantTown(TOWN)){
     trees.plant(p);if(p.ring==='in')roundCollider(p.x,p.z,TRUNK[p.kind]*p.size,'trunk');
   }
   // Open ground: away from roads, the river, every unit and every obstacle.
   const solidNear=(x,z,pad)=>colliders.some(c=>c.r!==undefined?Math.hypot(x-c.x,z-c.z)<c.r+pad:Math.abs(x-c.x)<c.w/2+pad&&Math.abs(z-c.z)<c.d/2+pad);
   const unitNear=(x,z,pad)=>UNITS.some(u=>{const [ax,az,aw,ad]=u.area;return Math.abs(x-ax)<aw/2+pad&&Math.abs(z-az)<ad/2+pad;});
   const roadNear=(x,z,asphaltPad,dirtPad)=>ROADS.some(r=>{const pad=r.kind==='asphalt'?asphaltPad:dirtPad;return Math.abs(x-r.x)<r.w/2+pad&&Math.abs(z-r.z)<r.d/2+pad;});
+  // Street props of around 2001, placed by each building kind (see props.js).
+  for(const p of placeProps(TOWN)){
+    scene.add(props.place(p.name,p.x,groundHeight(p.x,p.z)+p.y,p.z,p.heading,p.print));
+    const def=PROPS[p.name];if(def.hit)roundCollider(p.x,p.z,def.hit,'prop');
+    if(p.name==='banner')for(const lx of [-2.2,2.2])roundCollider(p.x+lx*Math.cos(p.heading),p.z-lx*Math.sin(p.heading),.07,'pole');
+  }
   // Street lamps follow every asphalt road on one verge, facing the road.
   for(const r of asphalt){
     const alongX=r.w>=r.d,length=alongX?r.w:r.d,half=(alongX?r.d:r.w)/2;
@@ -449,6 +458,21 @@ export async function makeWorld(canvas) {
       const x=alongX?r.x+t:r.x+half+2,z=alongX?r.z+half+2:r.z+t;
       if(!inside(x,z,-1)||inRiver(x,2)||onBridge(x,z,3)||inRoad(x,z,1.5)||unitNear(x,z,1)||solidNear(x,z,1))continue;
       roundCollider(x,z,.13,'lamp');cylinder(.09,.13,5.2,0x7b8270,x,2.6,z);box(alongX?.4:.9,.18,alongX?.9:.4,0xd9c596,alongX?x:x-.4,5.1,alongX?z-.4:z);
+    }
+  }
+  // Timber utility poles carry sagging phone and power lines along whichever
+  // verge has more room; a pole is left out in a yard or a doorway, and the
+  // line runs on over one missing pole.
+  const inUnit=(x,z,pad)=>UNITS.some(u=>u.solids.some(([sx,sz,sw,sd])=>Math.abs(x-sx)<sw/2+pad&&Math.abs(z-sz)<sd/2+pad));
+  for(const r of asphalt){
+    const alongX=r.w>=r.d,length=alongX?r.w:r.d,half=(alongX?r.d:r.w)/2;
+    const verge=side=>{const out=[];for(let t=-length/2+5;t<length/2-3;t+=20){const x=alongX?r.x+t:r.x+side*(half+1.4),z=alongX?r.z+side*(half+1.4):r.z+t;
+      if(inside(x,z,-1)&&!inRiver(x,2)&&!onBridge(x,z,3)&&!inRoad(x,z,.4)&&!inUnit(x,z,.3)&&!solidNear(x,z,.6)&&!BUILDINGS.some(b=>Math.hypot(x-b.door.x,z-b.door.z)<2.5))out.push([x,z]);}return out;};
+    const [a,b]=[verge(-1),verge(1)],spots=a.length>=b.length?a:b;let last=null;
+    for(const [x,z] of spots){
+      const pole=props.pole(x,groundHeight(x,z),z,alongX);scene.add(pole.group);roundCollider(x,z,.15,'pole');
+      if(last&&Math.hypot(x-last.x,z-last.z)<41&&![.25,.5,.75].some(t=>inUnit(last.x+(x-last.x)*t,last.z+(z-last.z)*t,.2)))scene.add(props.wires(last.points,pole.points));
+      last={x,z,points:pole.points};
     }
   }
   for(let i=0;i<9;i++){const hill=mesh(new T.IcosahedronGeometry(15+(i%3)*4,1),i%2?0x839d75:0x9bb087,-120+i*30,-3,-135-Math.sin(i)*8);hill.scale.y=.7;}

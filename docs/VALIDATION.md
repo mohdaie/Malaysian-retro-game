@@ -154,3 +154,11 @@ Amir and Nur are unchanged: their turnaround renders are pixel-identical to v0.1
 In the browser, a scripted Chapter 01 play-through passed all 25 checks with no page errors, as Nur from the built folder and as Amir from the repository root. It covers: meet Faiz and Mei Ling; Pak Rahman's menu (Buy / Delivery work / Talk / Leave) and the story parcel card (requester, destination, RM 1.00, carrying space); collect and hand over to Nenek (RM 2.00 → RM 3.00); Nenek's house menu and tea order; buy the tea (RM 2.30); a reload mid-job; the tea repaid with the upah (RM 4.00); a full congkak round with Nenek; a guli at Uncle Lim's (RM 3.50, chapter complete); a reload that keeps everything; and the quest book's friends list. All 38 interaction points and all 14 NPCs can be reached on foot from the start.
 
 Same six gameplay spots against v0.11.0 (software WebGL, 844 × 390): draw calls 129–518 (was 127–517), triangles 184–423k (was 156–373k). Near home and the warung the counts match v0.11.0. They are 15–23% higher where several townsfolk stand close together (Kedai Runcit, the padang, Nenek's, the mosque). Townsfolk past 42 m are hidden and only those within 20 m cast sun shadows. Textures rose from 55–64 to 77–85 (half-size face drawings and six cloth prints). These are workload counts, not phone frame rates.
+
+## v1.1.0 — street props of around 2001
+
+`npm test`: **59 tests passed**. A new test checks that the 2001 street props stand clear of every door, everyone's spot, the river, asphalt (except parked motorcycles and road signs) and every tree trunk; the reachability test now counts prop colliders too.
+
+The saved plan places 85 of its 86 props (one tempayan by a roadside house is left out where it would sit on the road) and 16 utility poles with lines; 3 trees make way for props (410 → 407). In the browser all 38 interaction points and all 14 NPCs are still reachable on foot, with no page errors. Each prop was checked in town from the game camera.
+
+Same six gameplay spots as v1.0.0: draw calls 131–547 (was 129–518, up 1–8%), triangles 192–459k (was 184–423k, up 3–11%). Props share the landmarks' vertex-coloured material and one sign atlas, so they add about one draw per street cell.

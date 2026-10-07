@@ -1,14 +1,14 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.0.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.0.0';
-import { readSave, writeSave } from './save.js?v=1.0.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.0.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.0.0';
-import { createSoundscape } from './soundscape.js?v=1.0.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.0.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.0.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.0.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.0.0';
+import { makeWorld } from './world.js?v=1.1.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.1.0';
+import { readSave, writeSave } from './save.js?v=1.1.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.1.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.1.0';
+import { createSoundscape } from './soundscape.js?v=1.1.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.1.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.1.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.1.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.1.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
