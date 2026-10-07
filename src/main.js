@@ -1,14 +1,16 @@
 import * as T from 'three';
-import { makeWorld } from './world.js?v=1.2.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.2.0';
-import { readSave, writeSave } from './save.js?v=1.2.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.2.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.2.0';
-import { createSoundscape } from './soundscape.js?v=1.2.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.2.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.2.0';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.2.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.2.0';
+import { makeWorld } from './world.js?v=1.3.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=1.3.0';
+import { readSave, writeSave } from './save.js?v=1.3.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=1.3.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=1.3.0';
+import { createSoundscape } from './soundscape.js?v=1.3.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=1.3.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=1.3.0';
+import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=1.3.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers } from './story.js?v=1.3.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=1.3.0';
+import { ITEM_KINDS } from './item-art.js?v=1.3.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -181,6 +183,7 @@ function refreshEconomy(){
 function counterButton(parent,label,onclick,cls='primary',disabled=false){const b=document.createElement('button');b.className=cls;b.textContent=label;b.disabled=disabled;b.onclick=onclick;parent.append(b);return b;}
 function offerCard(offer,place){
   const card=document.createElement('dl');card.className='job-offer';
+  const visual=document.createElement('div');visual.className='offer-visual';visual.append(itemIdentity(offer.item,inspectItem,ITEMS[offer.item].memory));card.append(visual);
   const row=(term,value,cls='')=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=term;dd.textContent=value;dd.className=cls;card.append(dt,dd);};
   const requester=personAt(offer.requester)?.name||NPCS[npcAt(offer.requester)]?.name||placeName(offer.requester);
   row('Requester',`${requester} · ${placeName(offer.requester)}`);
@@ -218,7 +221,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   }else if(view==='buy'){
     for(const item of STOCK[place]){
       const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
-      const name=document.createElement('b');name.textContent=it.name+(eco.collection[item]?` · owned ${eco.collection[item]}`:'');const price=document.createElement('span');price.textContent=rm(it.price);
+      const name=itemIdentity(item,inspectItem,eco.collection[item]?`Dalam koleksi · × ${eco.collection[item]}`:ITEM_KINDS[it.kind]);const price=document.createElement('span');price.textContent=rm(it.price);
       row.append(name,price);counterButton(row,'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price);
       body.append(row);
     }
@@ -283,18 +286,19 @@ function talk(key,place,npcKey){
 }
 function closeCounter(){$('counter-panel').hidden=true;counter=null;setMode('explore');}
 $('counter-close').onclick=closeCounter;
-function listItem(list,left,right,action){const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=left;b.textContent=right;if(action)b.append(action);li.append(a,b);list.append(li);}
+function listItem(list,left,right,action,item){const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=left;b.textContent=right;if(action)b.append(action);if(item){li.className='illustrated-list-item';li.append(itemThumbnail(item,inspectItem));}li.append(a,b);list.append(li);}
 function openBag(){
   if(mode!=='explore')return;setMode('bag');$('bag-panel').hidden=false;
   $('bag-wallet').textContent=`Duit Poket: ${rm(eco.wallet)} · Space ${usedSpace(eco)}/${BAG_SPACE}`;
   const list=$('bag-list');list.replaceChildren();
   const entries=Object.entries(eco.bag);
   if(!entries.length)listItem(list,'Your bag is empty.','');
-  for(const [item,qty] of entries){const job=eco.jobs.find(j=>j.item===item&&j.status==='carrying');listItem(list,ITEMS[item].name,`× ${qty}${job?` · for ${placeName(nextStop(job))}`:''}`);}
+  for(const [item,qty] of entries){const job=eco.jobs.find(j=>j.item===item&&j.status==='carrying');listItem(list,ITEMS[item].title,`× ${qty}${job?` · for ${placeName(nextStop(job))}`:''}`,null,item);}
   const album=$('bag-collection');album.replaceChildren();
   const owned=Object.entries(eco.collection);
   if(!owned.length)listItem(album,'Nothing yet. Uncle Lim sells cards, comics, gasing, wau, guli and Tamiya.','');
-  for(const [item,qty] of owned)listItem(album,ITEMS[item].name,`× ${qty}`);
+  album.classList.toggle('catalogue-grid',owned.length>0);
+  for(const [item,qty] of owned)album.append(catalogueCard(item,inspectItem,qty));
 }
 function openBook(){
   if(mode!=='explore')return;setMode('book');$('book-panel').hidden=false;
@@ -303,7 +307,7 @@ function openBook(){
   for(const job of eco.jobs){
     let action=null;
     if(job.status==='accepted'){action=document.createElement('button');action.textContent='Cancel';action.onclick=()=>{cancel(eco,job.id);persist();refreshEconomy();closePanel('book-panel');openBook();};}
-    listItem(jobs,`${jobText(job)}`,`${job.status==='carrying'?`Return at ${placeName(job.from)} to cancel · `:''}${rm(job.upah)}`,action);
+    listItem(jobs,`${jobText(job)}`,`${job.status==='carrying'?`Return at ${placeName(job.from)} to cancel · `:''}${rm(job.upah)}`,action,job.item);
   }
   if(!eco.jobs.length)listItem(jobs,'No delivery in progress. Ask at any shop (Delivery work) or house (Requests).','');
   $('book-summary').textContent=`Deliveries completed: ${eco.done.length} · Jobs ${eco.jobs.length}/${MAX_JOBS} · Duit Poket: ${rm(eco.wallet)} · Congkak: ${eco.congkak.won} won of ${eco.congkak.played}`;
@@ -313,6 +317,33 @@ function openBook(){
 function closePanel(id){$(id).hidden=true;setMode('explore');}
 $('bag-button').onclick=openBag;$('book-button').onclick=openBook;$('wallet-button').onclick=openBook;
 $('bag-close').onclick=()=>closePanel('bag-panel');$('book-close').onclick=()=>closePanel('book-panel');
+let inspectReturn=null, catalogueFilter='all';
+function inspectItem(id,trigger){
+  const surfaces=[...document.querySelectorAll('.modal-backdrop:not(#item-panel),#hud')].filter(el=>!el.hidden&&!el.inert);
+  inspectReturn={mode,trigger,surfaces};for(const el of surfaces)el.inert=true;const detail=detailContents(id);
+  $('item-title').textContent=detail.title;$('item-memory').textContent=detail.memory;
+  $('item-caption').textContent=detail.caption;$('item-image').src=detail.image;$('item-image').alt=detail.title;
+  $('item-panel').hidden=false;setMode('item');$('item-close').focus();
+}
+function closeItem(){
+  $('item-panel').hidden=true;const previous=inspectReturn;inspectReturn=null;
+  for(const el of previous?.surfaces||[])el.inert=false;
+  setMode(previous?.mode||'explore');if(previous?.trigger.isConnected)previous.trigger.focus();
+}
+$('item-close').onclick=closeItem;
+function renderCatalogue(){
+  const list=$('catalogue-list');list.replaceChildren();
+  const entries=Object.entries(ITEMS).filter(([,it])=>catalogueFilter==='all'||it.kind===catalogueFilter);
+  for(const [id] of entries)list.append(catalogueCard(id,inspectItem,eco.collection[id]||0));
+  $('catalogue-count').textContent=`${entries.length} / ${Object.keys(ITEMS).length} item · Pekan Seri Kenangan, circa 2001`;
+  for(const button of $('catalogue-filters').children)button.setAttribute('aria-pressed',String(button.dataset.kind===catalogueFilter));
+}
+for(const [kind,label] of Object.entries({all:'Semua',...ITEM_KINDS})){
+  const button=document.createElement('button');button.type='button';button.dataset.kind=kind;button.textContent=label;
+  button.onclick=()=>{catalogueFilter=kind;renderCatalogue();};$('catalogue-filters').append(button);
+}
+$('catalogue-button').onclick=()=>{$('bag-panel').hidden=true;$('catalogue-panel').hidden=false;setMode('catalogue');renderCatalogue();$('catalogue-close').focus();};
+$('catalogue-close').onclick=()=>{$('catalogue-panel').hidden=true;setMode('explore');openBag();$('catalogue-button').focus();};
 function openMap(){if(mode!=='explore')return;setMode('map');$('map-panel').hidden=false;drawMap($('town-map'),true);}
 $('map-button').onclick=openMap;
 $('map-close').onclick=()=>{$('map-panel').hidden=true;setMode('explore');};
@@ -323,6 +354,7 @@ $('home-button').onclick=()=>{persist();$('pause-panel').hidden=true;$('hud').hi
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
   if(orientationBlocked)return;
+  if(mode==='item'&&event.key==='Tab'){event.preventDefault();$('item-close').focus();return;}
   if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape'].includes(event.key))return;
   const key=event.key.toLowerCase();
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(key))event.preventDefault();
@@ -331,7 +363,7 @@ window.addEventListener('keydown',event=>{
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
-  if(key==='escape'){if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
+  if(key==='escape'){if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur',clearControls);

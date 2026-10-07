@@ -170,3 +170,11 @@ Same six gameplay spots as v1.0.0: draw calls 131–547 (was 129–518, up 1–8
 All 15 actions were checked on the cast in the turnaround; hands-on-hips and the watch check use a twist-then-raise arm rotation. In town, Kak Ita, Pak Mat, Atuk and Faiz were filmed over time stirring, wiping, bending, scratching, chatting and waving, and walking between their spots. Amir and Nur are unchanged (no action is passed for the player).
 
 A scripted Chapter 01 play-through as Amir passed all 25 checks with no page errors while the NPCs walked their loops.
+
+## v1.3.0 — illustrated item catalogue
+
+`npm test`: **63 tests passed**; `npm run build` passes. The added catalogue check follows every shop stock/request/parcel reference to a local asset and checks that all 51 item drawings are distinct, titled, and accompanied by a memory note. Delivery-only detail captions never format a missing purchase price. All previous purchasing, delivery, congkak, collision, routine and save checks still pass.
+
+A browser pass in Chromium with software WebGL checked: 51 SVGs fetched and decoded; category totals (26 goods, 5 snacks, 7 collectibles, 13 cargo); pictures in the bag and album; item inspection and Escape returning to the catalogue; browsing leaving wallet/bag/collection/jobs unchanged; all 15 grocer stock pictures; buying an ais krim debiting exactly 20 sen; illustrated delivery offers and active jobs in the quest book. Desktop 1280 × 800 and mobile landscape 915 × 412, 740 × 360 and 568 × 320 were checked for modal overflow, category controls, image inspection and return behaviour, with no browser errors. This is browser emulation; a physical phone GPU test was not performed.
+
+Artwork and actual game UI screenshots: `item-art-sheet-v130.webp`, `catalogue-v130.webp`, `bag-v130.webp`, `shop-items-v130.webp`, `delivery-items-v130.webp`, `catalogue-mobile-*-v130.webp`, `item-mobile-*-v130.webp`. The 51 source SVGs together are 70,818 bytes (about 69 KiB) (208 KB on disk); they are locally bundled and lazy-loaded. The catalogue is original vector artwork, not photographs or generated raster renders. Item IDs, prices, upah and save schema remain unchanged.
