@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.7.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.7.2**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -83,7 +83,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Local progress saves with resume, save validation and graceful storage failure.
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
 - Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus, congkak, Dam Haji and gasing.
-- Optional original synthesized breeze, bird calls, footsteps and shell sounds.
+- “Sore Kampung” by mohdaie plays quietly on repeat after Start/Continue. Music and synthesized town ambience have separate, saved volume controls in Pause/Settings. Both stop on the title screen, when the tab is hidden or when a phone rotates to portrait.
 - The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 

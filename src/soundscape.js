@@ -34,5 +34,5 @@ export function createSoundscape(isActive, isNight = () => false) {
     const t=context.currentTime;
     for(const at of [0,.16])for(const f of [2350,3520]){const osc=context.createOscillator(),gain=context.createGain();osc.type='sine';osc.frequency.value=f;gain.gain.setValueAtTime(0,t+at);gain.gain.linearRampToValueAtTime(f>3000?.05:.09,t+at+.005);gain.gain.exponentialRampToValueAtTime(.001,t+at+.5);osc.connect(gain);gain.connect(master);osc.start(t+at);osc.stop(t+at+.55);}
   }
-  return {context,footsteps,bell,shell:()=>click(),resume:()=>context.resume(),suspend:()=>context.suspend(),dispose:()=>{clearInterval(timer);context.close();}};
+  return {context,footsteps,bell,shell:()=>click(),setVolume:(value)=>master.gain.setTargetAtTime(.22*Math.max(0,Math.min(1,value)),context.currentTime,.04),resume:()=>context.resume(),suspend:()=>context.suspend(),dispose:()=>{clearInterval(timer);context.close();}};
 }
