@@ -1,5 +1,5 @@
-import { LEVELS, legalSteps, playStep, chooseTurn, squareName } from './dam-haji.js?v=2.10.0';
-import { DAM_QUESTS, startDam, recordDam } from './dam-progress.js?v=2.10.0';
+import { LEVELS, legalSteps, playStep, chooseTurn, squareName } from './dam-haji.js?v=2.11.0';
+import { DAM_QUESTS, startDam, recordDam } from './dam-progress.js?v=2.11.0';
 
 export function createDamUI({ getEco, getName, isPaused, onOpen, onClose, onChange }) {
   const $ = id => document.getElementById(id), panel = $('dam-panel');
@@ -114,7 +114,7 @@ export function createDamUI({ getEco, getName, isPaused, onOpen, onClose, onChan
       const fallback = () => finish(chooseTurn(s, 'belajar'));
       cancelSearch = () => finish(null);
       try {
-        worker = new Worker(new URL('./dam-worker.js?v=2.10.0', import.meta.url), { type: 'module' });
+        worker = new Worker(new URL('./dam-worker.js?v=2.11.0', import.meta.url), { type: 'module' });
         worker.onmessage = ({ data }) => data.error ? fallback() : finish(data.steps);
         worker.onerror = fallback;
         timer = setTimeout(fallback, 5000); worker.postMessage({ match: s });

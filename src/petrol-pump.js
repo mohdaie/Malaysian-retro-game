@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { toon } from './illustration.js?v=2.10.0';
+import { toon } from './illustration.js?v=2.11.0';
 
 // One pump from the Vintage PETRONAS Station model: plinth, enamel pedestal,
 // charcoal head, mechanical counter, two hoses and nozzles. Six meshes, one
