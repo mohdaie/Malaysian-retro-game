@@ -332,3 +332,14 @@ In the browser (no page errors): all 10 extras found every gathering spot and ev
 - 16:13: four kids running to the padang.
 - 17:20 the padang: six kids playing.
 - Saturday (day 8) 20:00 pasar malam: Siti, Ravi, Pak Daud and Mak Cik Gayah. Sunday (day 9): nobody.
+
+## v2.9.1 · storyline cross-check with the crowd
+
+The extras are not talkable and never enter the interaction prompt, so Chapter 1's people, counters and dialogue are untouched. Their names do not clash with any story text (the one "Siti" is Siti Nurhaliza's album). They gather at the warung, Kedai Runcit 99, Kedai Sudut Mini, the five-foot way, the padang, the masjid and the pasar malam, and none of these is a keepsake clue stop.
+
+One overlap fixed: Encik Faizal's padang errand (17:00–18:30) runs during the kids' game (16:15–18:40), and the crowd's spot picker did not avoid errand stand spots. Crowd spots now keep 1.4 m from them too. Measured in the browser: every crowd spot is at least 1.4 m from an errand spot, 1.5 m from an NPC and 2.1 m from its door.
+
+In the browser (no page errors), with the crowd present:
+- Step 0 at 17:30, with seven extras on the padang: "Talk to Faiz", the friends' scene plays and the chapter moves on.
+- Step 1 at 09:15, with Siti and Mak Cik Gayah at Kedai Runcit 99: Pak Rahman's counter opens with Delivery work.
+- Abang Kamal's Walkman pickup and Kak Midah's stand-in line are unchanged.

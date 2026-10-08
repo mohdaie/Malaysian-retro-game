@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Retro Malaysia">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Retro Malaysia · A kampung story</title>
-  <link rel="stylesheet" href="./styles.css?v=2.9.0">
+  <link rel="stylesheet" href="./styles.css?v=2.9.1">
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
 </head>
 <body>
@@ -21,7 +21,7 @@
     <div id="loading"><span class="loading-dot"></span>Finding our way home…</div>
     <div id="hud" hidden>
       <header class="topbar">
-        <div class="brand"><span class="brand-mark">R<span>M</span></span><button id="version-trigger" type="button" aria-label="Retro Malaysia version">RETRO MALAYSIA<small>A KAMPUNG STORY · v2.9.0</small></button></div>
+        <div class="brand"><span class="brand-mark">R<span>M</span></span><button id="version-trigger" type="button" aria-label="Retro Malaysia version">RETRO MALAYSIA<small>A KAMPUNG STORY · v2.9.1</small></button></div>
         <div class="top-actions"><span class="day-chip"><span id="day-icon">☀</span> <span id="day-label">Sabtu · 2001</span></span><button id="wallet-button" class="icon-button wallet" aria-label="Duit Poket and quest book"><small>DUIT POKET</small><b id="wallet-amount">RM 2.00</b></button><button id="bag-button" class="icon-button" aria-label="Open your bag">Beg<span id="bag-count" class="count"></span> <kbd>B</kbd></button><button id="book-button" class="icon-button" aria-label="Open your quest book">Buku <kbd>J</kbd></button><button id="map-button" class="icon-button" aria-label="Open town map">Map <kbd>M</kbd></button><button id="pause-button" class="icon-button" aria-label="Pause and settings">Ⅱ</button></div>
       </header>
       <aside class="quest-card"><span class="eyebrow" id="quest-chapter">CHAPTER 01 · CUTI SEKOLAH</span><h2 id="quest-title">A familiar face</h2><p id="quest-description">Find Nur outside your house.</p><span class="quest-phase" id="quest-phase">KENAL PEKAN</span><div class="quest-footer"><span id="quest-step">01 / 03</span><span id="quest-distance"></span></div><div class="quest-track"><i id="quest-progress"></i></div><div id="job-line" class="job-line" hidden><div class="job-head"><span class="eyebrow" id="job-eyebrow">PENGHANTARAN</span><span id="job-distance"></span></div><p id="job-text"></p></div></aside>
@@ -84,7 +84,7 @@
     <section id="orientation-panel" class="orientation-panel" hidden aria-label="Rotate your device to play"><div><div class="rotate-symbol" aria-hidden="true">↻</div><span class="eyebrow">BEST PLAYED SIDEWAYS</span><h2>Turn your phone.<br>The kampung is waiting.</h2><p>Gameplay stays in landscape. Your progress is kept while you rotate.</p><button id="landscape-button" class="primary">Enter landscape fullscreen →</button><button type="button" class="secondary" data-install-game hidden>Install Retro Malaysia →</button></div></section>
     <section id="error-panel" class="modal-backdrop" hidden><div class="modal"><h2>The town couldn't load.</h2><p id="error-text"></p><button onclick="location.reload()" class="primary">Try again</button></div></section>
   </main>
-  <script type="module" src="./src/pwa.js?v=2.9.0"></script>
-  <script src="./src/boot.js?v=2.9.0"></script>
+  <script type="module" src="./src/pwa.js?v=2.9.1"></script>
+  <script src="./src/boot.js?v=2.9.1"></script>
 </body>
 </html>
