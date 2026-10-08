@@ -1,25 +1,26 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.11.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.11.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.11.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.11.0';
-import { createProps } from './props.js?v=2.11.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.11.0';
-import { ACTIONS } from './actions.js?v=2.11.0';
-import { createWalkability } from './collision.js?v=2.11.0';
-import { createStorefronts } from './storefronts.js?v=2.11.0';
-import { createLandmarks } from './landmarks.js?v=2.11.0';
-import { loadTownCars } from './town-cars.js?v=2.11.0';
-import { loadTownBus } from './town-bus.js?v=2.11.0';
-import { loadPetrolPump } from './petrol-pump.js?v=2.11.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.11.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.11.0';
-import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.11.0';
-import { findWalkRoute } from './map-navigation.js?v=2.11.0';
-import { createTrees } from './trees.js?v=2.11.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.11.0';
-import { createRiver } from './river.js?v=2.11.0';
-import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.11.0';
+import { createCharacter } from './characters.js?v=2.11.1';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.11.1';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.11.1';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.11.1';
+import { createProps } from './props.js?v=2.11.1';
+import { ROUTINES, createRoutine } from './routines.js?v=2.11.1';
+import { ACTIONS } from './actions.js?v=2.11.1';
+import { createWalkability } from './collision.js?v=2.11.1';
+import { createStorefronts } from './storefronts.js?v=2.11.1';
+import { createLandmarks } from './landmarks.js?v=2.11.1';
+import { loadTownCars } from './town-cars.js?v=2.11.1';
+import { loadTownBus } from './town-bus.js?v=2.11.1';
+import { loadPetrolPump } from './petrol-pump.js?v=2.11.1';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.11.1';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.11.1';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.11.1';
+import { findWalkRoute } from './map-navigation.js?v=2.11.1';
+import { createTrees } from './trees.js?v=2.11.1';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.11.1';
+import { createRiver } from './river.js?v=2.11.1';
+import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.11.1';
+import { roadSurfaces } from './road-surfaces.js?v=2.11.1';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -258,13 +259,9 @@ export async function makeWorld(canvas) {
   const bankBounds=riverBounds();
   for(const [from,to] of [[-90,bankBounds.left],[bankBounds.right,90]])box(to-from,.6,160,textured(0xffffff,'grass'),(from+to)/2,-.35,0);
   const river=createRiver(scene);
-  for(const road of ROADS)box(road.w,.08,road.d,textured(0xffffff,road.kind),road.x,.015,road.z);
-  // Asphalt roads that reach the town edge carry on out of town, through a
-  // gap in the trees, to where the lawn meets the painted horizon.
-  for(const r of ROADS)if(r.kind==='asphalt'){
-    const alongX=r.w>=r.d,lo=alongX?r.x-r.w/2:r.z-r.d/2,hi=alongX?r.x+r.w/2:r.z+r.d/2,[min,max,edge]=alongX?[TOWN_BOUNDS.minX,TOWN_BOUNDS.maxX,90]:[TOWN_BOUNDS.minZ,TOWN_BOUNDS.maxZ,80];
-    for(const [from,to] of [lo<=min+1?[-edge,lo]:null,hi>=max-1?[hi,edge]:null].filter(Boolean)){const mid=(from+to)/2,len=to-from;box(alongX?len:r.w,.08,alongX?r.d:len,textured(0xffffff,'asphalt'),alongX?mid:r.x,.015,alongX?r.z:mid);}
-  }
+  // One surface per point, including road extensions beyond the town edge.
+  // World-aligned UVs keep the texture continuous across the trimmed pieces.
+  for(const road of roadSurfaces(ROADS,TOWN_BOUNDS))box(road.w,.08,road.d,textured(0xffffff,road.kind),road.x,.015,road.z);
   for(const {x,z,w,d,road} of BRIDGES) {
     box(w,.2,d,0xbcac8b,x,BRIDGE_DECK_Y-.1,z);
     // The abutments and piers are beneath the crossing, outside player space.

@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { toon } from './illustration.js?v=2.11.0';
+import { toon } from './illustration.js?v=2.11.1';
 
 // A drawn face for the modelled kids (v2.11). The image-to-3D texture gives
 // the face only ~150 px, so the painted eyes and mouth are soft and still.
