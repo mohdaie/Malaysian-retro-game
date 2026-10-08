@@ -36,6 +36,18 @@ export const ACTIONS = {
   // Glance at a wristwatch on the left wrist.
   check: () => ({ arms: [null, [-.53, -.87, -.32]], elbows: [null, -1.75], head: [.32, .2, 0] }),
   // A slow, friendly nod.
-  nod: t => ({ head: [.18 * Math.max(0, S(t * 3.5)), 0, 0] })
+  nod: t => ({ head: [.18 * Math.max(0, S(t * 3.5)), 0, 0] }),
+  // The barber's snip: scissors raised to head height, comb hand ready.
+  snip: t => ({ arms: [[-1.35, 0, -.25], [-.9, 0, .2]], elbows: [-1.1 + .07 * S(t * 16), -1.3], head: [.15, .1 * S(t * .8), 0] }),
+  // Hand sewing: the right hand draws the thread up and out.
+  sew: t => ({ arms: [[-.6 - .25 * Math.max(0, S(t * 3)), 0, .1], [-.55, 0, -.12]], elbows: [-1.2 + .35 * Math.max(0, S(t * 3)), -1.35], torso: [.12, 0, 0], head: [.42, 0, 0] }),
+  // Pumping a bicycle tyre: bent over, both hands working the pump.
+  pump: t => ({ arms: [[-.55 + .25 * S(t * 5), 0, .12], [-.55 + .25 * S(t * 5), 0, -.12]], elbows: [-.6 - .3 * S(t * 5), -.6 - .3 * S(t * 5)], torso: [.55 + .08 * S(t * 5), 0, 0], head: [-.1, 0, 0] }),
+  // Sweeping the yard with a penyapu lidi, side to side.
+  sweep: t => ({ arms: [[-.5, 0, -.1 + .35 * S(t * 2.4)], [-.35, 0, .1 + .35 * S(t * 2.4)]], elbows: [-.4, -.5], torso: [.32, .2 * S(t * 2.4), 0], head: [.3, 0, 0] }),
+  // Rocking the baby in its sling, swaying gently.
+  rock: t => ({ arms: [[-.55, 0, .3], [-.55, 0, -.3]], elbows: [-1.45, -1.45], torso: [.06, 0, .07 * S(t * 1.6)], head: [.3, 0, .08 * S(t * 1.6)] }),
+  // Lifting the rod and flicking the line out over the water.
+  cast: t => ({ arms: [[-1 - .35 * Math.max(0, S(t * .8)), 0, -.1], [-.5, 0, .05]], elbows: [-.7, -1.2], head: [-.12, 0, 0] })
 };
 export const ACTION_NAMES = Object.keys(ACTIONS);

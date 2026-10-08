@@ -10,7 +10,8 @@
 //   ['stand', seconds]             stand still and breathe
 //   ['do', action, seconds]        play an action (see actions.js): wave, look, stir,
 //                                  wipe, write, read, fan, stretch, hips, fold, talk,
-//                                  bend, scratch, check, nod
+//                                  bend, scratch, check, nod, snip, sew, pump,
+//                                  sweep, rock, cast
 //   ['walk', spot]                 walk to a spot, then face its way
 //   ['face', 'out'|'back'|'left'|'right']   turn on the spot
 //
@@ -31,7 +32,33 @@ export const ROUTINES = {
   nenek: { steps: [['do', 'fan', 6], ['stand', 4], ['do', 'look', 4], ['walk', 'left'], ['do', 'bend', 3], ['walk', 'home']] },
   atuk: { steps: [['do', 'talk', 6], ['do', 'hips', 4], ['walk', 'right'], ['do', 'look', 4], ['walk', 'home'], ['do', 'scratch', 2]] },
   faiz: { steps: [['do', 'bend', 3], ['do', 'talk', 5], ['walk', 'left'], ['do', 'wave', 2], ['walk', 'home'], ['do', 'stretch', 2]] },
-  meiling: { steps: [['do', 'read', 5], ['do', 'talk', 4], ['walk', 'forward'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 4]] }
+  meiling: { steps: [['do', 'read', 5], ['do', 'talk', 4], ['walk', 'forward'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 4]] },
+  // The residents at their own doors: shopkeepers at their trade, neighbours
+  // at their housework.
+  zaitun: { steps: [['do', 'sweep', 6], ['stand', 2], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fan', 3]] },
+  mail: { steps: [['do', 'bend', 6], ['walk', 'left'], ['do', 'bend', 4], ['walk', 'home'], ['do', 'stretch', 3], ['do', 'fan', 2]] },
+  salmah: { steps: [['do', 'stir', 6], ['do', 'fan', 3], ['walk', 'right'], ['do', 'talk', 3], ['walk', 'home'], ['do', 'wipe', 3]] },
+  rohani: { steps: [['do', 'rock', 8], ['do', 'look', 3], ['walk', 'left'], ['do', 'rock', 6], ['walk', 'home']] },
+  kamal: { steps: [['do', 'stretch', 4], ['do', 'scratch', 3], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 4]] },
+  timah: { steps: [['do', 'sweep', 5], ['do', 'check', 2], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fan', 3], ['do', 'talk', 3]] },
+  ismail: { steps: [['do', 'cast', 7], ['stand', 4], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'cast', 5], ['do', 'scratch', 2]] },
+  aminah: { steps: [['do', 'wipe', 4], ['do', 'look', 3], ['walk', 'right'], ['do', 'fold', 3], ['walk', 'home'], ['do', 'fan', 3], ['do', 'nod', 2]] },
+  lina: { steps: [['do', 'sweep', 7], ['do', 'wipe', 4], ['walk', 'right'], ['do', 'sweep', 5], ['walk', 'home'], ['do', 'hips', 3]] },
+  abu: { steps: [['do', 'read', 7], ['do', 'look', 3], ['walk', 'left'], ['do', 'nod', 2], ['walk', 'home'], ['do', 'fold', 3]] },
+  yati: { steps: [['do', 'rock', 8], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'rock', 6], ['do', 'nod', 2]] },
+  faizal: { steps: [['do', 'stretch', 3], ['do', 'read', 6], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'check', 2]] },
+  kiah: { steps: [['do', 'wipe', 4], ['do', 'talk', 4], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fan', 3]] },
+  ani: { steps: [['do', 'wipe', 4], ['do', 'write', 4], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 4]] },
+  hani: { steps: [['do', 'read', 4], ['do', 'talk', 4], ['walk', 'forward'], ['do', 'wave', 2], ['walk', 'home'], ['do', 'nod', 2], ['stand', 3]] },
+  muthu: { steps: [['do', 'snip', 6], ['do', 'wipe', 3], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'snip', 5], ['do', 'talk', 3]] },
+  hussin: { steps: [['do', 'pump', 6], ['do', 'bend', 4], ['walk', 'right'], ['do', 'wipe', 3], ['walk', 'home'], ['do', 'scratch', 2], ['do', 'hips', 3]] },
+  normah: { steps: [['do', 'sew', 7], ['do', 'check', 2], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'sew', 5], ['do', 'nod', 2]] },
+  kumar: { steps: [['do', 'read', 5], ['stand', 3], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 4], ['do', 'nod', 2]] },
+  jah: { steps: [['do', 'wipe', 5], ['do', 'fan', 3], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'fold', 3], ['do', 'talk', 3]] },
+  azura: { steps: [['do', 'read', 7], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'read', 5], ['do', 'nod', 2]] },
+  hafiz: { steps: [['do', 'hips', 4], ['do', 'look', 4], ['walk', 'forward'], ['do', 'stretch', 3], ['walk', 'home'], ['do', 'wave', 2], ['do', 'fold', 3]] },
+  karim: { steps: [['do', 'check', 3], ['do', 'look', 4], ['walk', 'right'], ['stand', 3], ['walk', 'home'], ['do', 'fold', 4], ['do', 'scratch', 2]] },
+  usop: { steps: [['do', 'write', 5], ['do', 'talk', 4], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'hips', 3]] }
 };
 
 const TURN = { out: 0, back: Math.PI, left: Math.PI / 2, right: -Math.PI / 2 };

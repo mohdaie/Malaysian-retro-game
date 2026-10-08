@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.7.1';
-import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=2.7.1';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.8.0';
+import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=2.8.0';
 // Local low-poly track and cars. One small renderer is reused between races.
 export function createTamiyaView(canvas) {
   const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(900,540,false);renderer.setClearColor('#c6d5ac');renderer.outputColorSpace=T.SRGBColorSpace;

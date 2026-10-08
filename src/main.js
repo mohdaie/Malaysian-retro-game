@@ -1,37 +1,37 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.7.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.8.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.7.1';
-import { createBicycle, stepBike } from './bicycle.js?v=2.7.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.7.1';
-import { readSave, readSaves, writeSave } from './save.js?v=2.7.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.7.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.7.1';
-import { createSoundscape } from './soundscape.js?v=2.7.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.7.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.7.1';
-import { NPCS, NPC_KEYS, npcAt, contactAt, line } from './cast.js?v=2.7.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.7.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.7.1';
-import { ITEM_KINDS } from './item-art.js?v=2.7.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.7.1';
-import { createGasingUI } from './gasing-ui.js?v=2.7.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.7.1';
-import { createDamUI } from './dam-ui.js?v=2.7.1';
-import { DAM_QUESTS } from './dam-progress.js?v=2.7.1';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.7.1';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.7.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.7.1';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.7.1';
-import { createTownMap } from './town-map-ui.js?v=2.7.1';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.7.1';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.7.1';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.7.1';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.7.1';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.7.1';
-import { NOSTALGIA_QUESTS, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.7.1';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.7.1';
-import { renderQuestJournal } from './journal-ui.js?v=2.7.1';
-import { CHAPTER_BRIEFS } from './journal.js?v=2.7.1';
+import { makeWorld } from './world.js?v=2.8.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.8.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.8.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.8.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.8.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.8.0';
+import { createSoundscape } from './soundscape.js?v=2.8.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.8.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.8.0';
+import { NPCS, NPC_KEYS, RESIDENTS, npcAt, contactAt, line } from './cast.js?v=2.8.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.8.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.8.0';
+import { ITEM_KINDS } from './item-art.js?v=2.8.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.8.0';
+import { createGasingUI } from './gasing-ui.js?v=2.8.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.8.0';
+import { createDamUI } from './dam-ui.js?v=2.8.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.8.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.8.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.8.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.8.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.8.0';
+import { createTownMap } from './town-map-ui.js?v=2.8.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.8.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.8.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.8.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.8.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.8.0';
+import { NOSTALGIA_QUESTS, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.8.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.8.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.8.0';
+import { CHAPTER_BRIEFS } from './journal.js?v=2.8.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -92,6 +92,8 @@ choose(readSave(storage)?.who ?? 'amir');
 const today = () => dayKey(time);
 const placeOf = id => BUILDINGS.find(b => b.id === id);
 const npcBody = key => world.npcs.find(n => n.id === key);
+// Everyone with a body in the town: the 14 NPCs, then the 24 residents.
+const townsfolk = () => [...world.npcs, ...world.residents];
 const atPost = n => Boolean(n) && onDuty(n.id, time.minute);
 const myHome = () => PLAYERS[state.who].home;
 const placeName = id => id === 1 ? `Rumah ${state.who === 'amir' ? state.name : 'Amir'}` : id === 11 ? `Rumah ${state.who === 'nur' ? state.name : 'Nur'}` : placeOf(id).name;
@@ -225,7 +227,10 @@ function interact() {
   // Face each other; the camera swings to an over-the-shoulder two-shot.
   const p=player.group.position;
   player.group.rotation.y=Math.atan2(nearby.x-p.x,nearby.z-p.z);
-  nearby.character.group.rotation.y=Math.atan2(p.x-nearby.x,p.z-nearby.z);talkingTo=nearby;
+  nearby.character.group.rotation.y=Math.atan2(p.x-nearby.x,p.z-nearby.z);
+  // A resident serves their own place's counter.
+  if(nearby.kind==='resident'){openCounter(nearby.place);return;}
+  talkingTo=nearby;
   const key=nearby.id;
   // Chapter 1 opens with the two friends at the padang.
   if(state.story===0&&(key==='faiz'||key==='meiling')){
@@ -638,7 +643,7 @@ function sayHi(){
   if(mode!=='explore')return;
   if(riding){audio?.bell?.();return;}
   player.wave?.();const p=player.group.position;
-  for(const n of world.npcs)if(atPost(n)&&Math.hypot(n.x-p.x,n.z-p.z)<8)n.waveUntil=elapsed+.5+2.1;
+  for(const n of townsfolk())if(atPost(n)&&Math.hypot(n.x-p.x,n.z-p.z)<8)n.waveUntil=elapsed+.5+2.1;
 }
 function toggleBike(){
   if(mode!=='explore')return;
@@ -795,6 +800,7 @@ function drawMap(canvas){
   for(const b of BUILDINGS){const color=DISTRICTS.find(d=>d.id===b.zone).color;rect(b.x,b.z,b.w,b.d,color+'95');}
   if(storySpot&&!storySpot.job){const q=storySpot;ctx.fillStyle='#e8b535';ctx.beginPath();ctx.moveTo(px(q.x),pz(q.z)-6);ctx.lineTo(px(q.x)+5,pz(q.z));ctx.lineTo(px(q.x),pz(q.z)+6);ctx.lineTo(px(q.x)-5,pz(q.z));ctx.fill();}
   for(const stop of jobStops()){const x=px(stop.x),y=pz(stop.z),r=4;ctx.fillStyle='#b5986a';ctx.strokeStyle='#272630';ctx.lineWidth=1.2;ctx.fillRect(x-r,y-r,r*2,r*2);ctx.strokeRect(x-r,y-r,r*2,r*2);}
+  world.residents.filter(atPost).forEach(n=>{ctx.fillStyle='#7d9a86';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),1.8,0,Math.PI*2);ctx.fill();});
   world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),2.5,0,Math.PI*2);ctx.fill();});
   if(!riding){ctx.fillStyle='#c8322c';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(bike.x),pz(bike.z),3.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
   const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -853,9 +859,11 @@ function tick(){
     jumpedNow=landedNow=false;
     nearby=null;let best=2.6;
     for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
+    // Residents answer for their own place, at the door or out front.
+    if(!nearby)for(const n of world.residents){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'resident',...n};}}
     if(!nearby){best=2.4;for(const b of BUILDINGS){if(atPost(npcBody(npcAt(b.id)))&&npcBody(npcAt(b.id)).post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
     $('interaction').hidden=!nearby;
-    if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
+    if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:nearby.kind==='resident'?`Talk to ${personAt(nearby.place)?.name||RESIDENTS[nearby.place].name}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
     const firstStop=jobStops()[0];$('job-distance').textContent=firstStop?`${Math.round(Math.hypot(p.x-firstStop.x,p.z-firstStop.z))} m away`:'';
     $('location-name').textContent=zoneAt(p.x,p.z);
     $('quest-distance').textContent=storySpot?`${Math.round(Math.hypot(p.x-storySpot.x,p.z-storySpot.z))} m away`:'';
@@ -864,15 +872,18 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
   } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null,{crouch:crouching,ride:riding?bicycle.targets():null});
-  // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m cast sun shadows.
-  for(const n of world.npcs){
-    const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20;
+  // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m
+  // cast sun shadows, and past 30 m their face drawing and ground shadow
+  // (a few pixels by then) are skipped to save two draws each.
+  for(const n of townsfolk()){
+    const {character}=n,pp=player.group.position,gap=Math.hypot(n.x-pp.x,n.z-pp.z),near=gap<20,detail=mode==='title'||gap<30;
     // Off duty they are at home: out of sight and out of the way.
     if(mode!=='title'&&!atPost(n)){character.group.visible=false;n.collider.x=1e4;continue;}
     character.group.visible=mode==='title'||gap<42;if(character.figure.castShadow!==near)character.figure.castShadow=near;
     if(!character.group.visible)continue;
+    if(n.detail!==detail){n.detail=detail;for(const d of character.details)d.visible=detail;}
     // Their own loop (routines.js): they stop for you when you come close, and wait while you talk.
-    const talking=talkingTo?.id===n.id||counter?.npc===n.id;
+    const resident=!NPCS[n.id],talking=resident?mode==='counter'&&counter?.place===n.place&&gap<4:talkingTo?.id===n.id||counter?.npc===n.id;
     if(talking)n.routine.state.heading=character.group.rotation.y;
     // Wave back when the player says hi nearby (after a short beat).
     const waving=n.waveUntil>elapsed&&n.waveUntil-elapsed<2.1;
@@ -913,4 +924,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({riding,bike:{...bike},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({riding,bike:{...bike},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),residents:world.residents.map(n=>({id:n.id,place:n.place,onDuty:atPost(n),visible:n.character.group.visible,x:+n.x.toFixed(2),z:+n.z.toFixed(2)})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

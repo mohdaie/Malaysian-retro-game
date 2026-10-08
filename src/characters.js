@@ -1,7 +1,7 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=2.7.1';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.7.1';
-import { ACTIONS } from './actions.js?v=2.7.1';
+import { toon, outline } from './illustration.js?v=2.8.0';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.8.0';
+import { ACTIONS } from './actions.js?v=2.8.0';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map(), fabrics = new Map();
@@ -116,7 +116,32 @@ const LOOKS = {
   hassan: { adult: true, plan: man({ height: 1.72, skin: 0xbe845b }), top: { cut: 'baju', colour: 0xf2eee2, trim: 0xd8d0bf, sleeve: 'long', long: .2 }, legs: 'trousers', pants: 0xf2eee2, feet: 'sandal', sole: 0x4b3a2e, strap: 0x3d2f26, hair: 'short', hairColour: 0x1f1b1c, hat: 'songkok', face: { ...MAN, moustache: '#2a2220', beard: '#2a2220' } },
   pakmat: { adult: true, plan: man({ height: 1.64, skin: 0x9f6743 }), top: { cut: 'shirt', colour: 0x7f9a6c, sleeve: 'rolled' }, legs: 'trousers', pants: 0x4a4740, feet: 'boots', sole: 0x1f1e20, shoe: 0x2a2a2e, hair: 'short', hairColour: 0x9a958d, hat: 'straw', props: ['basket'], face: { ...MAN, moustache: '#8f8a84', brow: '#6f6a66', lines: true } },
   nenek: { adult: true, plan: woman({ height: 1.5, skin: 0xc7926c }), stoop: .1, top: { cut: 'kurung', colour: 0xc3aedb, print: 'floral', sleeve: 'long' }, legs: 'kain', pants: 0xc3aedb, print: 'floral', feet: 'sandal', sole: 0x6b4a33, strap: 0x8a6a4a, hair: 'tudung', hairColour: 0xf4efe6, lace: 0xe2d6c2, face: { ...LADY, glasses: '#8a5a3a', lines: true, lips: '#8f4a4f', brow: '#6a5a55' } },
-  atuk: { adult: true, plan: man({ height: 1.63, skin: 0xa87250 }), stoop: .08, top: { cut: 'shirt', colour: 0xe9dfc6, sleeve: 'short', long: .16, loose: 1.06 }, legs: 'sarong', pants: 0x2f5a4f, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x6b4a33, hair: 'short', hairColour: 0xc9c4bc, hat: 'cap', hatColour: 0xcdbb94, props: ['toybox'], face: { ...MAN, moustache: '#d9d4cc', brow: '#bdb6ad', lines: true } }
+  atuk: { adult: true, plan: man({ height: 1.63, skin: 0xa87250 }), stoop: .08, top: { cut: 'shirt', colour: 0xe9dfc6, sleeve: 'short', long: .16, loose: 1.06 }, legs: 'sarong', pants: 0x2f5a4f, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x6b4a33, hair: 'short', hairColour: 0xc9c4bc, hat: 'cap', hatColour: 0xcdbb94, props: ['toybox'], face: { ...MAN, moustache: '#d9d4cc', brow: '#bdb6ad', lines: true } },
+  // The residents (cast.js RESIDENTS), dressed for their trade or housework.
+  zaitun: { adult: true, plan: woman({ height: 1.55, skin: 0xc8916a }), top: { cut: 'kurung', colour: 0xe7a46a, sleeve: 'long' }, legs: 'kain', pants: 0x7a5a48, feet: 'sandal', sole: 0x6b4a33, strap: 0xb5493a, hair: 'tudung', hairColour: 0xd9c27a, props: ['broom'], face: { ...LADY } },
+  mail: { adult: true, plan: man({ height: 1.66, skin: 0x9a6440 }), top: { cut: 'shirt', colour: 0xa3876a, sleeve: 'rolled' }, legs: 'trousers', pants: 0x4d4a3c, feet: 'boots', sole: 0x1f1e20, shoe: 0x2f3a2e, hair: 'short', hairColour: 0x2c2624, hat: 'straw', props: ['hoe'], face: { ...MAN, lines: true } },
+  salmah: { adult: true, plan: woman({ height: 1.54, skin: 0xbf8660, chest: .175 }), top: { cut: 'kurung', colour: 0xd9737f, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'batik', feet: 'sandal', sole: 0x6b4a33, strap: 0x8c3a4a, hair: 'tudung', hairColour: 0x8c3a4a, apron: { colour: 0xf6efe0, pocket: 0xe9c9a8, trim: 0x8c3a4a }, props: ['tiffin'], face: { ...LADY } },
+  rohani: { adult: true, plan: woman({ height: 1.58, skin: 0xd6a07a }), top: { cut: 'kurung', colour: 0x8fc0a5, sleeve: 'long' }, legs: 'kain', pants: 0x3d5a6a, feet: 'sandal', sole: 0x6b4a33, strap: 0x3d5a6a, hair: 'tudung', hairColour: 0xf4e1b0, sling: 0xe0b04a, props: ['baby'], face: { ...LADY } },
+  kamal: { adult: true, plan: man({ height: 1.72, skin: 0xa86d46 }), top: { cut: 'tee', colour: 0x2f6d8a, sleeve: 'short' }, legs: 'trousers', pants: 0x3d4a62, feet: 'sandal', sole: 0x2c2a2a, strap: 0x2c2a2a, hair: 'short', hairColour: 0x1f1b1c, hat: 'cap', hatColour: 0xe0a030, props: ['towel'], face: { ...MAN, moustache: '#2a2220' } },
+  timah: { adult: true, plan: woman({ height: 1.52, skin: 0xbf8862 }), stoop: .05, top: { cut: 'kurung', colour: 0x6c5aa8, sleeve: 'long' }, legs: 'kain', pants: 0x4a2f62, print: 'kain', feet: 'sandal', sole: 0x6b4a33, strap: 0x6c5aa8, hair: 'tudung', hairColour: 0x2f2a4a, props: ['broom'], face: { ...LADY, lines: true, brow: '#5a4a45' } },
+  ismail: { adult: true, plan: man({ height: 1.65, skin: 0x8f5a38 }), top: { cut: 'shirt', colour: 0xd8cfa8, sleeve: 'rolled' }, legs: 'sarong', pants: 0x2f5a4f, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x3d2f26, hair: 'short', hairColour: 0x5a5550, hat: 'straw', props: ['rod'], face: { ...MAN, moustache: '#4a4542', lines: true } },
+  aminah: { adult: true, plan: woman({ height: 1.57, skin: 0xe8b58e }), top: { cut: 'blouse', colour: 0x9bc3d9, sleeve: 'long' }, legs: 'kain', pants: 0x2f4a6a, feet: 'sandal', sole: 0x6b4a33, strap: 0x9bc3d9, hair: 'tudung', hairColour: 0xf2d6dc, face: { ...LADY } },
+  lina: { adult: true, plan: woman({ height: 1.6, skin: 0xd29a72 }), top: { cut: 'blouse', colour: 0xf0d36a, sleeve: 'rolled' }, legs: 'kain', pants: 0x5a7a5a, feet: 'sandal', sole: 0x6b4a33, strap: 0x3f7f78, hair: 'tudung', hairColour: 0x3f7f78, props: ['broom'], face: { ...LADY } },
+  abu: { adult: true, plan: man({ height: 1.64, skin: 0xb27a52 }), stoop: .05, top: { cut: 'shirt', colour: 0x7d97b8, sleeve: 'short', pocket: true }, legs: 'trousers', pants: 0x4a4a52, feet: 'sandal', sole: 0x3d2f26, strap: 0x5a4130, hair: 'short', hairColour: 0xbab4ac, props: ['newspaper'], face: { ...MAN, glasses: '#3a3230', moustache: '#bab4ac', brow: '#9a948c', lines: true } },
+  yati: { adult: true, plan: woman({ height: 1.55, skin: 0xc68d65 }), top: { cut: 'kurung', colour: 0xf2b8c6, sleeve: 'long' }, legs: 'kain', pants: 0x5e3f5e, feet: 'sandal', sole: 0x6b4a33, strap: 0xf2b8c6, hair: 'tudung', hairColour: 0xb6d0e8, sling: 0x8a5a8a, props: ['baby'], face: { ...LADY } },
+  faizal: { adult: true, plan: man({ height: 1.73, skin: 0xc28a62 }), top: { cut: 'polo', colour: 0xc65a4a, trim: 0xa8463a, sleeve: 'short', tuck: true }, legs: 'trousers', pants: 0x3a3f4f, feet: 'sandal', sole: 0x2c2a2a, strap: 0x2c2a2a, hair: 'short', hairColour: 0x1f1b1c, quiff: true, props: ['newspaper'], face: { ...MAN, glasses: '#2b2420' } },
+  kiah: { adult: true, plan: woman({ height: 1.53, skin: 0xb98058, chest: .175 }), top: { cut: 'kurung', colour: 0xe2c26a, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'kain', feet: 'sandal', sole: 0x6b4a33, strap: 0x7a3a2a, hair: 'tudung', hairColour: 0x7a3a2a, face: { ...LADY } },
+  ani: { adult: true, plan: woman({ height: 1.58, skin: 0xd09a74 }), top: { cut: 'blouse', colour: 0xd65a4a, sleeve: 'long' }, legs: 'kain', pants: 0x3a3a4a, feet: 'sandal', sole: 0x6b4a33, strap: 0xd65a4a, hair: 'tudung', hairColour: 0xf6e7c7, apron: { colour: 0x3a7fb0, pocket: 0x2f6890, trim: 0xf6e7c7 }, face: { ...LADY } },
+  hani: { adult: true, plan: woman({ height: 1.6, skin: 0xe2ad86 }), top: { cut: 'kurung', colour: 0xf3a6b8, sleeve: 'long' }, legs: 'kain', pants: 0xf3a6b8, feet: 'shoes', sole: 0x3a2a2a, shoe: 0x5a3a3a, hair: 'tudung', hairColour: 0xfbe7a0, props: ['folder'], face: { ...LADY } },
+  muthu: { adult: true, plan: man({ height: 1.7, skin: 0x6e4128 }), top: { cut: 'shirt', colour: 0xf4f2ec, sleeve: 'short', tuck: true, pocket: true }, legs: 'trousers', pants: 0x2c2c34, feet: 'sandal', sole: 0x2c2a2a, strap: 0x5a4130, hair: 'short', hairColour: 0x151214, props: ['scissors'], face: { ...MAN, moustache: '#151214', brow: '#151214' } },
+  hussin: { adult: true, plan: man({ height: 1.66, skin: 0x9c6844 }), top: { cut: 'tee', colour: 0x8a3a32, sleeve: 'rolled', tuck: true }, legs: 'overalls', pants: 0x46566e, feet: 'shoes', sole: 0x2c2420, shoe: 0x4a3a2a, hair: 'short', hairColour: 0x2a2523, hat: 'cap', hatColour: 0x2f5a8a, props: ['spanner', 'rag'], face: { ...MAN, moustache: '#2a2220', lines: true } },
+  normah: { adult: true, plan: woman({ height: 1.53, skin: 0xc7926c }), top: { cut: 'kurung', colour: 0x4f8aa8, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'batik', feet: 'sandal', sole: 0x6b4a33, strap: 0x4f8aa8, hair: 'tudung', hairColour: 0xe8e2d0, props: ['tape'], face: { ...LADY, glasses: '#7a4a3a', lines: true } },
+  kumar: { adult: true, plan: man({ height: 1.71, skin: 0x7b4a2e }), top: { cut: 'shirt', colour: 0xf8f8f6, sleeve: 'long', tuck: true, pocket: true }, legs: 'trousers', pants: 0x3a3a42, feet: 'shoes', sole: 0x1f1d20, shoe: 0x2a2526, hair: 'short', hairColour: 0x1a1617, hairline: .55, props: ['stethoscope'], face: { ...MAN, glasses: '#2b2420', moustache: '#1a1617' } },
+  jah: { adult: true, plan: woman({ height: 1.56, skin: 0xc68d65, chest: .178 }), top: { cut: 'blouse', colour: 0xf1e6d0, sleeve: 'rolled' }, legs: 'kain', pants: 0x8a5a3a, feet: 'sandal', sole: 0x6b4a33, strap: 0x8a5a3a, hair: 'tudung', hairColour: 0xe9d7b0, apron: { colour: 0xfbf7ef, pocket: 0xe6dcc8, trim: 0xc98a45 }, props: ['bread'], face: { ...LADY } },
+  azura: { adult: true, plan: woman({ height: 1.6, skin: 0xe2ad86 }), top: { cut: 'kurung', colour: 0x3d6a5a, sleeve: 'long' }, legs: 'kain', pants: 0x3d6a5a, feet: 'shoes', sole: 0x3a2a2a, shoe: 0x4a3a32, hair: 'tudung', hairColour: 0xd8a0a8, props: ['books'], face: { ...LADY, glasses: '#3a2a2a' } },
+  hafiz: { adult: true, plan: man({ height: 1.74, skin: 0xa87048 }), top: { cut: 'tee', colour: 0xd94b3a, trim: 0xf6f2ea, sleeve: 'short' }, legs: 'trousers', pants: 0x2a3a6a, feet: 'shoes', sole: 0xf0ece2, shoe: 0xf6f2ea, hair: 'short', hairColour: 0x1f1b1c, quiff: true, props: ['whistle'], face: { ...MAN } },
+  karim: { adult: true, plan: man({ height: 1.69, skin: 0xb07a50 }), belly: 1.07, top: { cut: 'shirt', colour: 0x6f8fb0, sleeve: 'short', tuck: true, pocket: true }, legs: 'trousers', pants: 0x2f3440, feet: 'shoes', sole: 0x1f1d20, shoe: 0x2a2526, hair: 'short', hairColour: 0x2a2523, hat: 'cap', hatColour: 0x2a3a5a, props: ['tag'], face: { ...MAN, moustache: '#2a2220' } },
+  usop: { adult: true, plan: man({ height: 1.67, skin: 0xa06a44 }), top: { cut: 'polo', colour: 0x8a3a5a, trim: 0x6e2c47, sleeve: 'short' }, legs: 'sarong', pants: 0x2f5a4f, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x6b4a33, hair: 'short', hairColour: 0x3a3532, hat: 'songkok', props: ['pouch'], face: { ...MAN, moustache: '#3a3532', beard: '#3a3532' } }
 };
 export const CHARACTER_KINDS = Object.keys(LOOKS);
 
@@ -124,7 +149,7 @@ export const CHARACTER_KINDS = Object.keys(LOOKS);
 // highlights, heavy upper lids, bold brows, a small nose tick and a smile.
 // Grown-ups get smaller eyes plus moustaches, beards, glasses or age lines.
 function face(kind, f, size) {
-  return drawing('face-' + kind, c => {
+  return drawing('face-' + (kind === 'amir' || kind === 'nur' ? kind : JSON.stringify(f)) + '-' + size, c => {
     const girl = !!f.lashes, adult = !!f.adult;
     const eyeY = f.eyeY ?? (adult ? 262 : 278), gap = f.gap ?? (adult ? 84 : 95), w = f.eyeW ?? (adult ? 34 : 45), h = f.eyeH ?? (adult ? 30 : 58);
     for (const outer of [-1, 1]) {
@@ -730,6 +755,75 @@ export function createCharacter(scene, x, z, kind = 'amir', options = {}) {
       block(.045, .028, .11, material(0x2b5fa8), cx, cy, .06, at.elbow);
       block(.035, .016, .05, material(0xf2c84b), cx, cy + .02, .055, at.elbow);
       for (const dz of [.025, .095]) for (const s of [-1, 1]) { const wheel = part(new T.CylinderGeometry(.014, .014, .012, 8), ink, cx + s * .028, cy - .012, dz, at.elbow); wheel.rotation.z = Math.PI / 2; }
+      } else if (prop === 'scissors') {
+      // Abang Muthu's scissors in the right hand, blades open a little.
+      const at = grip(-1), steel = material(0xc9ced6);
+      for (const s of [-1, 1]) block(.008, .1, .014, steel, at.x, at.y - .075, .035, at.elbow).rotation.x = s * .16;
+      for (const s of [-1, 1]) part(new T.TorusGeometry(.012, .004, 4, 10), material(0x2b2b33), at.x, at.y + .002, .035 + s * .013, at.elbow).rotation.y = Math.PI / 2;
+    } else if (prop === 'spanner') {
+      // Pak Hussin's spanner, ready for a loose nut.
+      const at = grip(-1), steel = material(0x9aa3ad);
+      block(.012, .17, .026, steel, at.x, at.y - .085, .035, at.elbow);
+      for (const y of [.01, -.175]) block(.014, .03, .045, steel, at.x, at.y + y, .035, at.elbow);
+    } else if (prop === 'tape') {
+      // A tailor's measuring tape hung round the neck.
+      const tape = material(0xf2d24b);
+      for (const s of [-1, 1]) line([[s * .055, shoulder + .06, -.04], [s * .075, shoulder + .01, frontAt(shoulder) + .01], [s * .07, shoulder - .16, frontAt(shoulder - .16) + .012], [s * .065, shoulder - .36, frontAt(shoulder - .36) + .014]], tape, .008, torso);
+    } else if (prop === 'stethoscope') {
+      // Dr. Kumar's stethoscope: tubing round the neck to a silver chest piece.
+      const tube = material(0x2a2a30), y = shoulder - .2;
+      for (const s of [-1, 1]) line([[s * .05, shoulder + .06, -.04], [s * .07, shoulder + .01, frontAt(shoulder) + .008], [s * .03, y, frontAt(y) + .012], [0, y - .03, frontAt(y - .03) + .012]], tube, .006, torso);
+      line([[0, y - .03, frontAt(y - .03) + .012], [.01, y - .1, frontAt(y - .1) + .012]], tube, .006, torso);
+      ball(.02, .02, .008, material(0xc9ced6), .01, y - .11, frontAt(y - .11) + .016, torso, 10, 6);
+    } else if (prop === 'tiffin') {
+      // A three-tier mangkuk tingkat of kuih, carried by its handle.
+      const at = grip(-1), steel = material(0xd9dde2), band = material(0xd0573f), z = .03;
+      for (let i = 0; i < 3; i++) lathe([[.052, 0], [.056, .006], [.056, .054], [.052, .06]], 1, i === 1 ? band : steel, at.x, at.y - .3 + i * .06, z, at.elbow, 14);
+      lathe([[0, -.002], [.052, 0]], 1, steel, at.x, at.y - .3, z, at.elbow, 14);
+      lathe([[.054, 0], [.03, .014], [0, .018]], 1, steel, at.x, at.y - .12, z, at.elbow, 14);
+      part(new T.TorusGeometry(.055, .005, 4, 12, Math.PI), material(0x8a8f96), at.x, at.y - .1, z, at.elbow).rotation.y = Math.PI / 2;
+    } else if (prop === 'bread') {
+      // Mak Jah's paper bag with a long loaf poking out.
+      const at = grip(1), cx = at.x + .02;
+      block(.07, .16, .11, material(0xd9b98a), cx, at.y - .1, .035, at.elbow);
+      ball(.032, .085, .032, material(0xc98a45), cx, at.y - .02, .05, at.elbow, 10, 8);
+    } else if (prop === 'books') {
+      // Cik Azura's armful of library books, held at the side.
+      const at = grip(1);
+      [[0x3d6a9a, .03, .22], [0xb5493a, .028, .2], [0xe0b04a, .024, .19]].forEach(([c, w, h], i) => block(w, h, .16, material(c), at.x + i * .03, at.y - .09, .035, at.elbow));
+    } else if (prop === 'newspaper') {
+      // A folded newspaper: Saturday's Berita Harian, held at the side.
+      const at = grip(-1);
+      block(.012, .26, .17, material(0xeeeadf), at.x, at.y - .1, .035, at.elbow);
+      for (const y of [-.05, -.09, -.13]) block(.014, .012, .12, material(0x8d8a84), at.x, at.y + y, .035, at.elbow);
+    } else if (prop === 'whistle') {
+      // The padang keeper's whistle on a blue lanyard.
+      const cord = material(0x2f5aa8), y = shoulder - .17;
+      for (const s of [-1, 1]) line([[s * .05, shoulder + .06, -.04], [s * .065, shoulder + .01, frontAt(shoulder) + .008], [0, y, frontAt(y) + .012]], cord, .004, torso);
+      block(.02, .022, .045, material(0xd9dde2), 0, y - .016, frontAt(y - .016) + .026, torso);
+    } else if (prop === 'rod') {
+      // A long bamboo fishing rod angled out over the water.
+      const at = grip(-1), g = new T.CylinderGeometry(.005, .011, 1.7, 6); g.translate(0, .85, 0);
+      part(g, material(0xb08a52), at.x, at.y - .04, .04, at.elbow).rotation.x = .75;
+    } else if (prop === 'hoe') {
+      // A cangkul: long wooden handle in the right hand, blade at the ground.
+      const at = grip(-1);
+      part(new T.CylinderGeometry(.013, .013, 1, 6), material(0x8a6a44), at.x, at.y - .02, .05, at.elbow);
+      block(.14, .015, .14, material(0x7d858e), at.x, at.y - .5, .11, at.elbow).rotation.x = .35;
+    } else if (prop === 'broom') {
+      // A penyapu lidi: a sheaf of palm-leaf ribs tied at the hand.
+      const at = grip(-1);
+      const lidi = material(0xb89558);
+      for (let i = 0; i < 7; i++) { const a = (i - 3) * .07, g = new T.CylinderGeometry(.004, .007, .72, 4); g.translate(0, -.36, 0); part(g, lidi, at.x, at.y - .02, .06, at.elbow).rotation.set(a * .4, 0, a); }
+      part(new T.TorusGeometry(.012, .006, 4, 10), material(0x8a5a2b), at.x, at.y - .03, .06, at.elbow).rotation.x = Math.PI / 2;
+    } else if (prop === 'baby') {
+      // A baby asleep in a kain sling across the body.
+      const sling = material(look.sling ?? 0xe0b04a), y = hipY + .2, z = frontAt(y);
+      line([[-.11, shoulder + .02, 0], [-.08, shoulder - .08, frontAt(shoulder - .08) + .02], [.02, y + .1, z + .06], [.13, y - .02, z + .02]], sling, .02, torso);
+      line([[-.11, shoulder + .02, 0], [-.07, shoulder - .1, -frontAt(shoulder - .1) - .01], [.13, y - .02, -z + .02]], sling, .02, torso);
+      ball(.09, .07, .065, material(0xf6efe0), .04, y + .03, z + .06, torso, 12, 8);
+      ball(.045, .05, .045, skin, .1, y + .09, z + .07, torso, 12, 8);
+      ball(.05, .03, .05, material(0xf6dfe6), .1, y + .125, z + .065, torso, 10, 6);
     }
   }
 
@@ -850,5 +944,7 @@ export function createCharacter(scene, x, z, kind = 'amir', options = {}) {
     backpack.rotation.z = -pose.hipRoll * .6;
   }
   root.userData.design = kind; root.userData.height = height;
-  return { group: root, figure, legs, knees, feet, arms, head, torso, backpack, height, animate };
+  // Drawings (face, motifs) and the ground shadow: small at a distance.
+  const details = []; root.traverse(o => { if (o.isMesh && o.material.transparent) details.push(o); });
+  return { group: root, figure, legs, knees, feet, arms, head, torso, backpack, height, animate, details };
 }
