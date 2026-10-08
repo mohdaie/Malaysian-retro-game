@@ -297,3 +297,15 @@ Headless Chromium, software WebGL, 932×430, Hari 2 at 15:00, standing outside f
 About +3–5% draw calls and +12–19% triangles. Software frame times only show the relative cost; real GPUs are far faster. JS heap rose from about 189 MB to 227 MB.
 
 In the browser: "Talk to Abang Muthu" shows beside the barber, and Talk opens Kedai Gunting with his line. At 21:00 every resident except Pak Usop (pasar malam until 22:30) is indoors and hidden, and the door still answers with their name. No page errors. Emulated checks only; a real phone still needs a check.
+
+### Errands and the families who keep house
+
+`npm test`: **171 tests passed**. New `tests/errands.test.js`: every runner's house has a keeper and every keeper has a runner; trips are in order, never overlap and end at least 30 minutes before dark; a walker leaves on time, arrives at its stand spot, counts as away, walks home and settles at the door; it waits about 3 s for someone in its path and then squeezes past; paused, it does not move; and a sync (load, sleep, prayer) puts it straight where the clock says.
+
+In the browser (no page errors):
+- All 12 trips found a walking route. Loaded at 07:57 by Rumah Pak Mail, he set off at 08:00 and was about 5 m down the lane a few minutes later, cangkul in hand.
+- Loaded at 09:00: Pak Mail at the kebun, Pak Abu at the library, Mak Cik Kiah at the bakery, everyone else at home. At Rumah Pak Mail the prompt read "Talk to Mak Cik Senah" and the door opened with her line. Beside Pak Mail at the kebun, Talk gave his street line.
+- At 11:00, approaching Pak Mail at home opened his own door counter.
+- At 15:05: Mak Cik Salmah at the warung, Mak Cik Kiah at Kedai Runcit 99.
+
+With the six keepers (44 bodies), the same five spots: 246–515 draw calls (+2 to +14 over the residents alone) and 354k–655k triangles (+2 to +9%).

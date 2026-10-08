@@ -11,7 +11,9 @@ import { createStorefronts } from './storefronts.js?v=2.8.0';
 import { createLandmarks } from './landmarks.js?v=2.8.0';
 import { loadTownCars } from './town-cars.js?v=2.8.0';
 import { loadTownBus } from './town-bus.js?v=2.8.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace } from './cast.js?v=2.8.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.8.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.8.0';
+import { findWalkRoute } from './map-navigation.js?v=2.8.0';
 import { createTrees } from './trees.js?v=2.8.0';
 import { plantTown, placeProps, TRUNK } from './planting.js?v=2.8.0';
 export const places = BUILDINGS;
@@ -657,8 +659,33 @@ export async function makeWorld(canvas) {
   const posts=npcPosts(BUILDINGS),homes=residentPosts(BUILDINGS);
   for(const key of NPC_KEYS)if(posts[key])stand(npcs,key,posts[key],NPCS[key].place);
   for(const key of RESIDENT_KEYS)if(homes[key])stand(residents,key,homes[key],residentPlace(key));
+  // The families who keep house, beside the residents who run errands.
+  for(const key of KEEPER_KEYS)if(homes[key]){stand(residents,key,homes[key],KEEPERS[key].place);residents.at(-1).keeper=true;}
   // Each one's own loop (routines.js), checked against everything but themselves.
-  for(const n of [...npcs,...residents]){const others=colliders.filter(c=>c!==n.collider);n.routine=createRoutine(ROUTINES[n.id],{x:n.x,z:n.z,heading:n.heading},createWalkability(others),ACTIONS);}
+  for(const n of [...npcs,...residents]){const others=colliders.filter(c=>c!==n.collider);n.walk=createWalkability(others);n.routine=createRoutine(ROUTINES[n.id],{x:n.x,z:n.z,heading:n.heading},n.walk,ACTIONS);}
+  // Six residents run errands (errands.js). Their routes are planned once
+  // against walls, fences and props; at the far end they stand a little out
+  // from the door, clear of whoever works there, facing in to chat.
+  const solid=createWalkability(colliders.filter(c=>c.kind!=='npc')),taken=[],people=[...npcs,...residents];
+  const AWAY={steps:[['do','talk',5],['do','nod',2],['do','look',4],['stand',3],['do','check',2],['do','talk',4]]};
+  function errandSpot(place){
+    const b=BUILDINGS.find(b=>b.id===place),dx=b.door.x-b.x,dz=b.door.z-b.z,len=Math.hypot(dx,dz)||1,ox=dx/len,oz=dz/len,rx=-oz,rz=ox;
+    for(const [r,f] of [[2.4,2.2],[-2.4,2.2],[0,3.2],[3.2,1.2],[-3.2,1.2],[1.6,3.8],[-1.6,3.8],[0,4.6],[3.6,3],[-3.6,3]]){
+      const x=b.door.x+rx*r+ox*f,z=b.door.z+rz*r+oz*f;
+      if(clear(x,z)&&clear(x+.35,z)&&clear(x-.35,z)&&clear(x,z+.35)&&clear(x,z-.35)&&people.every(p=>Math.hypot(p.x-x,p.z-z)>1.8)&&taken.every(p=>Math.hypot(p.x-x,p.z-z)>1.2)){const spot={x,z,heading:Math.atan2(b.door.x-x,b.door.z-z)};taken.push(spot);return spot;}
+    }
+    return null;
+  }
+  for(const key of ERRAND_KEYS){
+    const n=residents.find(r=>r.id===key);if(!n)continue;
+    const home={x:n.x,z:n.z,heading:n.heading},routes={};
+    for(const {to} of ERRANDS[key].trips){
+      if(routes[to])continue;
+      const spot=errandSpot(to),path=spot&&findWalkRoute(home,spot,solid,TOWN_BOUNDS);
+      if(path)routes[to]={path,spot};
+    }
+    n.errand=createErrand(key,home,routes,at=>createRoutine(ROUTINES[key],at,n.walk,ACTIONS),spot=>createRoutine(AWAY,spot,n.walk,ACTIONS));n.routes=routes;
+  }
   // A gold diamond marks the story's next person; parcels mark job stops.
   const marker=(geometry,color)=>{const m=mesh(geometry,color,0,0,0,scene);m.visible=false;m.userData.height=0;animated.push(m);return m;};
   const storyMarker=marker(new T.OctahedronGeometry(.19,0),0xe4bc68);

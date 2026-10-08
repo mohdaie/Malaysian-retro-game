@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CHARACTER_KINDS } from '../src/characters.js';
-import { NPC_KEYS, RESIDENTS, RESIDENT_KEYS, NPCS, residentPlace, residentPosts, npcPosts } from '../src/cast.js';
+import { NPC_KEYS, RESIDENTS, RESIDENT_KEYS, KEEPER_KEYS, NPCS, residentPlace, residentPosts, npcPosts } from '../src/cast.js';
 import { BUILDINGS } from '../src/town-layout.js';
 import { PLAYERS } from '../src/story.js';
 
 test('both playable children, every NPC and every resident have their own body', () => {
   // An unknown kind would quietly fall back to Amir's body.
-  for (const kind of [...Object.keys(PLAYERS), ...NPC_KEYS, ...RESIDENT_KEYS]) assert.ok(CHARACTER_KINDS.includes(kind), kind);
+  for (const kind of [...Object.keys(PLAYERS), ...NPC_KEYS, ...RESIDENT_KEYS, ...KEEPER_KEYS]) assert.ok(CHARACTER_KINDS.includes(kind), kind);
 });
 test('every resident has a unique key and stands at their own door', () => {
   assert.equal(RESIDENT_KEYS.length, Object.keys(RESIDENTS).length);

@@ -75,6 +75,21 @@ Every other place has a named household contact, and since v2.8 all 24 of them s
 | Kampung houses | Pak Mail, Mak Cik Salmah, Kak Rohani, Abang Kamal, Mak Long Timah | Cangkul; tiffin carrier of kuih; a baby in a sling; lorry driver's towel; sweeping |
 | Taman houses | Kak Lina, Pak Abu, Kak Yati, Encik Faizal, Mak Cik Kiah | Penyapu lidi; the newspaper; a baby in a sling; Saturday newspaper; tidying for visitors |
 
+### Errands: someone is always home
+
+Six residents leave their door at set times, walk the town's paths to a shop, chat there a while and walk home. A family member keeps each of their houses all day and answers the door while they are out, so a parcel can always be handed over. Stop a walker in the street and they tell you where they are going and who is at home. Load a save, sleep or pray and they are already where the clock says.
+
+| Resident | Out | Keeps the house |
+|---|---|---|
+| Pak Mail | Wakaf Kebun 8:00–10:00 and 16:30–18:00 | Mak Cik Senah, his wife |
+| Mak Cik Salmah | Warung Kak Ita 9:30–10:30 and 15:00–16:00, with kuih | Pak Jalil, her husband |
+| Abang Kamal | Kiosk Petrol 10:00–11:00, Bengkel 17:00–18:15 | Kak Midah, his wife |
+| Pak Abu | Perpustakaan 8:30–10:00, Masjid 12:40–14:00 | Mak Cik Esah, his wife |
+| Encik Faizal | Kedai Runcit 11:00–12:00, the padang 17:00–18:30 | Puan Rozita, his wife |
+| Mak Cik Kiah | Kedai Roti 9:00–10:00, Kedai Runcit 14:30–15:30 | Wan Som, her mother |
+
+The schedule is plain data in `src/errands.js`. Routes are planned once at load against walls, fences and props; walkers wait for anyone in their way and then squeeze past.
+
 Their loops are in `src/routines.js` next to the NPCs'. Six new actions cover the trades: snip, sew, pump, sweep, rock (the baby) and cast. Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
 
 ## Duit Poket and deliveries

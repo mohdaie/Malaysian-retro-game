@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ROUTINES, SHARED_SPOTS, createRoutine } from '../src/routines.js';
 import { ACTIONS } from '../src/actions.js';
-import { NPC_KEYS, RESIDENT_KEYS } from '../src/cast.js';
+import { NPC_KEYS, RESIDENT_KEYS, KEEPER_KEYS } from '../src/cast.js';
 
-test('every NPC and resident has a loop of known steps, actions and spots', () => {
-  assert.deepEqual(Object.keys(ROUTINES).sort(), [...NPC_KEYS, ...RESIDENT_KEYS].sort());
+test('every NPC, resident and keeper has a loop of known steps, actions and spots', () => {
+  assert.deepEqual(Object.keys(ROUTINES).sort(), [...NPC_KEYS, ...RESIDENT_KEYS, ...KEEPER_KEYS].sort());
   for (const [key, r] of Object.entries(ROUTINES)) {
     const spots = { ...SHARED_SPOTS, ...(r.spots || {}) };
     for (const [kind, a, b] of r.steps) {

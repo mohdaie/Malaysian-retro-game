@@ -58,7 +58,14 @@ export const ROUTINES = {
   azura: { steps: [['do', 'read', 7], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'read', 5], ['do', 'nod', 2]] },
   hafiz: { steps: [['do', 'hips', 4], ['do', 'look', 4], ['walk', 'forward'], ['do', 'stretch', 3], ['walk', 'home'], ['do', 'wave', 2], ['do', 'fold', 3]] },
   karim: { steps: [['do', 'check', 3], ['do', 'look', 4], ['walk', 'right'], ['stand', 3], ['walk', 'home'], ['do', 'fold', 4], ['do', 'scratch', 2]] },
-  usop: { steps: [['do', 'write', 5], ['do', 'talk', 4], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'hips', 3]] }
+  usop: { steps: [['do', 'write', 5], ['do', 'talk', 4], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'hips', 3]] },
+  // The families keeping house.
+  senah: { steps: [['do', 'bend', 5], ['do', 'look', 3], ['walk', 'left'], ['do', 'bend', 4], ['walk', 'home'], ['do', 'fan', 3]] },
+  jalil: { steps: [['do', 'read', 8], ['do', 'nod', 2], ['do', 'look', 4], ['do', 'fold', 5], ['do', 'scratch', 2]] },
+  midah: { steps: [['do', 'sweep', 6], ['walk', 'right'], ['do', 'sweep', 4], ['walk', 'home'], ['do', 'hips', 3]] },
+  esah: { steps: [['do', 'fan', 5], ['do', 'wipe', 4], ['walk', 'left'], ['do', 'look', 3], ['walk', 'home'], ['do', 'nod', 2]] },
+  rozita: { steps: [['do', 'wipe', 4], ['do', 'fold', 3], ['walk', 'right'], ['do', 'look', 3], ['walk', 'home'], ['do', 'talk', 3]] },
+  som: { steps: [['do', 'fan', 6], ['do', 'nod', 2], ['stand', 4], ['do', 'look', 4]] }
 };
 
 const TURN = { out: 0, back: Math.PI, left: Math.PI / 2, right: -Math.PI / 2 };

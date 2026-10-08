@@ -83,13 +83,25 @@ export const RESIDENTS = {
   35: { key: 'karim', name: 'Pak Karim', role: 'Bus driver', hello: 'Next bus to the bandar at four.' },
   38: { key: 'usop', name: 'Pak Usop', role: 'Night market organiser', hello: 'Saturday night the whole town comes here.' }
 };
+// The family who keep a house while its resident is out on an errand
+// (errands.js), so there is always someone at the door to take a parcel.
+export const KEEPERS = {
+  senah: { place: 3, name: 'Mak Cik Senah', role: 'Pak Mail’s wife', hello: 'Pak Mail ke kebun. Ada barang? Mak Cik ambilkan.' },
+  jalil: { place: 4, name: 'Pak Jalil', role: 'Mak Cik Salmah’s husband, retired', hello: 'Salmah hantar kuih. Duduk dulu, {name}.' },
+  midah: { place: 6, name: 'Kak Midah', role: 'Abang Kamal’s wife', hello: 'Abang Kamal keluar sekejap. Nak hantar barang?' },
+  esah: { place: 13, name: 'Mak Cik Esah', role: 'Pak Abu’s wife', hello: 'Pak Abu tu, tak boleh duduk diam. Ada apa, nak?' },
+  rozita: { place: 17, name: 'Puan Rozita', role: 'Encik Faizal’s wife', hello: 'Suami saya keluar. Barang boleh tinggal dengan saya.' },
+  som: { place: 18, name: 'Wan Som', role: 'Mak Cik Kiah’s mother', hello: 'Kiah pergi kedai. Wan ada, Wan ada.' }
+};
+export const KEEPER_KEYS = Object.keys(KEEPERS);
+export const keeperAt = place => KEEPER_KEYS.find(k => KEEPERS[k].place === place) || null;
 export const RESIDENT_KEYS = Object.values(RESIDENTS).map(r => r.key);
 export const residentPlace = key => Number(Object.keys(RESIDENTS).find(place => RESIDENTS[place].key === key));
 // The contact who answers at a place: its NPC, else its resident.
 export function contactAt(place) {
   const key = npcAt(place);
   if (key) return { key, ...NPCS[key] };
-  return RESIDENTS[place] ? { key: null, ...RESIDENTS[place] } : null;
+  return RESIDENTS[place] ? { ...RESIDENTS[place], key: null } : null;
 }
 export const line = (text, name) => text.replaceAll('{name}', name);
 
@@ -103,10 +115,11 @@ export const PADANG = 34;
 export function npcPosts(buildings) {
   return postsFor(buildings, NPC_KEYS.map(key => ({ key, place: NPCS[key].place, post: NPCS[key].post })));
 }
-// The residents keep to their own doors, with more spots to try because
-// shopfronts and verandas are busier than the NPCs' posts.
+// The residents and the families who keep house keep to their own doors,
+// with more spots to try because shopfronts and verandas are busier than
+// the NPCs' posts.
 export function residentPosts(buildings) {
-  return postsFor(buildings, RESIDENT_KEYS.map(key => ({ key, place: residentPlace(key) })), [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2], [2.2, 1], [-2.2, 1], [1, 2.6], [-1, 2.6], [0, 3.2]]);
+  return postsFor(buildings, [...RESIDENT_KEYS.map(key => ({ key, place: residentPlace(key) })), ...KEEPER_KEYS.map(key => ({ key, place: KEEPERS[key].place }))], [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2], [2.2, 1], [-2.2, 1], [1, 2.6], [-1, 2.6], [0, 3.2]]);
 }
 function postsFor(buildings, people, around = [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2]]) {
   const byId = new Map(buildings.map(b => [b.id, b])), posts = {}, shared = {};
