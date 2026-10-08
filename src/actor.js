@@ -4,6 +4,7 @@ import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { toon, outline } from './illustration.js?v=2.10.0';
 import { createCharacter, motif } from './characters.js?v=2.10.0';
+import { dressModel } from './outfit.js?v=2.10.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -509,6 +510,7 @@ function createModelActor(scene, x, z, kind, rig, model) {
   const figure = new T.SkinnedMesh(geometry, material); figure.castShadow = figure.receiveShadow = true; figure.frustumCulled = false;
   root.add(figure); root.updateMatrixWorld(true); figure.bind(new T.Skeleton(bones), figure.matrixWorld);
   outline(figure, 1.6);
+  const outfit = dressModel({ kind, root, material, geometry, skinIndex: source, order, joints: J, headBone: bone('head'), stand: STAND });
   const shadow = new T.Mesh(new T.PlaneGeometry(.62, .62), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = .075; root.add(shadow);
 
@@ -538,7 +540,7 @@ function createModelActor(scene, x, z, kind, rig, model) {
   }
   const { animate, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips, scale: k, groundLock });
   root.userData.design = kind; root.userData.height = height;
-  return { group: root, figure, head: bone('head'), height, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true };
+  return { group: root, figure, head: bone('head'), height, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true, outfit };
 }
 // Turn a bone so its child points at a world target (bind-time fitting).
 function aimBone(b, child, target) {
