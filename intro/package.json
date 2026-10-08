@@ -1,0 +1,12 @@
+{
+  "name": "retro-malaysia-intro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.141 preview",
+    "check": "npx --yes hyperframes@0.8.141 check",
+    "audio": "./scripts/make-audio.sh",
+    "render": "npx --yes hyperframes@0.8.141 render -o renders/retro-malaysia-intro.mp4 -f 24 --crf 23",
+    "publish": "npx --yes hyperframes@0.8.141 publish"
+  }
+}
