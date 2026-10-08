@@ -29,7 +29,7 @@ async function title(){
 const nearNpc=`(key)=>{const n=retroMalaysia.snapshot().npcs.find(n=>n.id===key);for(const [dx,dz] of [[1.2,0],[-1.2,0],[0,1.2],[0,-1.2],[1,1],[-1,-1]])if(retroMalaysia.canWalk(n.x+dx,n.z+dz))return {x:n.x+dx,z:n.z+dz};throw Error('No clear approach for '+key);}`;
 async function fixture(story,npc,setup=''){
  await title();
- await evaluate(`(async()=>{const {newEconomy,accept,collect,deliver}=await import('/src/economy.js?v=2.9.1'),{NOSTALGIA_QUESTS:qs,startNostalgia,followNostalgiaClue,recordNostalgiaWin,claimNostalgia}=await import('/src/nostalgia-quests.js?v=2.9.1');const eco=newEconomy(),id='nostalgia_P02',q=qs[id],context={place:q.place,npc:q.npc};${setup}localStorage.setItem('retro-malaysia-save-amir',JSON.stringify({version:3,who:'amir',name:'Aie',story:${story},...(${nearNpc})('${npc}'),...eco,clock:{day:4,minute:840},savedAt:Date.now()}));})()`);
+ await evaluate(`(async()=>{const {newEconomy,accept,collect,deliver}=await import('/src/economy.js?v=2.10.0'),{NOSTALGIA_QUESTS:qs,startNostalgia,followNostalgiaClue,recordNostalgiaWin,claimNostalgia}=await import('/src/nostalgia-quests.js?v=2.10.0');const eco=newEconomy(),id='nostalgia_P02',q=qs[id],context={place:q.place,npc:q.npc};${setup}localStorage.setItem('retro-malaysia-save-amir',JSON.stringify({version:3,who:'amir',name:'Aie',story:${story},...(${nearNpc})('${npc}'),...eco,clock:{day:4,minute:840},savedAt:Date.now()}));})()`);
  await reload();
 }
 async function screenshot(path){const r=await send('Page.captureScreenshot',{format:'png'});await writeFile(repo+'/docs/'+path,Buffer.from(r.data,'base64'));}

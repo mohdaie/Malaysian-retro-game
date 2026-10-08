@@ -1,6 +1,6 @@
-# Nostalgic keepsakes — v2.7.1
+# Nostalgic keepsakes — v2.10.0
 
-Six progressively unlocked collectible quests use the existing delivery and four game systems. The full 28-item collection has local reference images; 22 entries are reserved for later chapters.
+Fourteen progressively unlocked collectible quests use the existing delivery, story, clock and four game systems. The full 28-item collection has local reference images; 14 entries remain reserved for later chapters.
 
 ## Earning paths (v2.7.1)
 
@@ -14,6 +14,25 @@ The first story jobs with Pak Rahman and Nenek remain single, quick errands. New
 | Sony Walkman WM-EX9 | Abang Kamal | After first earned keepsake | 6 | 4 | 2 | 3 | 1 gasing win against Atuk |
 | Too Phat — Plan B | Faiz | After first earned keepsake | 8 | 5 | 3 | 4 | 1 Tamiya win |
 | Lightning Magnum | Uncle Lim | After first earned keepsake | 12 | 6 | 4 | 5 | 1 Tamiya win on each of the 3 tracks |
+
+## Set two (v2.10.0)
+
+All eight stories become discoverable after completing Chapter 1. Future rewards remain anonymous until earned; accepting a story adds only its next clue to Buku. Ordered actions tick themselves when completed, with separate Amir/Nur saves and dedications.
+
+| Keepsake | Giver | Extra gate | Earning path |
+|---|---|---|---|
+| Digimon | Faiz, padang | First earned keepsake | 4 paid jobs, 3 destinations, 3 clues, first place on Selekoh Lapan |
+| Tamagotchi | Cikgu Hani, tadika | None | 3 care notes, return on a later game day |
+| GEMPAK | Cik Azura, library | None | Match 3 sketches, obtain the artist's permission, return it |
+| Mutiara Naga | Faiz, padang | Earned Ujang No.111 | Lending record, school note, friend's account, return the original comic |
+| Senario VCD | Kak Ita, warung | None | Collect and deliver AV cable, folding chair and 3 invitations; visit the hall after 19:00 |
+| Telekom phonecards | Pak Karim, bus stop | None | Follow 5 witness/thank-you stops; the pair counts as one keepsake |
+| Proton Wira miniature | Pak Man, workshop | First earned keepsake | 5 paid jobs, 3 destinations, 2 long jobs, receipt/photo evidence, return on a later game day |
+| Charizard | Mei Ling, padang | 3 earned keepsakes from this set | 4 accounts/notes, Jaguh Dam Haji win and first place on Tamiya Jaguh |
+
+Senario's three special jobs use the normal parcel system: accept, collect, then hand over at each destination. Cancelling or finishing an unrelated job cannot tick them. Its final invitation stop advances the story once. Evening arrangements remain saved if the player returns another day; Pak Salleh stays available at the hall between 19:00 and 22:00 for this story. Next-day visits compare the current game day with the preceding clue's saved day. Sleeping at home after Maghrib advances the day. No quest expires.
+
+Digimon and Tamagotchi are collectible rewards; these quests do not add device battle or pet-care simulators. The Wira uses the existing miniature photo. Existing early game victories count after accepting each story, with exact difficulty and track filters.
 
 ## Progress and ownership
 
@@ -71,3 +90,7 @@ Images are resized WebP copies of researched original photographs or cover art, 
 ## v2.7.1 validation
 
 All 160 existing tests and five new pacing regressions pass. The production build passes. New checks cover starter-only discovery, real first-keepsake unlocks, early win and track persistence, ordered-story gates, one-time clue migration, existing accepted later stories and all six old earned rewards. Physical playthrough duration has not been measured.
+
+## v2.10.0 validation
+
+All 193 Node tests pass. New checks complete all eight earning paths through actual economy/quest functions, check duplicate claims, Chapter 1 and earned-item gates, real Senario parcel handovers and cancellation, next-day and evening gates, exact game/track requirements, journal ticks, reloads and separate character saves. Existing six-quest migration and ownership regressions remain covered. Production and browser checks are recorded with the release PR.

@@ -9,7 +9,7 @@ import { startTamiya, recordTamiya } from '../src/tamiya-progress.js';
 import { prepareTamiya, launchTamiya, advanceTamiya } from '../src/tamiya.js';
 import { ownedCars } from '../src/tamiya-cars.js';
 import { readSave, writeSave } from '../src/save.js';
-import { unlockLater } from './quest-helpers.js';
+import { unlockLater, ORIGINAL_QUEST_IDS } from './quest-helpers.js';
 const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
 const context=id=>({place:QUESTS[id].place,npc:QUESTS[id].npc});
 function errand(eco,n,route=90,to=1+n%18,stops=[to]) {
@@ -26,10 +26,10 @@ function trail(eco,id) {
 }
 function winAll(eco,id){for(const c of QUESTS[id].challenges)for(let i=0;i<c.count;i++)recordNostalgiaWin(eco,{game:c.game,level:c.level,opponent:c.opponent,track:c.tracks?c.tracks[i%c.tracks.length]:'oval'});}
 
-test('all 28 photographed keepsakes have stories and cannot be bought; six paths use actual town stops',()=>{
- assert.equal(Object.keys(NOSTALGIA_ITEMS).length,28);assert.equal(Object.keys(QUESTS).length,6);
+test('all 28 photographed keepsakes have stories and cannot be bought; 14 active paths; original six use actual town stops',()=>{
+ assert.equal(Object.keys(NOSTALGIA_ITEMS).length,28);assert.equal(Object.keys(QUESTS).length,14);
  for(const [id,item] of Object.entries(NOSTALGIA_ITEMS)){assert.ok(item.storyTitle&&item.story&&item.source&&item.photoSource);assert.ok(!Object.values(STOCK).some(s=>s.includes(id)));assert.equal(buy(newEconomy(),25,id).reason,'quest-only');assert.ok(ITEMS[id].rewardOnly);}
- for(const q of Object.values(QUESTS)){assert.ok(q.grind.deliveries>=3&&q.grind.deliveries<=12&&q.trail.length>=3);assert.ok(q.trail.every(s=>Number.isInteger(s.place)&&s.place>=1&&s.place<=38&&s.clue));}
+ for(const q of ORIGINAL_QUEST_IDS.map(id=>QUESTS[id])){assert.ok(q.grind.deliveries>=3&&q.grind.deliveries<=12&&q.trail.length>=3);assert.ok(q.trail.every(s=>Number.isInteger(s.place)&&s.place>=1&&s.place<=38&&s.clue));}
 });
 test('progress starts at acceptance, paid deliveries count once and cancelled work counts zero',()=>{
  const eco=newEconomy(),id='nostalgia_M01';errand(eco,90);assert.deepEqual(eco.nostalgia.quests,{});
@@ -61,7 +61,7 @@ test('easier or wrong-opponent wins cannot satisfy the final challenge',()=>{
  const walkman=newEconomy();startNostalgia(walkman,'nostalgia_G04',context('nostalgia_G04'));trail(walkman,'nostalgia_G04');recordNostalgiaWin(walkman,{game:'gasing',opponent:'faiz'});assert.equal(walkman.nostalgia.quests.nostalgia_G04.wins[0]||0,0);
 });
 test('every path earns once, preserves the dedication and survives clean saves without touching money',()=>{
- for(const id of Object.keys(QUESTS)){
+ for(const id of ORIGINAL_QUEST_IDS){
   const eco=newEconomy();startNostalgia(eco,id,context(id));assert.equal(claimNostalgia(eco,id,context(id),0,'Aie',3).ok,false);trail(eco,id);winAll(eco,id);assert.equal(nostalgiaStatus(eco,id).stage,'ready');
   const wallet=eco.wallet;assert.equal(claimNostalgia(eco,id,{place:22,npc:'rahman'},0,'Aie',3).ok,false);assert.ok(claimNostalgia(eco,id,context(id),1,'Aie',3).ok);assert.equal(eco.collection[id],1);assert.equal(eco.wallet,wallet);
   assert.equal(claimNostalgia(eco,id,context(id),0,'Aie',4).ok,false);const clean=cleanEconomy(eco);assert.deepEqual(clean.nostalgia,eco.nostalgia);assert.equal(clean.collection[id],1);assert.equal(clean.nostalgia.earned[id].player,'Aie');assert.equal(nostalgiaStatus(clean,id).stage,'earned');

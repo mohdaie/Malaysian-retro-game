@@ -1,4 +1,4 @@
-import { chooseTurn } from './dam-haji.js?v=2.9.1';
+import { chooseTurn } from './dam-haji.js?v=2.10.0';
 self.onmessage = ({ data }) => {
   try { self.postMessage({ steps: chooseTurn(data.match) }); }
   catch { self.postMessage({ error: true }); }

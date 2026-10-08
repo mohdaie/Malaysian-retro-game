@@ -1,40 +1,40 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.9.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.10.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.9.1';
-import { createBicycle, stepBike } from './bicycle.js?v=2.9.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.9.1';
-import { readSave, readSaves, writeSave } from './save.js?v=2.9.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.9.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.9.1';
-import { createSoundscape } from './soundscape.js?v=2.9.1';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.9.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.9.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.9.1';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.9.1';
-import { tripAt } from './errands.js?v=2.9.1';
-import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.9.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.9.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.9.1';
-import { ITEM_KINDS } from './item-art.js?v=2.9.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.9.1';
-import { createGasingUI } from './gasing-ui.js?v=2.9.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.9.1';
-import { createDamUI } from './dam-ui.js?v=2.9.1';
-import { DAM_QUESTS } from './dam-progress.js?v=2.9.1';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.9.1';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.9.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.9.1';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.9.1';
-import { createTownMap } from './town-map-ui.js?v=2.9.1';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.9.1';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.9.1';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.9.1';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.9.1';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.9.1';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.9.1';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.9.1';
-import { renderQuestJournal } from './journal-ui.js?v=2.9.1';
-import { chapterBrief } from './journal.js?v=2.9.1';
+import { makeWorld } from './world.js?v=2.10.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.10.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.10.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.10.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.10.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.10.0';
+import { createSoundscape } from './soundscape.js?v=2.10.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.10.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.10.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.10.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.10.0';
+import { tripAt } from './errands.js?v=2.10.0';
+import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.10.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.10.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.10.0';
+import { ITEM_KINDS } from './item-art.js?v=2.10.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.10.0';
+import { createGasingUI } from './gasing-ui.js?v=2.10.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.10.0';
+import { createDamUI } from './dam-ui.js?v=2.10.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.10.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.10.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.10.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.10.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.10.0';
+import { createTownMap } from './town-map-ui.js?v=2.10.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.10.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.10.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.10.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.10.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.10.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.10.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.10.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.10.0';
+import { chapterBrief } from './journal.js?v=2.10.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -97,7 +97,7 @@ const placeOf = id => BUILDINGS.find(b => b.id === id);
 const npcBody = key => world.npcs.find(n => n.id === key);
 // Everyone with a body in the town: the 14 NPCs, then the 24 residents.
 const townsfolk = () => [...world.npcs, ...world.residents];
-const atPost = n => Boolean(n) && onDuty(n.id, time.minute);
+const atPost = n => Boolean(n) && (onDuty(n.id, time.minute) || n.id==='salleh'&&eco.nostalgia.quests.nostalgia_M05?.stage==='trail'&&time.minute>=19*60&&time.minute<22*60);
 const myHome = () => PLAYERS[state.who].home;
 const placeName = id => id === 1 ? `Rumah ${state.who === 'amir' ? state.name : 'Amir'}` : id === 11 ? `Rumah ${state.who === 'nur' ? state.name : 'Nur'}` : placeOf(id).name;
 const doorGap = (a, b) => Math.hypot(placeOf(a).door.x - placeOf(b).door.x, placeOf(a).door.z - placeOf(b).door.z);
@@ -312,7 +312,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   $('counter-text').textContent=note||(closedShop?`${placeName(place)} tutup. Waktu operasi ${timeLabel(hours[0])}–${timeLabel(hours[1])}. Bungkusan masih boleh dihantar di pintu.`:place===31&&!person?'Masjid tetap dibuka untuk solat. Ustaz Hassan sedang berehat.':reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(doorContact(place).hello));
   const body=$('counter-body');body.replaceChildren();
   const add=(label,onclick,cls,disabled)=>counterButton(body,label,onclick,cls,disabled);
-  const memoryContext={place,npc:person?.key||null};
+  const memoryContext={place,npc:person?.key||null,chapter:state.story,day:time.day};
   // A keepsake story is the resident's own to tell, not the family's standing in.
   const memories=npcKey||!doorContact(place)?.standIn?nostalgiaAt(eco,memoryContext):[];
   // A closed shop takes parcels at the door but hands nothing out.
@@ -344,7 +344,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     if(place===31)add('Solat · 5 waktu (+20 minit)',()=>openCounter(31,npcKey,'prayer'),'primary');
     add('Leave',closeCounter,'secondary');
   }else if(view==='memories'&&!reception){
-    if(!note)$('counter-text').textContent='Long errands, a story trail and challenge wins. Progress stays with you. Every keepsake is earned once.';
+    if(!note)$('counter-text').textContent='Setiap kisah ada perjalanan sendiri. Ikut petunjuk, bantu penduduk dan siapkan tugas dalam Buku. Progress disimpan; setiap keepsake diperoleh sekali.';
     for(const id of memories)body.append(memoryQuestCard(id,eco,memoryActions(memoryContext)));
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='exhibition'&&!reception&&person.key==='salleh'&&state.exhibition){
@@ -379,7 +379,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     body.append(tamiyaCatalogue(eco,inspectItem,id=>shop(place,npcKey,id,'tamiya')));
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='work'){
-    const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,storyOffers(state.story,eco));
+    const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,[...storyOffers(state.story,eco),...nostalgiaOffers(eco,doorGap)]);
     if(offers.length){
       $('counter-text').textContent=offers[0].note||(eco.jobs.length>=MAX_JOBS?`You are carrying ${MAX_JOBS} jobs already. Finish one first.`:'Here is what needs doing. The upah is fixed once you accept.');
       for(const offer of offers){
@@ -477,9 +477,10 @@ function navigateMemory(entryId){
   navigation={entry,route,planned:{x:entry.x,z:entry.z},arrived:false};lastNavigationUpdate=-1;updateNavigation();toast(`Keepsake trail · ${entry.name}`);
 }
 function memoryActions(context=null){
-  return {placeName,inspect:inspectItem,context,navigate:navigateMemory,chapter:{step:state.story,focus:chapterGuide(state.story,eco,state.exhibition).questId,exhibition:state.exhibition},
-    start:id=>{const r=startNostalgia(eco,id,context);persist();openCounter(counter.place,counter.npc,'memories',r.ok?`${NOSTALGIA_QUESTS[id].title} started. Your deliveries from now on build this keepsake's progress.`:'This story is already in your quest book.');},
-    clue:id=>{const r=followNostalgiaClue(eco,id,context.place);persist();openCounter(counter.place,counter.npc,'memories',r.ok?r.clue:'Follow the clues in the order shown in your quest book.');},
+  return {placeName,inspect:inspectItem,context,clock:{...time},navigate:navigateMemory,chapter:{step:state.story,focus:chapterGuide(state.story,eco,state.exhibition).questId,exhibition:state.exhibition},
+    start:id=>{const r=startNostalgia(eco,id,context);persist();openCounter(counter.place,counter.npc,'memories',r.ok?`${NOSTALGIA_QUESTS[id].title} diterima. Ikut langkah seterusnya dalam Buku; progress bermula sekarang.`:'Kisah ini sudah diterima atau belum terbuka.');},
+    clue:id=>{const r=followNostalgiaClue(eco,id,context.place,time);persist();openCounter(counter.place,counter.npc,'memories',r.ok?r.clue:r.text||'Ikut turutan petunjuk dalam Buku.');},
+    delivery:id=>{const step=NOSTALGIA_QUESTS[id].trail[eco.nostalgia.quests[id].trail],offer=nostalgiaOffers(eco,doorGap).find(o=>o.story===step.delivery?.story);if(offer)takeJob(offer,counter.place,counter.npc);},
     claim:(id,choice)=>{const r=claimNostalgia(eco,id,context,choice,state.name,time.day);if(!r.ok)return;persist();refreshEconomy();audio?.shell();toast(`Keepsake earned · ${ITEMS[id].title}`);openCounter(counter.place,counter.npc,'memories',`${r.entry.giver}: For ${r.entry.player}. ${r.entry.inscription}`);}
   };
 }
@@ -533,7 +534,8 @@ function inspectItem(id,trigger){
   inspectReturn={mode,trigger,surfaces};for(const el of surfaces)el.inert=true;const detail=detailContents(id);
   const keepsake=NOSTALGIA_ITEMS[id],earned=eco.nostalgia.earned[id];
   if(keepsake){
-    const status=nostalgiaStatus(eco,id);detail.memory=earned?`${keepsake.story}\n\n“${earned.inscription}”\nGiven by ${earned.giver}, for ${earned.player}, game day ${earned.day}.`:status.place?`Next story clue: ${placeName(status.place)}. ${status.text}`:status.text;
+    const story=NOSTALGIA_QUESTS[id]?.set===2?EXHIBITION_STORIES[id]:keepsake.story;
+    const status=nostalgiaStatus(eco,id);detail.memory=earned?`${story}\n\n“${earned.inscription}”\nGiven by ${earned.giver}, for ${earned.player}, game day ${earned.day}.`:status.place?`Next story clue: ${placeName(status.place)}. ${status.text}`:status.text;
     if(!earned){detail.image='./assets/nostalgia-locked.svg';detail.title='Kenangan rahsia';detail.caption='Belum diperoleh';detail.memory=eco.nostalgia.quests[id]?'Teruskan kisah yang kau terima. Ganjarannya menunggu di penghujung perjalanan.':'Teroka pekan dan dengar cerita penduduk untuk menemui kenangan ini.';}
     if(earned)detail.caption+=` · ${keepsake.referenceType}`;
   }
