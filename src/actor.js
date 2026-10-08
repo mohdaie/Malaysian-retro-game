@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { toon, outline } from './illustration.js?v=2.10.0';
 import { createCharacter, motif } from './characters.js?v=2.10.0';
 import { dressModel } from './outfit.js?v=2.10.0';
+import { createFace } from './face.js?v=2.10.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library
@@ -480,6 +481,8 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
 // rotations as recorded, hip travel scaled to the shorter legs, no baked bone
 // lengths. A ground lock keeps the feet on the floor.
 const STAND = .065, LEG = .673;
+// Where each drawn face sits, as fractions of the head's bind-pose bounds.
+const FACE_RECTS = { amir: { halfWidth: .42, bottom: .0, top: .6 } };
 function createModelActor(scene, x, z, kind, rig, model) {
   const { joints: J, bones: order, height = 1.5 } = model.parser.json.extras;
   const root = new T.Group(); root.position.set(x, 0, z); scene.add(root);
@@ -511,6 +514,8 @@ function createModelActor(scene, x, z, kind, rig, model) {
   root.add(figure); root.updateMatrixWorld(true); figure.bind(new T.Skeleton(bones), figure.matrixWorld);
   outline(figure, 1.6);
   const outfit = dressModel({ kind, root, material, geometry, skinIndex: source, order, joints: J, headBone: bone('head'), stand: STAND });
+  // Amir's face is drawn over the model's soft painted one (see face.js).
+  const face = FACE_RECTS[kind] ? createFace({ root, geometry, skinIndex: source, order, headBone: bone('head'), map: mesh.material.map, rect: FACE_RECTS[kind] }) : null;
   const shadow = new T.Mesh(new T.PlaneGeometry(.62, .62), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = .075; root.add(shadow);
 
@@ -538,9 +543,10 @@ function createModelActor(scene, x, z, kind, rig, model) {
     }
     skeletonRoot.position.y = STAND + lift; root.updateMatrixWorld(true);
   }
-  const { animate, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips, scale: k, groundLock });
+  const { animate: move, wave, mixer, native } = attachMotion({ root, skeletonRoot, bone, rig, clips, scale: k, groundLock });
+  const animate = (dt, moving, running, travel, action, state) => { move(dt, moving, running, travel, action, state); face?.update(dt, action === 'talk'); };
   root.userData.design = kind; root.userData.height = height;
-  return { group: root, figure, head: bone('head'), height, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true, outfit };
+  return { group: root, figure, head: bone('head'), height, animate, wave, mixer, scale: k, native, bikeScale: Math.min(1, leg / LEG + .08), actor: true, outfit, face };
 }
 // Turn a bone so its child points at a world target (bind-time fitting).
 function aimBone(b, child, target) {
