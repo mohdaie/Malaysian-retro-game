@@ -11,6 +11,7 @@ import { createStorefronts } from './storefronts.js?v=2.10.0';
 import { createLandmarks } from './landmarks.js?v=2.10.0';
 import { loadTownCars } from './town-cars.js?v=2.10.0';
 import { loadTownBus } from './town-bus.js?v=2.10.0';
+import { loadPetrolPump } from './petrol-pump.js?v=2.10.0';
 import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.10.0';
 import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.10.0';
 import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.10.0';
@@ -28,6 +29,7 @@ export async function makeWorld(canvas) {
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   const carLoad = loadTownCars(renderer).catch(error => { console.warn('Town car model unavailable; using the original sedans', error); return null; });
   const busLoad = loadTownBus(renderer).catch(error => { console.warn('Town bus model unavailable; using the original bus', error); return null; });
+  const pumpLoad = loadPetrolPump().catch(error => { console.warn('Petrol pump model unavailable; using the original pumps', error); return null; });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
@@ -152,6 +154,20 @@ export async function makeWorld(canvas) {
       ctx.fillStyle=color; ctx.fillText('RUMAH ' + name.toUpperCase(),256,65,465); texture.needsUpdate=true;
     } });
     const m = new T.Mesh(new T.PlaneGeometry(width, width / 4), new T.MeshBasicMaterial({ map: texture })); m.position.set(x, y, z); parent.add(m); return m;
+  }
+  // PETRONAS branding as it looked around 2001: turquoise lettering on ivory,
+  // with the long turquoise band beside it on wide fascias.
+  const brandTeal='#1d8e91',brandIvory='#eae7da';
+  function brandPanel(w,h,x,y,z,turn=0,band=false,parent=root){
+    const c=document.createElement('canvas');c.height=128;c.width=Math.min(2048,Math.round(128*w/h));
+    const ctx=c.getContext('2d');ctx.fillStyle=brandIvory;ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle=brandTeal;ctx.font='bold 84px sans-serif';ctx.textBaseline='middle';
+    const text='PETRONAS',space=12,glyphs=[...text].map(ch=>ctx.measureText(ch).width),run=glyphs.reduce((a,b)=>a+b,0)+space*(text.length-1);
+    let px=band?48:(c.width-run)/2;
+    for(let i=0;i<text.length;i++){ctx.fillText(text[i],px,68);px+=glyphs[i]+space;}
+    if(band)ctx.fillRect(px+36,34,c.width-px-36,60);
+    const texture=new T.CanvasTexture(c);texture.colorSpace=T.SRGBColorSpace;texture.anisotropy=4;
+    const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:texture}));m.position.set(x,y,z);m.rotation.y=turn;parent.add(m);return m;
   }
   const glass=toon(0x75a6aa);mats.set('window-glass',glass);
   function windowDetail(x,y,z,w=1.6,h=1.5){
@@ -297,7 +313,8 @@ export async function makeWorld(canvas) {
     for(let a=0;a<4;a++){const leaf=mesh(new T.SphereGeometry(.3,6,4),0x62834f,x+Math.sin(a*1.57)*.13,y+.78,z+Math.cos(a*1.57)*.13);leaf.scale.set(.45,1.25,.45);}
   }
   const landmarks=createLandmarks({parent:()=>root,toon,textured,register:(key,material)=>{mats.set(key,material);return material;},sign,collider,roundCollider});
-  const [townCars, townBus] = await Promise.all([carLoad, busLoad]), cars = [], buses = [];
+  const [townCars, townBus, petrolPump] = await Promise.all([carLoad, busLoad, pumpLoad]), cars = [], buses = [];
+  petrolPump?.materials.forEach((material,i)=>mats.set('petrol-pump-'+i,material));
   const storefronts=await createStorefronts(renderer);
   const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
@@ -336,12 +353,22 @@ export async function makeWorld(canvas) {
     library(u){civic(12,8,placeName(33),civicColors[33]);},
     nursery(u){civic(9,10,placeName(20),civicColors[20]);for(let i=0;i<3;i++)box(.6,.2,.6,[0xe5a88c,0xf0d18d,0x89b0ca][i],-2+i*1.1,.18,7);},
     petrol(u){
-      // Retro petrol kiosk and two physical pumps under a flat canopy.
+      // Retro PETRONAS kiosk and two physical pumps under a flat canopy.
       civic(9,8,placeName(37),civicColors[37]);
       box(10,.25,7,0xf0d18d,0,4.4,-10);
       for(const x of [-4,4]){box(.18,4.3,.18,0x755d42,x,2.2,-10);collider(x,-10,.18,.18,'post');}
-      for(const x of [-2,2]){box(.9,1.7,.75,0x749458,x,.95,-10);box(.7,.5,.1,0x414b3f,x,1.35,-9.6);collider(x,-10,.9,.75,'pump');}
-      sign('PETROL · 2001',0,4.35,-6.4,8);
+      // Ivory fascia with the period turquoise lettering and band on all four sides.
+      for(const [w,x,z,turn] of [[10.2,0,-6.39,0],[10.2,0,-13.61,Math.PI],[7.2,5.11,-10,Math.PI/2],[7.2,-5.11,-10,-Math.PI/2]])brandPanel(w,.62,x,4.42,z,turn,true);
+      for(const x of [-2,2]){
+        // Raised concrete island; the pump from the station model stands on it.
+        box(2,.2,1.1,0xcbbd99,x,.1,-10);collider(x,-10,2,1.1,'pump');
+        let top=1.8;
+        if(petrolPump){const pump=petrolPump.create();pump.position.set(x,0,-10);root.add(pump);top=petrolPump.height;}
+        else{box(.9,1.7,.75,0x749458,x,.95,-10);box(.7,.5,.1,0x414b3f,x,1.35,-9.6);}
+        // Brand topper on the pump head, readable from both sides.
+        box(.04,.1,.04,0xa6adad,x,top+.05,-10);
+        for(const turn of [0,Math.PI])brandPanel(.7,.18,x,top+.19,-10+(turn?-.012:.012),turn);
+      }
       // Pak Din's solid wooden Dam table, beside the kiosk's front counter.
       box(1.25,.12,1.25,0x6e482e,-3,.8,5.4);collider(-3,5.4,1.25,1.25,'dam-table');
       for(const x of [-3.5,-2.5])for(const z of [4.9,5.9])box(.09,.74,.09,0x6e482e,x,.39,z);
