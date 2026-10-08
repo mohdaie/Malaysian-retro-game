@@ -1,19 +1,19 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.7.2';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.7.2';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.7.2';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.7.2';
-import { createProps } from './props.js?v=2.7.2';
-import { ROUTINES, createRoutine } from './routines.js?v=2.7.2';
-import { ACTIONS } from './actions.js?v=2.7.2';
-import { createWalkability } from './collision.js?v=2.7.2';
-import { createStorefronts } from './storefronts.js?v=2.7.2';
-import { createLandmarks } from './landmarks.js?v=2.7.2';
-import { loadTownCars } from './town-cars.js?v=2.7.2';
-import { loadTownBus } from './town-bus.js?v=2.7.2';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.7.2';
-import { createTrees } from './trees.js?v=2.7.2';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.7.2';
+import { createCharacter } from './characters.js?v=2.7.3';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.7.3';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.7.3';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.7.3';
+import { createProps } from './props.js?v=2.7.3';
+import { ROUTINES, createRoutine } from './routines.js?v=2.7.3';
+import { ACTIONS } from './actions.js?v=2.7.3';
+import { createWalkability } from './collision.js?v=2.7.3';
+import { createStorefronts } from './storefronts.js?v=2.7.3';
+import { createLandmarks } from './landmarks.js?v=2.7.3';
+import { loadTownCars } from './town-cars.js?v=2.7.3';
+import { loadTownBus } from './town-bus.js?v=2.7.3';
+import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.7.3';
+import { createTrees } from './trees.js?v=2.7.3';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.7.3';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
