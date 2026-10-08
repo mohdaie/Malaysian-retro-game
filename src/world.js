@@ -1,23 +1,25 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.10.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.10.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.10.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.10.0';
-import { createProps } from './props.js?v=2.10.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.10.0';
-import { ACTIONS } from './actions.js?v=2.10.0';
-import { createWalkability } from './collision.js?v=2.10.0';
-import { createStorefronts } from './storefronts.js?v=2.10.0';
-import { createLandmarks } from './landmarks.js?v=2.10.0';
-import { loadTownCars } from './town-cars.js?v=2.10.0';
-import { loadTownBus } from './town-bus.js?v=2.10.0';
-import { loadPetrolPump } from './petrol-pump.js?v=2.10.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.10.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.10.0';
-import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.10.0';
-import { findWalkRoute } from './map-navigation.js?v=2.10.0';
-import { createTrees } from './trees.js?v=2.10.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.10.0';
+import { createCharacter } from './characters.js?v=2.11.0';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.11.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.11.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.11.0';
+import { createProps } from './props.js?v=2.11.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.11.0';
+import { ACTIONS } from './actions.js?v=2.11.0';
+import { createWalkability } from './collision.js?v=2.11.0';
+import { createStorefronts } from './storefronts.js?v=2.11.0';
+import { createLandmarks } from './landmarks.js?v=2.11.0';
+import { loadTownCars } from './town-cars.js?v=2.11.0';
+import { loadTownBus } from './town-bus.js?v=2.11.0';
+import { loadPetrolPump } from './petrol-pump.js?v=2.11.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.11.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.11.0';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.11.0';
+import { findWalkRoute } from './map-navigation.js?v=2.11.0';
+import { createTrees } from './trees.js?v=2.11.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.11.0';
+import { createRiver } from './river.js?v=2.11.0';
+import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.11.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -252,8 +254,10 @@ export async function makeWorld(canvas) {
     for(let i=0;i<=length;i+=1.6){const px=x+(axis==='x'?i:0),pz=z+(axis==='z'?i:0);box(.12,1.3,.12,0xd4c6a0,px,.65,pz);}
     for(const y of [.35,.95]) box(axis==='x'?length:.1,.12,axis==='z'?length:.1,0xd4c6a0,x+(axis==='x'?length/2:0),y,z+(axis==='z'?length/2:0));
   }
-  // Ground and the fixed river with its two bridges. Roads come from the plan.
-  box(180,.6,160,textured(0xffffff,'grass'),0,-.35,0);
+  // Two lawns leave an actual opening for the lower water and sloping banks.
+  const bankBounds=riverBounds();
+  for(const [from,to] of [[-90,bankBounds.left],[bankBounds.right,90]])box(to-from,.6,160,textured(0xffffff,'grass'),(from+to)/2,-.35,0);
+  const river=createRiver(scene);
   for(const road of ROADS)box(road.w,.08,road.d,textured(0xffffff,road.kind),road.x,.015,road.z);
   // Asphalt roads that reach the town edge carry on out of town, through a
   // gap in the trees, to where the lawn meets the painted horizon.
@@ -261,9 +265,20 @@ export async function makeWorld(canvas) {
     const alongX=r.w>=r.d,lo=alongX?r.x-r.w/2:r.z-r.d/2,hi=alongX?r.x+r.w/2:r.z+r.d/2,[min,max,edge]=alongX?[TOWN_BOUNDS.minX,TOWN_BOUNDS.maxX,90]:[TOWN_BOUNDS.minZ,TOWN_BOUNDS.maxZ,80];
     for(const [from,to] of [lo<=min+1?[-edge,lo]:null,hi>=max-1?[hi,edge]:null].filter(Boolean)){const mid=(from+to)/2,len=to-from;box(alongX?len:r.w,.08,alongX?r.d:len,textured(0xffffff,'asphalt'),alongX?mid:r.x,.015,alongX?r.z:mid);}
   }
-  box(8,.1,155,0x71958a,RIVER.x,-.02,0);
-  box(1,.1,155,0x799365,RIVER.x-5,.015,0);box(1,.1,155,0x799365,RIVER.x+5,.015,0);
-  for(const {x,z,d} of BRIDGES) {box(13,.2,d,0xbcac8b,x,.13,z);for(const s of [-1,1]){collider(x,z+s*(d/2-.3),13,.15,'bridge-rail');box(13,.13,.15,0xe4d0a6,x,1.1,z+s*(d/2-.3));for(let px=x-6;px<=x+6;px+=2)box(.15,1.15,.15,0xe4d0a6,px,.6,z+s*(d/2-.3));}}
+  for(const {x,z,w,d,road} of BRIDGES) {
+    box(w,.2,d,0xbcac8b,x,BRIDGE_DECK_Y-.1,z);
+    // The abutments and piers are beneath the crossing, outside player space.
+    for(const side of [-1,1]){
+      box(.8,1.25,d-.15,0x9c947d,x+side*4.65,-.55,z);
+      for(const along of [-1,1])box(.42,1.48,.48,0x9c947d,x+side*1.75,-.7,z+along*(d/2-.8));
+      const approach=road ? .065 : -.025,edge=x+side*w/2,far=edge+side*BRIDGE_RAMP;
+      const points=[[edge,BRIDGE_DECK_Y,z-d/2],[edge,BRIDGE_DECK_Y,z+d/2],[far,approach,z-d/2],[far,approach,z+d/2]];
+      const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute((side>0?[0,1,2,2,1,3]:[0,2,1,2,3,1]).flatMap(i=>points[i]),3));ramp.computeVertexNormals();
+      mesh(ramp,toon(0xbcac8b,{side:T.DoubleSide}),0,0,0);
+      collider(x,z+side*(d/2-.3),w,.15,'bridge-rail');box(w,.13,.15,0xe4d0a6,x,1.1,z+side*(d/2-.3));
+      for(let px=x-w/2+.5;px<=x+w/2-.5;px+=2)box(.15,1.15,.15,0xe4d0a6,px,.6,z+side*(d/2-.3));
+    }
+  }
   const inRoad=(x,z,pad=0,except=null)=>ROADS.some(r=>r!==except&&Math.abs(x-r.x)<r.w/2+pad&&Math.abs(z-r.z)<r.d/2+pad);
   const onBridge=(x,z,pad=1)=>BRIDGES.some(b=>Math.abs(x-b.x)<b.w/2+pad&&Math.abs(z-b.z)<b.d/2+pad);
   const inRiver=(x,pad=0)=>Math.abs(x-RIVER.x)<RIVER.w/2+pad;
@@ -522,6 +537,10 @@ export async function makeWorld(canvas) {
   for(const p of plantTown(TOWN)){
     trees.plant(p);if(p.ring==='in')roundCollider(p.x,p.z,TRUNK[p.kind]*p.size,'trunk');
   }
+  for(const p of river.details.bamboo){
+    const previous=root,bankGroup=new T.Group();bankGroup.position.y=p.y;scene.add(bankGroup);root=bankGroup;
+    trees.plant(p);root=previous;
+  }
   // Open ground: away from roads, the river, every unit and every obstacle.
   const solidNear=(x,z,pad)=>colliders.some(c=>c.r!==undefined?Math.hypot(x-c.x,z-c.z)<c.r+pad:Math.abs(x-c.x)<c.w/2+pad&&Math.abs(z-c.z)<c.d/2+pad);
   const unitNear=(x,z,pad)=>UNITS.some(u=>{const [ax,az,aw,ad]=u.area;return Math.abs(x-ax)<aw/2+pad&&Math.abs(z-az)<ad/2+pad;});
@@ -662,8 +681,8 @@ export async function makeWorld(canvas) {
   }
   // Standing height: the highest raised floor, bridge or road under a point.
   function groundHeight(x,z){
-    let height=inRoad(x,z)?.065:-.025;
-    if(onBridge(x,z,0))height=Math.max(height,.24);
+    let height=inRiver(x)?riverTerrainHeight(x,z):inRoad(x,z)?.065:-.025;
+    const bridgeHeight=bridgeSurfaceHeight(x,z);if(bridgeHeight!==null)height=Math.max(height,bridgeHeight);
     for(const [fx,fz,fw,fd,fh] of FLOORS)if(fh>height&&Math.abs(x-fx)<fw/2&&Math.abs(z-fz)<fd/2)height=fh;
     return height;
   }
@@ -797,5 +816,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,crowd,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {updateRiver:river.update,riverSnapshot:river.snapshot,busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,crowd,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

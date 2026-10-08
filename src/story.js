@@ -2,9 +2,9 @@
 // leading to the community's Pameran Kenangan. Pure: the game reports
 // events, `advance` moves the chapter on, `storyOffers` adds the chapter's
 // own jobs to the right counters.
-import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.10.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.10.0';
-import { SET_TWO_EXHIBITION } from './nostalgia-set-two.js?v=2.10.0';
+import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.11.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.11.0';
+import { SET_TWO_EXHIBITION } from './nostalgia-set-two.js?v=2.11.0';
 export const PLAYERS = {
   amir: { name: 'Amir', home: 1, parent: 'Mak', parentPlace: 1 },
   nur: { name: 'Nur', home: 11, parent: 'Ibu', parentPlace: 11 }
