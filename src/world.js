@@ -1,21 +1,22 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.8.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.8.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.8.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.8.0';
-import { createProps } from './props.js?v=2.8.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.8.0';
-import { ACTIONS } from './actions.js?v=2.8.0';
-import { createWalkability } from './collision.js?v=2.8.0';
-import { createStorefronts } from './storefronts.js?v=2.8.0';
-import { createLandmarks } from './landmarks.js?v=2.8.0';
-import { loadTownCars } from './town-cars.js?v=2.8.0';
-import { loadTownBus } from './town-bus.js?v=2.8.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.8.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.8.0';
-import { findWalkRoute } from './map-navigation.js?v=2.8.0';
-import { createTrees } from './trees.js?v=2.8.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.8.0';
+import { createCharacter } from './characters.js?v=2.9.0';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.9.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.9.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.9.0';
+import { createProps } from './props.js?v=2.9.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.9.0';
+import { ACTIONS } from './actions.js?v=2.9.0';
+import { createWalkability } from './collision.js?v=2.9.0';
+import { createStorefronts } from './storefronts.js?v=2.9.0';
+import { createLandmarks } from './landmarks.js?v=2.9.0';
+import { loadTownCars } from './town-cars.js?v=2.9.0';
+import { loadTownBus } from './town-bus.js?v=2.9.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.9.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.9.0';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.9.0';
+import { findWalkRoute } from './map-navigation.js?v=2.9.0';
+import { createTrees } from './trees.js?v=2.9.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.9.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -686,6 +687,40 @@ export async function makeWorld(canvas) {
     }
     n.errand=createErrand(key,home,routes,at=>createRoutine(ROUTINES[key],at,n.walk,ACTIONS),spot=>createRoutine(AWAY,spot,n.walk,ACTIONS));n.routes=routes;
   }
+  // The extras (crowds.js): spots near each gathering place, nudged clear of
+  // walls and everyone else, facing the middle of their group; the paths
+  // they run or walk between doors and spots are planned here once.
+  const placeOf=id=>BUILDINGS.find(b=>b.id===id),crowd=[],spots=[];
+  function crowdSpot(place,[r,f]){
+    const b=placeOf(place),dx=b.door.x-b.x,dz=b.door.z-b.z,len=Math.hypot(dx,dz)||1,ox=dx/len,oz=dz/len,x=b.door.x-oz*r+ox*f,z=b.door.z+ox*r+oz*f;
+    const ok=(px,pz)=>clear(px,pz)&&clear(px+.3,pz)&&clear(px-.3,pz)&&clear(px,pz+.3)&&clear(px,pz-.3)&&people.every(p=>Math.hypot(p.x-px,p.z-pz)>1.4)&&spots.every(p=>Math.hypot(p.x-px,p.z-pz)>.9);
+    for(const rad of [0,.6,1.2,1.8,2.6])for(let i=0;i<(rad?12:1);i++){const px=x+Math.cos(i*Math.PI/6)*rad,pz=z+Math.sin(i*Math.PI/6)*rad;if(ok(px,pz)){const spot={x:px,z:pz,place};spots.push(spot);return spot;}}
+    return null;
+  }
+  const doorOf=id=>{const b=placeOf(id),dx=b.door.x-b.x,dz=b.door.z-b.z,len=Math.hypot(dx,dz)||1;for(const f of [.8,1.2,1.8,2.6]){const x=b.door.x+dx/len*f,z=b.door.z+dz/len*f;if(solid(x,z))return {x,z};}return null;};
+  for(const key of CROWD_KEYS){
+    const legs=[],stops=[];
+    for(const [o,outing] of CROWD[key].outings.entries()){
+      legs[o]={};let at=outing.out?doorOf(outing.out):null;
+      for(const [i,stop] of outing.stops.entries()){
+        const spot=crowdSpot(stop.at,stop.spot);stops.push({o,i,spot});
+        if(!spot){at=null;continue;}
+        if(at)legs[o][i]=findWalkRoute(at,spot,solid,TOWN_BOUNDS);
+        at=spot;
+      }
+      const door=outing.home&&doorOf(outing.home);if(at&&door)legs[o].home=findWalkRoute(at,door,solid,TOWN_BOUNDS);
+    }
+    const first=stops.find(s=>s.spot)?.spot||{x:0,z:0},body=character(first.x,first.z,key);body.group.visible=false;
+    const collider={x:1e4,z:1e4,r:.25,kind:'npc'};colliders.push(collider);
+    crowd.push({id:key,x:first.x,z:first.z,character:body,collider,legs,stops});
+  }
+  // Each stop faces the middle of everyone gathered at that place (or the door, alone).
+  for(const c of crowd)for(const st of c.stops)if(st.spot){
+    const group=spots.filter(p=>p.place===st.spot.place&&p!==st.spot),b=placeOf(st.spot.place);
+    const cx=group.length?group.reduce((n,p)=>n+p.x,0)/group.length:b.door.x,cz=group.length?group.reduce((n,p)=>n+p.z,0)/group.length:b.door.z;
+    st.spot.heading=Math.atan2(cx-st.spot.x,cz-st.spot.z);
+  }
+  for(const c of crowd){const others=colliders.filter(k=>k!==c.collider);c.walk=createWalkability(others);c.routineAt=(o,i)=>{const st=c.stops.find(s=>s.o===o&&s.i===i);return st?.spot&&createRoutine(LOOPS[CROWD[c.id].outings[o].stops[i].loop],st.spot,c.walk,ACTIONS);};}
   // A gold diamond marks the story's next person; parcels mark job stops.
   const marker=(geometry,color)=>{const m=mesh(geometry,color,0,0,0,scene);m.visible=false;m.userData.height=0;animated.push(m);return m;};
   const storyMarker=marker(new T.OctahedronGeometry(.19,0),0xe4bc68);
@@ -735,5 +770,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,crowd,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

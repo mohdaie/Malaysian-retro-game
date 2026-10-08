@@ -1,7 +1,7 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=2.8.0';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.8.0';
-import { ACTIONS } from './actions.js?v=2.8.0';
+import { toon, outline } from './illustration.js?v=2.9.0';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.9.0';
+import { ACTIONS } from './actions.js?v=2.9.0';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map(), fabrics = new Map();
@@ -148,7 +148,18 @@ const LOOKS = {
   midah: { adult: true, plan: woman({ height: 1.57, skin: 0xc68d65 }), top: { cut: 'kurung', colour: 0xe58a4e, sleeve: 'long' }, legs: 'kain', pants: 0x4a2f62, print: 'kain', feet: 'sandal', sole: 0x6b4a33, strap: 0xe58a4e, hair: 'tudung', hairColour: 0x2f6e69, props: ['broom'], face: { ...LADY } },
   esah: { adult: true, plan: woman({ height: 1.5, skin: 0xbf8862 }), stoop: .08, top: { cut: 'kurung', colour: 0xc3aedb, print: 'floral', sleeve: 'long' }, legs: 'kain', pants: 0x5e3f5e, feet: 'sandal', sole: 0x6b4a33, strap: 0x8a6a4a, hair: 'tudung', hairColour: 0xf4efe6, face: { ...LADY, glasses: '#8a5a3a', lines: true, brow: '#6a5a55' } },
   rozita: { adult: true, plan: woman({ height: 1.6, skin: 0xe2ad86 }), top: { cut: 'blouse', colour: 0x5aa0c8, sleeve: 'long' }, legs: 'kain', pants: 0x2a3a5a, feet: 'sandal', sole: 0x6b4a33, strap: 0x5aa0c8, hair: 'tudung', hairColour: 0xf3c7c3, face: { ...LADY } },
-  som: { adult: true, plan: woman({ height: 1.47, skin: 0xb98058 }), stoop: .12, top: { cut: 'kurung', colour: 0x8a7a6a, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'batik', feet: 'sandal', sole: 0x6b4a33, strap: 0x8a7a6a, hair: 'tudung', hairColour: 0xf6f2ea, face: { ...LADY, glasses: '#5a4a3a', lines: true, lips: '#8f4a4f', brow: '#8a7a75' } }
+  som: { adult: true, plan: woman({ height: 1.47, skin: 0xb98058 }), stoop: .12, top: { cut: 'kurung', colour: 0x8a7a6a, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'batik', feet: 'sandal', sole: 0x6b4a33, strap: 0x8a7a6a, hair: 'tudung', hairColour: 0xf6f2ea, face: { ...LADY, glasses: '#5a4a3a', lines: true, lips: '#8f4a4f', brow: '#8a7a75' } },
+  // The town's extras (crowds.js): holiday kids and orang kampung.
+  adam: { plan: { ...PLANS.amir, height: 1.38, skin: 0xb98058 }, pants: 0x6b6f4a, seam: 0x52563a, legs: 'shorts', feet: 'slipper', sole: 0xf0ece2, strap: 0xc23a35, top: 0xd94b3a, trim: 0xa8382c, shirt: 'tee', hem: -.03, hair: 'curtains', hairColour: 0x231d1b, sheen: 0x3a302b, face: {} },
+  hakim: { plan: { ...PLANS.amir, height: 1.45, skin: 0xc28a62 }, pants: 0x3b4f72, seam: 0x2c3c58, legs: 'cargo', feet: 'sneaker', top: 0xf3e9c6, trim: 0x2f6e69, shirt: 'ringer', hem: .035, hair: 'spiky', face: {} },
+  aisyah: { plan: { ...PLANS.nur, height: 1.42, skin: 0xd6a07a }, girl: true, pants: 0x5e3f5e, seam: 0x4a304a, stripe: 0xf2b8c6, legs: 'slacks', feet: 'sneaker', top: 0x9bc3d9, trim: 0x6f9ab8, shirt: 'tee', sleeve: 'long', hem: -.02, hair: 'tudung', hairColour: 0xf6f2ea, face: { lashes: true } },
+  keong: { plan: { ...PLANS.amir, height: 1.36, skin: 0xf0c9a5 }, pants: 0x2f3d68, seam: 0x222d50, legs: 'shorts', feet: 'slipper', sole: 0xf0ece2, strap: 0x2f6fb0, top: 0xf2c84b, trim: 0xd9a92c, shirt: 'tee', hem: -.03, motif: 'car', hair: 'soft', hairColour: 0x1d1a1f, face: {} },
+  siti: { plan: { ...PLANS.nur, height: 1.34, skin: 0xc68d65 }, girl: true, pants: 0x8a5a8a, seam: 0x6e466e, stripe: 0xf3c7c3, legs: 'cargo', feet: 'sneaker', top: 0xf3a6b8, trim: 0xd98a9d, shirt: 'tee', sleeve: 'long', hem: -.02, hair: 'tudung', hairColour: 0xf3c7c3, face: { lashes: true } },
+  ravi: { plan: { ...PLANS.amir, height: 1.44, skin: 0x7b4a2e }, pants: 0xa48d62, seam: 0x857048, legs: 'shorts', feet: 'slipper', sole: 0xf0ece2, strap: 0x2f6e44, top: 0x4f9a5a, trim: 0x3a7a46, shirt: 'tee', hem: -.03, hair: 'soft', hairColour: 0x151214, face: {} },
+  seman: { adult: true, plan: man({ height: 1.65, skin: 0xa87250 }), stoop: .05, top: { cut: 'baju', colour: 0x7fa6c4, trim: 0x5f86a4, sleeve: 'long', long: .2 }, legs: 'sarong', pants: 0x2f5a4f, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x6b4a33, hair: 'short', hairColour: 0xbab4ac, hat: 'songkok', face: { ...MAN, moustache: '#bab4ac', lines: true } },
+  daud: { adult: true, plan: man({ height: 1.7, skin: 0xb27650 }), belly: 1.06, top: { cut: 'shirt', colour: 0xc9b27a, sleeve: 'short', pocket: true }, legs: 'trousers', pants: 0x4a4740, feet: 'sandal', sole: 0x2c2a2a, strap: 0x2c2a2a, hair: 'short', hairColour: 0x2a2523, hat: 'cap', hatColour: 0x3f7f78, face: { ...MAN, moustache: '#2a2220' } },
+  rashid: { adult: true, plan: man({ height: 1.68, skin: 0x9a6440 }), top: { cut: 'tee', colour: 0xe9e3d6, sleeve: 'short' }, legs: 'sarong', pants: 0x3a3f6a, print: 'pelikat', feet: 'sandal', sole: 0x3d2f26, strap: 0x3d2f26, hair: 'short', hairColour: 0x1f1b1c, hat: 'songkok', props: ['towel'], face: { ...MAN, beard: '#2a2220', moustache: '#2a2220' } },
+  gayah: { adult: true, plan: woman({ height: 1.55, skin: 0xbf8660 }), top: { cut: 'kurung', colour: 0xd9a24a, sleeve: 'long' }, legs: 'kain', pants: 0x6b3a22, print: 'batik', feet: 'sandal', sole: 0x6b4a33, strap: 0xd9a24a, hair: 'tudung', hairColour: 0x8a3b4a, props: ['basket'], face: { ...LADY } }
 };
 export const CHARACTER_KINDS = Object.keys(LOOKS);
 
