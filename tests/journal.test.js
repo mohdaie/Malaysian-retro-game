@@ -14,3 +14,26 @@ test('delivery requirements tick independently and survive save cleaning',()=>{c
 test('the clue checklist contains completed clues and only the next known stop',()=>{const id='nostalgia_M01',e=start(id);trust(e,id);assert.equal(e.nostalgia.quests[id].stage,'trail');let j=memoryJournal(e,id);assert.deepEqual(j.tasks.filter(t=>t.place).map(t=>t.place),[qs[id].trail[0].place]);assert.ok(!j.tasks.some(t=>t.id.startsWith('win')));followNostalgiaClue(e,id,qs[id].trail[0].place);j=memoryJournal(e,id);assert.deepEqual(j.tasks.filter(t=>t.place).map(t=>t.done),[true,false]);assert.equal(j.note,qs[id].trail[0].clue);assert.deepEqual(memoryJournal(cleanEconomy(e),id),j);});
 test('Tamiya wins tick while missing tracks remain open; claim ticks only after earning',()=>{const id='nostalgia_T01',e=start(id);trust(e,id);for(const t of qs[id].trail)followNostalgiaClue(e,id,t.place);for(let i=0;i<6;i++)recordNostalgiaWin(e,{game:'tamiya',track:'oval'});let tasks=memoryTasks(e,id);assert.equal(tasks.find(t=>t.id==='win-0').done,true);assert.deepEqual(tasks.filter(t=>t.id.startsWith('track-')).map(t=>t.done),[true,false,false]);assert.equal(e.nostalgia.quests[id].stage,'challenge');for(const track of ['eight','jaguh'])recordNostalgiaWin(e,{game:'tamiya',track});assert.equal(memoryTasks(e,id).find(t=>t.id==='claim').done,false);claimNostalgia(e,id,context(id),0,'Aie',4);assert.equal(memoryTasks(e,id).find(t=>t.id==='claim').done,true);assert.deepEqual(memoryJournal(cleanEconomy(e),id),memoryJournal(e,id));});
 test('multi-stop delivery checklist records pickup and individual completed stops',()=>{const e=newEconomy(),job=accept(e,{id:'multi',kind:'parcel',requester:22,from:22,to:3,stops:[1,2,3],item:'gula',qty:3,cost:0,upah:200,route:90}).job;assert.deepEqual(deliveryTasks(job).map(t=>t.done),[false,false,false,false]);collect(e,job.id,22);deliver(e,job.id,1);assert.deepEqual(deliveryTasks(job).map(t=>t.done),[true,true,false,false]);assert.deepEqual(deliveryTasks(cleanEconomy(e).jobs[0]),deliveryTasks(job));});
+
+test('all discovered stories show exact delivery rules, revealed clues, opponents and claim actions',()=>{
+ for(const id of Object.keys(qs)){
+  const e=start(id),q=qs[id];let tasks=memoryTasks(e,id);
+  assert.deepEqual(tasks.map(t=>t.total),[q.grind.deliveries,q.grind.destinations,q.grind.long]);
+  assert.match(tasks[0].detail,/Accept.*Collect.*Deliver parcel/);
+  assert.match(tasks[1].detail,/bangunan berlainan.*sekali/);
+  assert.match(tasks[2].detail,/jarak 60 m.*berpusing/);
+  trust(e,id);assert.deepEqual(memoryTasks(e,id).slice(0,3).map(t=>t.done),[true,true,true]);
+  for(const stop of q.trail)followNostalgiaClue(e,id,stop.place);
+  tasks=memoryTasks(e,id);
+  assert.equal(tasks.filter(t=>t.id.startsWith('clue-')).length,q.trail.length);
+  assert.ok(tasks.find(t=>t.id==='claim').detail.includes(q.giver));
+  assert.match(tasks.find(t=>t.id==='claim').detail,/Ada kisah.*dedikasi/);
+  assert.ok(tasks.filter(t=>t.id.startsWith('win-')).every(t=>t.detail&&t.route));
+  if(id==='nostalgia_G01')assert.match(tasks.find(t=>t.id==='win-0').detail,/Pak Din.*Jaguh/);
+  if(id==='nostalgia_G04')assert.match(tasks.find(t=>t.id==='win-0').detail,/Atuk.*Cabaran Atuk/);
+  for(const c of q.challenges)for(let i=0;i<c.count;i++)recordNostalgiaWin(e,{game:c.game,level:c.level,opponent:c.opponent,track:c.tracks?.[i]||'oval'});
+  assert.equal(e.nostalgia.quests[id].stage,'ready');
+  assert.deepEqual(memoryTasks(cleanEconomy(e),id),memoryTasks(e,id));
+  assert.equal(memoryTasks(e,id).filter(t=>!t.done).length,1,'only receiving the keepsake is left');
+ }
+});

@@ -1,4 +1,4 @@
-import { TOWN_PLAN } from './town-plan.js?v=2.7.2';
+import { TOWN_PLAN } from './town-plan.js?v=2.7.3';
 
 // Town plan geometry shared by the game, the tests and the map editor. The
 // editable positions live in town-plan.js; everything here is derived from
