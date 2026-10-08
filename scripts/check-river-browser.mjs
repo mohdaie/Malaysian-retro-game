@@ -23,8 +23,8 @@ async function capture(name){const r=await send('Page.captureScreenshot',{format
 try{
  await send('Runtime.enable');await send('Page.enable');await send('Emulation.setDeviceMetricsOverride',{width:1280,height:720,deviceScaleFactor:1,mobile:false});await until('!!window.riverReview');
  const checks=await evaluate(`(async()=>{
-  const {BRIDGES,RIVER,BUILDINGS,SPOTS,TOWN_BOUNDS}=await import('/src/town-layout.js?v=2.11.0');
-  const {findWalkRoute,clearSegment}=await import('/src/map-navigation.js?v=2.11.0');const w=riverReview.world;
+  const {BRIDGES,RIVER,BUILDINGS,SPOTS,TOWN_BOUNDS}=await import('/src/town-layout.js?v=2.11.1');
+  const {findWalkRoute,clearSegment}=await import('/src/map-navigation.js?v=2.11.1');const w=riverReview.world;
   const crossed=BRIDGES.map(b=>({deck:w.groundHeight(b.x,b.z),clear:clearSegment({x:b.x-7.4,z:b.z},{x:b.x+7.4,z:b.z},w.canWalk)}));
   let routes=0;const failed=[];for(const start of [SPOTS.spawn,SPOTS.spawnNur])for(const b of BUILDINGS){const p=findWalkRoute(start,b.door,w.canWalk,TOWN_BOUNDS);if(!p){failed.push(b.id);continue;}for(let i=1;i<p.length;i++)if(!clearSegment(p[i-1],p[i],w.canWalk))throw Error('Invalid route '+b.name);routes++;}
   const ray=new (await import('three')).Raycaster();ray.set(new (await import('three')).Vector3(RIVER.x,5,18),new (await import('three')).Vector3(0,-1,0));
