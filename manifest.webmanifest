@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Retro Malaysia",
+  "short_name": "Retro Malaysia",
+  "description": "A kampung story. Explore Pekan Seri Kenangan, meet its people and play the games of your childhood.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#f4efdf",
+  "theme_color": "#204d45",
+  "prefer_related_applications": false,
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
