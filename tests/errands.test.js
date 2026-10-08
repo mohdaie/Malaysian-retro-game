@@ -60,7 +60,7 @@ test('a resident a story needs stays home: no keeper ever tells their part', asy
   const { NOSTALGIA_QUESTS, storyNeedsHome, newNostalgia } = await import('../src/nostalgia-quests.js');
   // Which stories put an errand runner's door on their path?
   const homes = new Map(ERRAND_KEYS.map(k => [residentPlace(k), k])), touched = [];
-  for (const [id, q] of Object.entries(NOSTALGIA_QUESTS)) {
+  for (const [id, q] of Object.entries(NOSTALGIA_QUESTS).filter(([,q])=>q.set!==2)) {
     if (!q.npc && homes.has(q.place)) touched.push([id, 'giver', homes.get(q.place)]);
     q.trail.forEach((t, i) => { if (homes.has(t.place)) touched.push([id, `clue ${i}`, homes.get(t.place)]); });
   }

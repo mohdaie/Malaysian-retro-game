@@ -1,6 +1,6 @@
-import { STOCK_BUILD, validBuild } from './tamiya-parts.js?v=2.9.1';
-import { dynamicPlan, rivalPlan } from './tamiya-dynamics.js?v=2.9.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.9.1';
+import { STOCK_BUILD, validBuild } from './tamiya-parts.js?v=2.10.0';
+import { dynamicPlan, rivalPlan } from './tamiya-dynamics.js?v=2.10.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.10.0';
 export const TAMIYA_TRACKS = {
   oval: { name: 'Oval Pekan', note: 'Beginner · lurus panjang, selekoh lebar', length: 78, segments: [[.25,'straight'],[.25,'bend'],[.25,'straight'],[.25,'bend']], faiz: 'tamiya_burning', meiling: 'tamiya', recommended: 'balanced' },
   eight: { name: 'Selekoh Lapan', note: 'Technical · selekoh rapat, jambatan silang', length: 98, segments: [[.15,'straight'],[.2,'tight'],[.15,'bridge'],[.15,'straight'],[.2,'tight'],[.15,'bend']], faiz: 'tamiya_cannon', faizSetup: 'stable', meiling: 'tamiya_star', recommended: 'stable' },

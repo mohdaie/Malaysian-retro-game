@@ -5,7 +5,7 @@ import { NOSTALGIA_QUESTS, startNostalgia as startRaw, followNostalgiaClue, reco
 import { DONE, advance, syncChapter, chapterGuide, chapterKeepsake, cleanExhibition, shareKeepsake, EXHIBITION_LINKS } from '../src/story.js';
 import { validateSave, readSave, writeSave } from '../src/save.js';
 
-import { unlockLater } from './quest-helpers.js';
+import { unlockLater, ORIGINAL_QUEST_IDS } from './quest-helpers.js';
 const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
 const context = id => ({ place: NOSTALGIA_QUESTS[id].place, npc: NOSTALGIA_QUESTS[id].npc });
 function deliveries(eco, id) {
@@ -49,8 +49,8 @@ test('the chapter follows real delivery, clue, challenge, claim and exhibition g
   assert.match(chapterGuide(DONE,eco,result.exhibition).text,/Shared at the balai raya on game day 4/);
 });
 test('any of the six stories can complete Chapter 1; the remaining stories stay open',()=>{
-  assert.equal(Object.keys(EXHIBITION_LINKS).length,6);
-  for(const id of Object.keys(NOSTALGIA_QUESTS)){
+  assert.equal(Object.keys(EXHIBITION_LINKS).length,14);
+  for(const id of ORIGINAL_QUEST_IDS){
     const eco=newEconomy();earn(eco,id);assert.equal(syncChapter(7,eco),12);
     assert.ok(shareKeepsake(eco,12,id,4).ok);
     const other=Object.keys(NOSTALGIA_QUESTS).find(k=>!eco.nostalgia.quests[k]);assert.ok(startNostalgia(eco,other,context(other)).ok);

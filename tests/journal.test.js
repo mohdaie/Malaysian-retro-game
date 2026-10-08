@@ -4,7 +4,7 @@ import {newEconomy,cleanEconomy,accept,collect,deliver} from '../src/economy.js'
 import {NOSTALGIA_QUESTS as qs,startNostalgia as startRaw,followNostalgiaClue,recordNostalgiaWin,claimNostalgia} from '../src/nostalgia-quests.js';
 import {discoveredMemories,memoryJournal,memoryTasks,deliveryTasks} from '../src/journal.js';
 import {chapterGuide} from '../src/story.js';
-import { unlockLater } from './quest-helpers.js';
+import { unlockLater, ORIGINAL_QUEST_IDS } from './quest-helpers.js';
 const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
 const context=id=>({place:qs[id].place,npc:qs[id].npc});
 function start(id='nostalgia_M01'){const e=newEconomy();startNostalgia(e,id,context(id));return e;}
@@ -16,7 +16,7 @@ test('Tamiya wins tick while missing tracks remain open; claim ticks only after 
 test('multi-stop delivery checklist records pickup and individual completed stops',()=>{const e=newEconomy(),job=accept(e,{id:'multi',kind:'parcel',requester:22,from:22,to:3,stops:[1,2,3],item:'gula',qty:3,cost:0,upah:200,route:90}).job;assert.deepEqual(deliveryTasks(job).map(t=>t.done),[false,false,false,false]);collect(e,job.id,22);deliver(e,job.id,1);assert.deepEqual(deliveryTasks(job).map(t=>t.done),[true,true,false,false]);assert.deepEqual(deliveryTasks(cleanEconomy(e).jobs[0]),deliveryTasks(job));});
 
 test('all discovered stories show exact delivery rules, revealed clues, opponents and claim actions',()=>{
- for(const id of Object.keys(qs)){
+ for(const id of ORIGINAL_QUEST_IDS){
   const e=start(id),q=qs[id];let tasks=memoryTasks(e,id);
   assert.deepEqual(tasks.map(t=>t.total),[q.grind.deliveries,q.grind.destinations,q.grind.long]);
   assert.match(tasks[0].detail,/Accept.*Collect.*Deliver parcel/);

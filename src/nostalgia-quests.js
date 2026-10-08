@@ -1,5 +1,6 @@
 // Long-term collectible quests. Progress only starts after accepting a story;
 // qualifying victories count from acceptance, without skipping the story trail.
+import { SET_TWO_QUESTS, SET_TWO_IDS } from './nostalgia-set-two.js?v=2.10.0';
 export const LONG_ROUTE = 60;
 const stop = (place, clue) => ({ place, clue });
 export const NOSTALGIA_QUESTS = {
@@ -35,7 +36,8 @@ export const NOSTALGIA_QUESTS = {
     stop(13, "Pak Abu finds the family postcard. Uncle Lim kept a little tower model from the old trip plan."),
     stop(25, "Uncle Lim has the tower model and an old photograph for the display. Pak Salleh can bring them together at the balai raya."),
     stop(32, "The display leaves a space for a future photograph. Win one congkak match, then return to Nenek. A win since accepting this story already counts.")
-  ], challenges: [{ game: 'congkak', count: 1, label: 'Beat Nenek at congkak' }], choices: [{ label: 'A journey still ahead', memory: 'For the journey we still hope to take, from Nenek.' }, { label: 'A memory shared at home', memory: 'A little tower from the night we shared our family\'s story.' }] }
+  ], challenges: [{ game: 'congkak', count: 1, label: 'Beat Nenek at congkak' }], choices: [{ label: 'A journey still ahead', memory: 'For the journey we still hope to take, from Nenek.' }, { label: 'A memory shared at home', memory: 'A little tower from the night we shared our family\'s story.' }] },
+  ...SET_TWO_QUESTS
 };
 const validPlace = n => Number.isInteger(n) && n >= 1 && n <= 38;
 const count = n => Number.isInteger(n) && n >= 0 && n <= 1e6 ? n : 0;
@@ -66,8 +68,13 @@ export function cleanNostalgia(v) {
     q.challenges.forEach((c,i)=>{const n=Math.min(count(raw.wins?.[i]),c.count);if(n)p.wins[i]=n;});
     p.tracks=Array.isArray(raw.tracks)?[...new Set(raw.tracks.filter(t=>['oval','eight','jaguh'].includes(t)))]:[];
     if(grindDone(q,p)) {
-      p.stage='trail';p.trail=raw.pacing===2?Math.min(count(raw.trail),q.trail.length):LEGACY_TRAIL_INDICES[id].filter(i=>i<count(raw.trail)).length;
+      p.stage='trail';p.trail=raw.pacing===2?Math.min(count(raw.trail),q.trail.length):(LEGACY_TRAIL_INDICES[id]||[]).filter(i=>i<count(raw.trail)).length;
       if(p.trail===q.trail.length){p.stage='challenge';update(q,p);}
+    }
+    if(q.set===2) {
+      p.startedDay=count(raw.startedDay)||1;
+      p.clueDays=Array.from({length:p.trail},(_,i)=>Math.max(p.startedDay,count(raw.clueDays?.[i])||p.startedDay));
+      p.completedJobs=q.trail.map(s=>s.delivery?.story).filter(tag=>tag&&Array.isArray(raw.completedJobs)&&raw.completedJobs.includes(tag));
     }
     out.quests[id]=p;
     const e=v.earned?.[id];
@@ -77,36 +84,61 @@ export function cleanNostalgia(v) {
   }
   return out;
 }
-export function canStartNostalgia(eco,id) {
+export function canStartNostalgia(eco,id,context={}) {
   const q=NOSTALGIA_QUESTS[id];
-  return !!q && (!q.later || Object.keys(eco.nostalgia.earned).length>0);
+  const earned=eco.nostalgia.earned;
+  return !!q && (!q.afterChapter || context.chapter>=q.afterChapter) && (!q.later || Object.keys(earned).length>0)
+    && (!q.requires || q.requires.every(id=>earned[id])) && (!q.newKeepsakes || SET_TWO_IDS.filter(id=>earned[id]).length>=q.newKeepsakes);
 }
 export function startNostalgia(eco,id,context) {
   const q=NOSTALGIA_QUESTS[id];
   if(!q||!matches(q,context))return {ok:false,reason:'not-here'};
   if(eco.nostalgia.quests[id])return {ok:false,reason:'started'};
-  if(!canStartNostalgia(eco,id))return {ok:false,reason:'locked'};
-  eco.nostalgia.quests[id]=fresh();return {ok:true};
+  if(!canStartNostalgia(eco,id,context))return {ok:false,reason:'locked'};
+  const p=fresh();if(q.set===2)Object.assign(p,{startedDay:count(context.day)||1,clueDays:[],completedJobs:[]});
+  update(q,p);eco.nostalgia.quests[id]=p;return {ok:true};
 }
 export function recordNostalgiaDelivery(eco,job) {
   for(const [id,p] of Object.entries(eco.nostalgia.quests)) {
-    const q=NOSTALGIA_QUESTS[id];if(!q||p.stage!=='grind')continue;
+    const q=NOSTALGIA_QUESTS[id];if(!q)continue;
+    const step=p.stage==='trail'?q.trail[p.trail]:null;
+    if(step?.delivery&&job.story===step.delivery.story&&job.from===step.delivery.from&&job.item===step.delivery.item&&JSON.stringify(job.stops)===JSON.stringify(step.delivery.stops)&&!p.completedJobs.includes(job.story)) {
+      p.completedJobs.push(job.story);p.clueDays.push(p.startedDay);p.trail++;
+      if(p.trail===q.trail.length){p.stage='challenge';update(q,p);}
+    }
+    if(p.stage!=='grind')continue;
     p.deliveries=Math.min(p.deliveries+1,q.grind.deliveries);
     for(const place of job.stops)if(!p.destinations.includes(place))p.destinations.push(place);
     if(job.route>=LONG_ROUTE)p.long=Math.min(p.long+1,q.grind.long);
     update(q,p);
   }
 }
-export function followNostalgiaClue(eco,id,place) {
+export function clueRequirement(eco,id,clock={}) {
+  const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id],step=p?.stage==='trail'?q?.trail[p.trail]:null;
+  if(!step)return {ok:false,reason:'not-trail'};
+  if(step.delivery&&!p.completedJobs.includes(step.delivery.story))return {ok:false,reason:'delivery',text:step.delivery.note,offer:step.delivery};
+  if(step.waitDays){const day=(p.clueDays[p.trail-1]||p.startedDay)+step.waitDays;if((clock.day||0)<day)return {ok:false,reason:'day',day,text:`Datang semula pada hari game ${day} atau selepasnya. Tidur di rumah selepas Maghrib untuk ke hari berikutnya.`};}
+  if(step.afterMinute&&(clock.minute===undefined||clock.minute<step.afterMinute))return {ok:false,reason:'time',text:'Datang ke balai raya selepas 19:00 pada mana-mana hari. Persediaan kamu kekal disimpan.'};
+  return {ok:true};
+}
+export function nostalgiaOffers(eco,gap=()=>0) {
+  return Object.entries(NOSTALGIA_QUESTS).flatMap(([id,q])=>{const p=eco.nostalgia.quests[id],d=p?.stage==='trail'?q.trail[p.trail]?.delivery:null;
+    if(!d||p.completedJobs.includes(d.story)||eco.jobs.some(j=>j.story===d.story))return [];
+    return [{...d,stops:[...d.stops],route:Math.round(d.stops.reduce((n,to,i)=>n+gap(i?d.stops[i-1]:d.from,to),0))}];
+  });
+}
+export function followNostalgiaClue(eco,id,place,clock={}) {
   const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];
   if(!q||p?.stage!=='trail'||q.trail[p.trail]?.place!==place)return {ok:false};
+  const requirement=clueRequirement(eco,id,clock);if(!requirement.ok)return requirement;
+  if(q.set===2)p.clueDays.push(Math.max(p.startedDay,count(clock.day)||p.startedDay));
   const clue=q.trail[p.trail++].clue;if(p.trail===q.trail.length){p.stage='challenge';update(q,p);}return {ok:true,clue};
 }
 export function recordNostalgiaWin(eco,event) {
   if(!eco.nostalgia)return;
   for(const [id,p] of Object.entries(eco.nostalgia.quests)) {
     const q=NOSTALGIA_QUESTS[id];if(!q||!['grind','trail','challenge'].includes(p.stage))continue;
-    q.challenges.forEach((c,i)=>{if(c.game!==event.game||c.level&&c.level!==event.level||c.opponent&&c.opponent!==event.opponent)return;p.wins[i]=Math.min((p.wins[i]||0)+1,c.count);if(c.tracks&&c.tracks.includes(event.track)&&!p.tracks.includes(event.track))p.tracks.push(event.track);});
+    q.challenges.forEach((c,i)=>{if(c.game!==event.game||c.level&&c.level!==event.level||c.opponent&&c.opponent!==event.opponent||c.tracks&&!c.tracks.includes(event.track))return;p.wins[i]=Math.min((p.wins[i]||0)+1,c.count);if(c.tracks&&!p.tracks.includes(event.track))p.tracks.push(event.track);});
     update(q,p);
   }
 }
@@ -121,7 +153,7 @@ export function nostalgiaStatus(eco,id) {
   if(!p)return {stage:'locked',text:`Start with ${q.giver}.`};
   if(p.stage==='grind')return {stage:p.stage,text:`Deliveries ${p.deliveries}/${q.grind.deliveries} · Destinations ${p.destinations.length}/${q.grind.destinations} · Long routes (60 m+) ${p.long}/${q.grind.long}`};
   if(p.stage==='trail')return {stage:p.stage,text:`Story trail ${p.trail}/${q.trail.length} · Next clue at place #${q.trail[p.trail].place}`,place:q.trail[p.trail].place};
-  if(p.stage==='challenge')return {stage:p.stage,text:q.challenges.map((c,i)=>`${c.label}: ${p.wins[i]||0}/${c.count}${c.tracks?` · Tracks ${p.tracks.length}/3`:''}`).join(' / ')};
+  if(p.stage==='challenge')return {stage:p.stage,text:q.challenges.map((c,i)=>`${c.label}: ${p.wins[i]||0}/${c.count}${c.tracks?` · Tracks ${c.tracks.filter(t=>p.tracks.includes(t)).length}/${c.tracks.length}`:''}`).join(' / ')};
   if(p.stage==='ready')return {stage:p.stage,text:`Challenge complete. Return to ${q.giver} for your keepsake.`};
   return {stage:'earned',text:`Given by ${q.giver} · Game day ${eco.nostalgia.earned[id].day}`};
 }
@@ -132,5 +164,5 @@ export function storyNeedsHome(eco,place) {
   return Object.entries(NOSTALGIA_QUESTS).some(([id,q])=>{const p=eco.nostalgia.quests[id];return !q.npc&&q.place===place&&p?.stage==='ready'||p?.stage==='trail'&&q.trail[p.trail]?.place===place;});
 }
 export function nostalgiaAt(eco,context) {
-  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
+  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id,context))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
 }

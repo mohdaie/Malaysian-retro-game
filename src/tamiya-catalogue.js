@@ -1,6 +1,6 @@
-import { TAMIYA_PARTS, PART_SLOTS, partEffect } from './tamiya-parts.js?v=2.9.1';
-import { TAMIYA_CARS, CAR_IDS, carRating } from './tamiya-cars.js?v=2.9.1';
-import { itemThumbnail } from './item-ui.js?v=2.9.1';
+import { TAMIYA_PARTS, PART_SLOTS, partEffect } from './tamiya-parts.js?v=2.10.0';
+import { TAMIYA_CARS, CAR_IDS, carRating } from './tamiya-cars.js?v=2.10.0';
+import { itemThumbnail } from './item-ui.js?v=2.10.0';
 export function carStats(id) {
   const a=TAMIYA_CARS[id],list=document.createElement('dl');list.className='tamiya-stats';
   for(const [label,key] of [['Speed','speed'],['Grip','grip'],['Stability','stability']]){

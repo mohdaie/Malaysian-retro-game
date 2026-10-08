@@ -1,8 +1,10 @@
 // Original illustrated objects from a Malaysian town around 2001.
 // Kept separate from the economy so descriptions never change item/save IDs.
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.9.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.9.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.10.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.10.0';
 export const ITEM_ART = {
+  kabelav: ['Kabel AV', 'Kabel merah, putih dan kuning untuk malam tayangan jiran-jiran di balai raya.'],
+  kerusilipat: ['Kerusi lipat', 'Kerusi stor balai raya. Angkat elok-elok dan pulangkan selepas malam tayangan.'],
   beras: ['Beras kampung', 'Guni beras di kedai runcit. Mak pesan angkat elok-elok, jangan pecah di jalan.'],
   gula: ['Gula pasir', 'Plastik gula diikat getah, bekalan untuk teh panas dan kuih petang.'],
   teh: ['Teh waktu petang', 'Paket teh kertas dari kedai runcit. Bau teh panas dari dapur Nenek.'],

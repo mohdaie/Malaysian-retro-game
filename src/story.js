@@ -2,8 +2,9 @@
 // leading to the community's Pameran Kenangan. Pure: the game reports
 // events, `advance` moves the chapter on, `storyOffers` adds the chapter's
 // own jobs to the right counters.
-import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.9.1';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.9.1';
+import { NOSTALGIA_QUESTS, nostalgiaStatus } from './nostalgia-quests.js?v=2.10.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.10.0';
+import { SET_TWO_EXHIBITION } from './nostalgia-set-two.js?v=2.10.0';
 export const PLAYERS = {
   amir: { name: 'Amir', home: 1, parent: 'Mak', parentPlace: 1 },
   nur: { name: 'Nur', home: 11, parent: 'Ibu', parentPlace: 11 }
@@ -37,6 +38,7 @@ export function advance(step, event) {
 }
 
 export const EXHIBITION_LINKS = {
+  ...SET_TWO_EXHIBITION,
   nostalgia_M01: 'Faiz’s unfinished verse gives the exhibition a story about finding the courage to be heard.',
   nostalgia_P02: 'A comic passed between school bags brings the exhibition a story about friendship and borrowed laughter.',
   nostalgia_G01: 'Kak Lina’s old phone brings the exhibition a story about the call that helped someone come home.',
@@ -47,6 +49,7 @@ export const EXHIBITION_LINKS = {
 // Completed memories for the exhibition, rather than the quest's original
 // instructions. The player's chosen dedication is displayed alongside them.
 export const EXHIBITION_STORIES = {
+  ...SET_TWO_EXHIBITION,
   nostalgia_M01: 'Faiz kept his schoolyard rhymes in a notebook, but the other half belonged to a friend he had lost touch with. A library slip, an old classroom note and Pak Karim’s bus memories led back to their rehearsal promise. At the balai raya, the unfinished verse finally had somewhere to belong. Finishing a race taught us to keep trying through setbacks. Faiz passed on his spare Plan B album as a reminder of the courage it took to share his own words.',
   nostalgia_P02: 'This Ujang once travelled between school bags. Uncle Lim remembered a pupil saving recess money. The library’s return slip brought its little journey back to Nenek’s veranda. Nobody remembered every joke, but everyone remembered laughing together on a difficult school day. After a patient game of congkak, Cikgu Farid passed the comic on with a promise: borrowed laughter is worth returning. Its lending journey now has a place in our exhibition.',
   nostalgia_G01: 'The old Nokia had a contact saved simply as Home. Pak Abu’s address book and a workshop repair slip traced the family’s route through town. Pak Karim remembered the call that brought a relative home. Kak Lina kept the private family messages safe. The hard-won Dam Haji match became a lesson in waiting, thinking and not rushing the next move. She passed on the phone as a keepsake of a homecoming, a small object with a whole family behind it.',

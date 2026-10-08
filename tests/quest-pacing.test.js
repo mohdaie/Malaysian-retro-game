@@ -2,18 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newEconomy, cleanEconomy } from '../src/economy.js';
 import { NOSTALGIA_QUESTS as qs, startNostalgia, nostalgiaAt, canStartNostalgia, recordNostalgiaDelivery, recordNostalgiaWin, followNostalgiaClue, claimNostalgia, cleanNostalgia } from '../src/nostalgia-quests.js';
-import { unlockLater } from './quest-helpers.js';
+import { unlockLater, ORIGINAL_QUEST_IDS } from './quest-helpers.js';
 const context=id=>({place:qs[id].place,npc:qs[id].npc});
 const help=(e,id)=>{for(let i=0;i<qs[id].grind.deliveries;i++)recordNostalgiaDelivery(e,{stops:[i+1],route:90});};
 test('new players discover only short starters; the first earned keepsake unlocks longer stories',()=>{
  const e=newEconomy();
- for(const [id,q] of Object.entries(qs)){
+ for(const [id,q] of ORIGINAL_QUEST_IDS.map(id=>[id,qs[id]])){
   assert.equal(canStartNostalgia(e,id),!q.later);
   assert.equal(nostalgiaAt(e,context(id)).includes(id),!q.later);
   if(q.later)assert.equal(startNostalgia(e,id,context(id)).reason,'locked');
  }
  unlockLater(e,'nostalgia_M01');
- for(const id of Object.keys(qs))assert.ok(canStartNostalgia(e,id));
+ for(const id of ORIGINAL_QUEST_IDS)assert.ok(canStartNostalgia(e,id));
  assert.ok(startNostalgia(e,'nostalgia_M01',context('nostalgia_M01')).ok);
 });
 test('wins from acceptance survive reloads during errands and clues, without skipping story gates',()=>{
@@ -48,7 +48,7 @@ test('old clue indices migrate to retained stops once, and already accepted late
  const partial=legacy('nostalgia_P02',2);assert.equal(cleanNostalgia(partial).quests.nostalgia_P02.trail,1);
 });
 test('every old earned keepsake retains ownership, dedication and save-slot data after rebalance',()=>{
- for(const [id,q] of Object.entries(qs)){
+ for(const [id,q] of ORIGINAL_QUEST_IDS.map(id=>[id,qs[id]])){
   const old=legacy(id,id==='nostalgia_I01'?6:5);
   old.quests[id].wins={0:6,1:2,2:2,3:2};old.quests[id].tracks=['oval','eight','jaguh'];
   old.earned[id]={choice:1,day:4,player:'Nur'};

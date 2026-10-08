@@ -1,6 +1,6 @@
 // Only accepted stories and already revealed clues enter the book.
-import { NOSTALGIA_QUESTS, LONG_ROUTE } from './nostalgia-quests.js?v=2.9.1';
-import { itemLabel, rm } from './economy.js?v=2.9.1';
+import { NOSTALGIA_QUESTS, LONG_ROUTE, clueRequirement } from './nostalgia-quests.js?v=2.10.0';
+import { itemLabel, rm } from './economy.js?v=2.10.0';
 export const discoveredMemories = eco => Object.keys(NOSTALGIA_QUESTS).filter(id => eco.nostalgia.quests[id]);
 const phases={grind:'Bantu penduduk',trail:'Jejak petunjuk',challenge:'Menang cabaran',ready:'Jumpa semula pemberi',earned:'Kenangan diperoleh'};
 export const TRACK_NAMES={oval:'Oval',eight:'Selekoh Lapan',jaguh:'Jaguh'};
@@ -10,7 +10,7 @@ const challengeRoute=c=>`npc:${{congkak:'nenek',dam:'din',gasing:'atuk',tamiya:'
 function challengeTask(c,i,p){
  const labels={congkak:'Menang congkak dengan Nenek',dam:`Kalahkan Pak Din dalam Dam Haji${c.level?' · '+c.level[0].toUpperCase()+c.level.slice(1):''}`,gasing:`Kalahkan ${c.opponent==='atuk'?'Atuk':'Faiz'} dalam gasing`,tamiya:'Dapat tempat pertama dalam Tamiya'};
  const instructions={congkak:'Jumpa Nenek → Main congkak. Menang diperlukan; seri atau kalah tidak dikira.',dam:`Jumpa Pak Din → Main Dam Haji → pilih ${c.level?c.level[0].toUpperCase()+c.level.slice(1):'kesukaran yang diberi'}. Menang pada kesukaran lain tidak memenuhi tugas ini.`,gasing:`Jumpa ${c.opponent==='atuk'?'Atuk':'Faiz'} → Main gasing → pilih ${c.opponent==='atuk'?'Cabaran Atuk':'Lawan Faiz'}. Tamat dengan putaran lebih lama daripada lawan.`,tamiya:'Jumpa Faiz atau Mei Ling di padang → Main Tamiya · Jom Dash! → pilih track → tamat race di tempat pertama. Kereta pinjaman boleh digunakan.'};
- return row('win-'+i,labels[c.game],p.wins[i]||0,c.count,{detail:instructions[c.game],route:challengeRoute(c)});
+ return row('win-'+i,c.tracks?c.label:labels[c.game],p.wins[i]||0,c.count,{detail:instructions[c.game]+(c.tracks?` Track wajib: ${c.tracks.map(t=>TRACK_NAMES[t]).join(', ')}.`:''),route:challengeRoute(c)});
 }
 export function memoryTasks(eco,id){
  const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];if(!q||!p)return [];
@@ -18,11 +18,12 @@ export function memoryTasks(eco,id){
   row('deliveries','Selesaikan delivery',p.deliveries,q.grind.deliveries,{detail:'Delivery work / Requests → Accept → Collect atau Buy for → Deliver parcel di semua hentian. Satu kerja lengkap dikira sekali; sekadar Talk atau ambil parcel belum siap.'}),
   row('destinations','Hantar ke destinasi berbeza',p.destinations.length,q.grind.destinations,{detail:'Pilih kerja ke bangunan berlainan. Destinasi yang sama dikira sekali sahaja. Semua hentian kerja mesti selesai sebelum direkod.',places:[...p.destinations]}),
   row('long',`Selesaikan delivery dengan laluan ${LONG_ROUTE} m+`,p.long,q.grind.long,{detail:`Pilih tawaran yang menunjukkan jarak ${LONG_ROUTE} m atau lebih, kemudian siapkan kerja itu. Jarak tawaran digunakan; berjalan berpusing tidak menambah kiraan.`})
- ];
+ ].filter(t=>t.total>0);
  if(p.stage==='grind')return rows;
- for(let i=0;i<p.trail;i++)rows.push(row('clue-'+i,`Baca petunjuk ${i+1}`,1,1,{place:q.trail[i].place}));
+ for(let i=0;i<p.trail;i++)rows.push(row('clue-'+i,q.trail[i].label||`Baca petunjuk ${i+1}`,1,1,{place:q.trail[i].place}));
  if(p.stage==='trail'){
-  rows.push(row('clue-'+p.trail,`Baca petunjuk ${p.trail+1}`,0,1,{place:q.trail[p.trail].place,detail:'Di lokasi ini, buka Ada kisah untuk dicerita → Baca petunjuk. Sampai atau Talk sahaja tidak menanda tugas siap.',route:`place:${q.trail[p.trail].place}`}));return rows;
+  const step=q.trail[p.trail],job=step.delivery&&eco.jobs.find(j=>j.story===step.delivery.story);
+  rows.push(row('clue-'+p.trail,step.label||`Baca petunjuk ${p.trail+1}`,0,1,{place:step.place,detail:step.delivery?step.delivery.note+' Buka Ada kisah untuk dicerita → Terima parcel khas; Collect di pengirim dan Deliver parcel di semua hentian. Tugas ditanda selesai hanya selepas penghantaran terakhir.':`Di lokasi ini, buka Ada kisah untuk dicerita → Baca petunjuk. Sampai atau Talk sahaja tidak menanda tugas siap.${step.waitDays?' Datang pada hari game berikutnya selepas petunjuk sebelumnya; tidur di rumah selepas Maghrib.':''}${step.afterMinute?' Acara bermula 19:00, boleh datang pada mana-mana hari.':''}`,route:job?deliveryNext(job,n=>String(n)).route:`place:${step.place}`}));return rows;
  }
  for(const [i,c] of q.challenges.entries()){
   rows.push(challengeTask(c,i,p));
@@ -39,10 +40,15 @@ export function deliveryNext(job,placeName){
  const task=deliveryTasks(job).find(t=>!t.done);
  return {text:`${task.label} di ${placeName(task.place)} → ${job.status==='accepted'?(job.kind==='purchase'?'Buy for':'Collect'):'Deliver parcel'}.`,route:task.route};
 }
-export function memoryNext(eco,id,placeName){
+export function memoryNext(eco,id,placeName,clock={}){
  const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];if(!q||!p)return null;
- if(p.stage==='grind')return eco.jobs.length?deliveryNext(eco.jobs[0],placeName):{text:'Jumpa Pak Rahman → Delivery work → Accept satu kerja. Kemudian Collect / Buy for dan Deliver parcel. Ketiga-tiga syarat delivery di bawah mesti siap.',route:'npc:rahman'};
- if(p.stage==='trail')return {text:`Pergi ke ${placeName(q.trail[p.trail].place)} → Ada kisah untuk dicerita → Baca petunjuk.`,route:`place:${q.trail[p.trail].place}`};
+ if(p.stage==='grind')return eco.jobs.length?deliveryNext(eco.jobs[0],placeName):{text:'Jumpa Pak Rahman → Delivery work → Accept satu kerja. Kemudian Collect / Buy for dan Deliver parcel. Semua syarat delivery yang disenaraikan mesti siap.',route:'npc:rahman'};
+ if(p.stage==='trail'){
+  const step=q.trail[p.trail],requirement=clueRequirement(eco,id,clock);
+  if(step.delivery){const job=eco.jobs.find(j=>j.story===step.delivery.story);if(job)return deliveryNext(job,placeName);
+   return {text:`${step.delivery.note} Pergi ke ${placeName(step.place)} → Ada kisah untuk dicerita → Terima parcel khas.`,route:`place:${step.place}`};}
+  return {text:(!requirement.ok?requirement.text+' ':'')+`Pergi ke ${placeName(step.place)} → Ada kisah untuk dicerita → Baca petunjuk.`,route:`place:${step.place}`};
+ }
  if(p.stage==='challenge'){
   const tasks=memoryTasks(eco,id),task=tasks.find(t=>!t.done&&t.id!=='claim');
   return {text:task.detail+(task.id.startsWith('track-')?` Pilih track ${task.label.split(' · ')[1]}.`:''),route:task.route};
@@ -53,7 +59,8 @@ export function memoryNext(eco,id,placeName){
 export function memoryJournal(eco,id){
  const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];if(!q||!p)return null;
  const tasks=memoryTasks(eco,id);
- const progress=p.stage==='grind'?(Math.min(p.deliveries/q.grind.deliveries,1)+Math.min(p.destinations.length/q.grind.destinations,1)+Math.min(p.long/q.grind.long,1))/3:p.stage==='trail'?p.trail/q.trail.length:p.stage==='challenge'?q.challenges.reduce((n,c,i)=>n+Math.min((p.wins[i]||0)/c.count,c.tracks?p.tracks.length/c.tracks.length:1),0)/q.challenges.length:1;
+ const targets=[['deliveries',p.deliveries],['destinations',p.destinations.length],['long',p.long]].filter(([key])=>q.grind[key]>0);
+ const progress=p.stage==='grind'?targets.reduce((n,[key,value])=>n+Math.min(value/q.grind[key],1),0)/targets.length:p.stage==='trail'?p.trail/q.trail.length:p.stage==='challenge'?q.challenges.reduce((n,c,i)=>n+Math.min((p.wins[i]||0)/c.count,c.tracks?c.tracks.filter(t=>p.tracks.includes(t)).length/c.tracks.length:1),0)/q.challenges.length:1;
  return {id,title:q.title,giver:q.giver,stage:p.stage,phase:phases[p.stage],progress,tasks,done:tasks.filter(t=>t.done).length,nextPlace:p.stage==='trail'?q.trail[p.trail].place:null,note:p.trail>0?q.trail[p.trail-1].clue:q.intro};
 }
 export const CHAPTER_BRIEFS=['Jumpa Faiz atau Mei Ling di padang dan habiskan dialog.','Pak Rahman → Delivery work → Accept pesanan gula untuk Nenek.','Collect gula di Pak Rahman → Rumah Tok → Deliver parcel.','Nenek → Requests → Accept teh → Pak Rahman → Buy for → Nenek → Deliver parcel.','Nenek → Main congkak. Habiskan satu pusingan; tidak wajib menang.','Uncle Lim → Buy → beli satu collectible, seperti guli atau pelekat.','Pak Salleh → Chapter 1 · Prepare Pameran Kenangan. Habiskan dialog.','Teroka pekan → Ada kisah untuk dicerita → Terima tugas. Talk sahaja belum menerima tugas.','Siapkan semua syarat delivery dalam Buku → Tugasan.','Di lokasi petunjuk → Ada kisah untuk dicerita → Baca petunjuk.','Menang cabaran dengan lawan, kesukaran dan track yang ditetapkan.','Jumpa pemberi kisah → Ada kisah untuk dicerita → pilih dedikasi.','Pak Salleh → Share at Pameran Kenangan → habiskan dialog.','Chapter 1 siap. Teruskan kisah lain yang kau temui.'];

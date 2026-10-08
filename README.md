@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.9.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.10.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Install Retro Malaysia
 
@@ -36,7 +36,7 @@ Three tabs replace the long quest list: **Tugasan** holds the short chapter goal
 
 ## Long-term keepsake quests
 
-Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, Nokia 3310, Sony Walkman WM-EX9, Lightning Magnum and a KLCC miniature. Start with Ujang (3 deliveries) or Nenek’s KLCC story (4). Earning a first keepsake opens Nokia and Walkman (6 each), Too Phat’s album (8), and the playable Lightning Magnum championship (12). Follow 3–5 clues and win one game challenge; Lightning needs a win on every track. Qualifying wins count from acceptance, even before the clues. Existing saves retain accepted quests, earned keepsakes and discovered clue progress. Progress survives losses and reloads. Rewards include a personal dedication; Lightning Magnum is playable in the Tamiya garage. The catalogue reserves another 22 keepsakes for future chapters. See [quest requirements and photo credits](docs/NOSTALGIA.md).
+Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, Nokia 3310, Sony Walkman WM-EX9, Lightning Magnum and a KLCC miniature. Start with Ujang (3 deliveries) or Nenek’s KLCC story (4). Earning a first keepsake opens Nokia and Walkman (6 each), Too Phat’s album (8), and the playable Lightning Magnum championship (12). Follow 3–5 clues and win one game challenge; Lightning needs a win on every track. Qualifying wins count from acceptance, even before the clues. Existing saves retain accepted quests, earned keepsakes and discovered clue progress. Progress survives losses and reloads. Rewards include a personal dedication; Lightning Magnum is playable in the Tamiya garage. After Chapter 1, eight more keepsake stories open: Digimon, Tamagotchi, GEMPAK, Mutiara Naga, Senario VCD, Telekom phonecards, Proton Wira miniature and Charizard. They use illustrated delivery parcels, ordered investigations, next-day visits and existing game challenges. Mutiara Naga requires earned Ujang; Charizard requires three earned keepsakes from the new set. There are now 14 active keepsakes, with 14 catalogue entries reserved for later chapters. See [quest requirements and photo credits](docs/NOSTALGIA.md).
 
 ## The town's people
 

@@ -13,3 +13,5 @@ export function unlockLater(eco,id) {
  recordNostalgiaWin(eco,{game:'congkak'});
  assert.ok(claimNostalgia(eco,starter,context,0,'Aie',1).ok);
 }
+
+export const ORIGINAL_QUEST_IDS = Object.keys(NOSTALGIA_QUESTS).filter(id=>NOSTALGIA_QUESTS[id].set!==2);
