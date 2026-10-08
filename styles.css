@@ -197,3 +197,5 @@
 #counter-body>.journal-memory{grid-column:1/-1}
 @media(max-width:650px){.journal-grid{grid-template-columns:1fr}.journal-friends{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(orientation:landscape) and (max-height:500px){#book-panel{padding:6px}#book-panel .journal-modal{height:calc(100dvh - 12px);max-height:calc(100dvh - 12px);border-radius:12px}.journal-header{padding:8px 16px}.journal-header h2{font-size:22px}.journal-tabs{padding:4px 12px}.journal-tabs button{min-height:44px;font-size:12px}.journal-content{padding:12px 16px 20px}.journal-chapter{padding:12px}.journal-stats{margin-bottom:10px}.journal-empty{padding:15px 14px}.journal-empty .journal-art{width:64px;height:64px}}
+
+.audio-settings{border-top:1px solid #536b4730;padding-top:4px}.audio-settings .setting{margin:16px 0}.audio-volume output{display:block;color:var(--muted);font-size:11px;margin-top:4px}.audio-settings #music-status{margin:4px 0 18px;line-height:1.5}
