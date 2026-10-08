@@ -63,6 +63,7 @@ test('build release changes with file contents and includes nested game assets',
     await writeFile(join(root, 'index.html'), 'town');
     await writeFile(join(root, 'src/main.js'), 'old');
     await writeFile(join(root, 'manifest.webmanifest'), '{}');
+    await writeFile(join(root, 'admin.html'), 'admin');
     const first = await buildPwa(root, template);
     assert.deepEqual(first.files, ['index.html', 'src/main.js']);
     assert.equal((await buildPwa(root, template)).release, first.release);
@@ -95,6 +96,14 @@ test('other apps, the manifest, unknown assets and writes are not intercepted', 
   const w = await worker();
   for (const path of ['https://github.com/', '/Other-game/index.html', 'manifest.webmanifest', 'unknown.json']) assert.equal(await w.request(path), undefined);
   assert.equal(await w.request('src/main.js', { method: 'POST' }), undefined);
+});
+
+test('the admin page and its health checks always reach the network', async () => {
+  const w = await worker();
+  assert.equal(await w.request('admin.html', { mode: 'navigate' }), undefined);
+  assert.equal(await w.request('admin.html#access_token=x', { mode: 'navigate' }), undefined);
+  assert.equal(await w.request('src/main.js?v=2.8.1&health=1'), undefined);
+  assert.equal(await (await w.request('./', { mode: 'navigate' })).text(), 'offline town');
 });
 
 test('offline audio supports byte ranges and rejects ranges past the end', async () => {

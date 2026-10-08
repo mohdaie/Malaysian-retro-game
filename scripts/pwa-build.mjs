@@ -8,7 +8,7 @@ export async function buildPwa(root = 'dist', template = 'sw.js') {
     for (const entry of await readdir(join(root, directory), { withFileTypes: true })) {
       const path = directory ? `${directory}/${entry.name}` : entry.name;
       if (entry.isDirectory()) await walk(path);
-      else if (!['sw.js', 'manifest.webmanifest', '.nojekyll'].includes(path) && !/\.(md|txt)$/i.test(path)) files.push(path);
+      else if (!['sw.js', 'manifest.webmanifest', '.nojekyll', 'admin.html'].includes(path) && !/\.(md|txt)$/i.test(path)) files.push(path);
     }
   };
   await walk();

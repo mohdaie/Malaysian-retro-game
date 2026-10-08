@@ -340,6 +340,17 @@ All 68 items have original comic illustrations: 26 shop goods, five snacks, 24 c
 
 Rebuild the checked-in SVG art with `npm run art`. The images live in `assets/items/`, item names/notes in `src/item-art.js`, and shared image UI in `src/item-ui.js`.
 
+## Game health and the admin page
+
+`admin.html` (https://retromalaysia.space/admin.html) shows how the published game is doing.
+
+- **Game health** needs no sign-in. It checks that the site is up and which version it serves, that the key files load (game code, 3D engine, Amir, Nur, animations, music), that the offline package is built, and that the last publish and test runs on GitHub passed. **Run live check** loads the real game in a small window and times how long it takes to be ready to play.
+- **Visitors** and **Debug status** need the owner's sign-in (an emailed link to the owner's address). They show unique devices today, this week and this month, visitors per day, phone/tablet/desktop, browser or installed app, and versions. They also list errors players hit (grouped, with stack traces and versions), failed loads, frame rate and load time after a minute of play, and the latest reports.
+
+**What the game reports, and privacy.** `src/telemetry.js` sends small anonymous reports to the game's Supabase database: that the game was opened (version, device type, browser or app, operating system, browser name, screen size, language), load time and frame rate once a visit, and uncaught errors (message, file and line, a short stack). Identity is a random device id kept in the browser and a random id per visit. It sends no names, saves, IP addresses or cookies. Reports come only from the published site, are kept 90 days, and nobody but the signed-in owner can read them. A browser stops reporting when localStorage `retro-malaysia-notrack` is `1`, which is the admin page's "Don't count this browser" box.
+
+The reports live in the `retro_events` table of the owner's Supabase project, with `retro_report()` (anyone, write-only, validated and rate-limited) and `retro_dashboard()` (owner only).
+
 ## Controls
 
 | Action | Desktop | Phone |
