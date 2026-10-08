@@ -27,6 +27,9 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== new URL(ROOT).origin || !url.href.startsWith(ROOT)) return;
+  // The admin page and its health checks always go to the network: they
+  // must see what is published now, not this device's offline copy.
+  if (url.pathname.endsWith('/admin.html') || url.searchParams.has('health')) return;
   if (request.mode === 'navigate') {
     // Serve this release's entrypoint even online. A background worker update
     // prepares the next complete release while progress stays on this origin.

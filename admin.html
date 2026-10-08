@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Retro Malaysia Admin</title>
+<style>
+  /* Admin page for retromalaysia.space: game health (public checks),
+     visitors and debug (Supabase, signed in as the owner only). */
+  :root {
+    --bg: #f4f3ef; --surface: #fcfcfb; --surface-2: #f0efec; --line: #e2e0da;
+    --ink: #1d1c1a; --ink-2: #55534d; --ink-3: #85827a;
+    --series: #2a78d6; --series-soft: rgba(42,120,214,.12);
+    --good: #0ca30c; --good-ink: #006300; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+    --focus: #2a78d6; color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --line: #33322f;
+      --ink: #f0efec; --ink-2: #bdbab2; --ink-3: #8c897f;
+      --series: #3987e5; --series-soft: rgba(57,135,229,.18); --good-ink: #0ca30c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --line: #33322f;
+    --ink: #f0efec; --ink-2: #bdbab2; --ink-3: #8c897f;
+    --series: #3987e5; --series-soft: rgba(57,135,229,.18); --good-ink: #0ca30c; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .01em; }
+  header h1 small { color: var(--ink-3); font-weight: 500; margin-left: 6px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  main { max-width: 1120px; margin: 0 auto; padding: 16px; display: grid; gap: 20px; }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+  section > h2 { font-size: 15px; margin: 0 0 4px; }
+  section > p.lead { margin: 0 0 14px; color: var(--ink-2); font-size: 13.5px; }
+  button, select, input { font: inherit; color: inherit; }
+  button { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  button.primary { background: var(--series); border-color: var(--series); color: #fff; }
+  button:disabled { opacity: .55; cursor: default; }
+  select, input[type="email"], input[type="url"] { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .tile { background: var(--surface-2); border-radius: 10px; padding: 12px; min-width: 0; }
+  .tile .label { color: var(--ink-2); font-size: 12.5px; }
+  .tile .value { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 2px; }
+  .tile .note { color: var(--ink-3); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+  .status { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .status::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-3); flex: none; }
+  .status[data-s="good"]::before { background: var(--good); } .status[data-s="good"] { color: var(--good-ink); }
+  .status[data-s="warning"]::before { background: var(--warning); }
+  .status[data-s="critical"]::before { background: var(--critical); } .status[data-s="critical"] { color: var(--critical); }
+  .status[data-s="pending"]::before { background: transparent; border: 2px solid var(--ink-3); width: 6px; height: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; color: var(--ink-2); font-weight: 600; font-size: 12.5px; border-bottom: 1px solid var(--line); padding: 6px 8px; }
+  td { border-bottom: 1px solid var(--line); padding: 7px 8px; vertical-align: top; overflow-wrap: anywhere; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  .scroll table { min-width: 600px; }
+  .muted { color: var(--ink-3); }
+  code, pre { font: 12.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-2); padding: 8px; border-radius: 8px; margin: 6px 0 0; max-height: 220px; overflow: auto; }
+  details > summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .split { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .bars { display: grid; gap: 6px; }
+  .bar-row { display: grid; grid-template-columns: minmax(70px, 30%) 1fr auto; gap: 8px; align-items: center; font-size: 13px; }
+  .bar-row .track { height: 10px; }
+  .bar-row .fill { height: 10px; background: var(--series); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .bar-row .n { font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); padding: 6px 8px; border-radius: 6px; font-size: 12.5px; white-space: nowrap; transform: translate(-50%, -110%); }
+  .login { max-width: 460px; display: grid; gap: 10px; }
+  .login .row input { flex: 1 1 220px; }
+  .notice { font-size: 13px; color: var(--ink-2); }
+  .err { color: var(--critical); font-size: 13px; }
+  iframe.preview { width: 100%; max-width: 360px; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 8px; background: #000; }
+  .hidden { display: none !important; }
+  @media (max-width: 520px) { .tile .value { font-size: 22px; } header { padding: 12px 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Retro Malaysia <small>Admin</small></h1>
+  <div class="controls">
+    <label class="muted" for="range">Period</label>
+    <select id="range"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option></select>
+    <button id="refresh" type="button">Refresh</button>
+    <button id="logout" type="button" class="hidden">Sign out</button>
+  </div>
+</header>
+<main>
+  <section id="health" aria-labelledby="health-title">
+    <h2 id="health-title">Game health</h2>
+    <p class="lead">The published site, its key files, the offline package and the last builds. These checks need no sign-in.</p>
+    <div class="grid" id="health-tiles"></div>
+    <h3 style="font-size:14px;margin:18px 0 6px">Key files</h3>
+    <div class="scroll"><table id="files"><thead><tr><th>File</th><th>Status</th><th class="num">Size</th><th class="num">Time</th></tr></thead><tbody></tbody></table></div>
+    <h3 style="font-size:14px;margin:18px 0 6px">Recent builds (GitHub)</h3>
+    <div class="scroll"><table id="builds"><thead><tr><th>Workflow</th><th>Result</th><th>Commit</th><th class="num">When</th></tr></thead><tbody></tbody></table></div>
+    <h3 style="font-size:14px;margin:18px 0 6px">Live check</h3>
+    <p class="notice">Loads the real game in a small window and waits until it is ready to play. It is not counted as a visitor.</p>
+    <div class="row"><button id="live-run" type="button" class="primary">Run live check</button><span id="live-status" class="status" data-s="pending">Not run</span></div>
+    <iframe id="live-frame" class="preview hidden" title="Live game check" loading="lazy"></iframe>
+  </section>
+
+  <section id="signin" aria-labelledby="signin-title">
+    <h2 id="signin-title">Sign in for visitors and debug</h2>
+    <p class="lead">Only the owner's email can see visitor numbers and error reports.</p>
+    <form class="login" id="login-form">
+      <div class="row"><input id="email" type="email" required value="ayiepts@gmail.com" autocomplete="email" aria-label="Email"><button class="primary" type="submit">Email me a sign-in link</button></div>
+      <p id="login-note" class="notice"></p>
+      <details><summary>The link opened another page instead?</summary>
+        <p class="notice">Copy the link from the email (long-press or right-click, Copy link) and paste it here.</p>
+        <div class="row"><input id="paste" type="url" placeholder="https://…supabase.co/auth/v1/verify?token=…" aria-label="Sign-in link"><button id="paste-go" type="button">Sign in</button></div>
+      </details>
+      <p id="login-error" class="err"></p>
+    </form>
+  </section>
+
+  <section id="visitors" class="hidden" aria-labelledby="visitors-title">
+    <h2 id="visitors-title">Visitors</h2>
+    <p class="lead">Unique devices that opened the game (anonymous random ids). Days are Malaysia time.</p>
+    <div class="grid" id="visitor-tiles"></div>
+    <h3 style="font-size:14px;margin:18px 0 2px">Visitors per day</h3>
+    <div class="chart" id="daily-chart"></div>
+    <details><summary>Table view</summary><div class="scroll"><table id="daily-table"><thead><tr><th>Day</th><th class="num">Visitors</th><th class="num">Visits</th></tr></thead><tbody></tbody></table></div></details>
+    <div class="split" style="margin-top:16px">
+      <div><h3 style="font-size:14px;margin:0 0 8px">Device</h3><div class="bars" id="by-device"></div></div>
+      <div><h3 style="font-size:14px;margin:0 0 8px">Browser or installed app</h3><div class="bars" id="by-mode"></div></div>
+      <div><h3 style="font-size:14px;margin:0 0 8px">Version</h3><div class="bars" id="by-version"></div></div>
+    </div>
+  </section>
+
+  <section id="debug" class="hidden" aria-labelledby="debug-title">
+    <h2 id="debug-title">Debug status</h2>
+    <p class="lead">Errors players hit, loading failures and frame rate after a minute of play.</p>
+    <div class="grid" id="debug-tiles"></div>
+    <h3 style="font-size:14px;margin:18px 0 6px">Errors</h3>
+    <div class="scroll"><table id="errors"><thead><tr><th>Message</th><th class="num">Times</th><th class="num">Devices</th><th>Versions</th><th class="num">Last seen</th></tr></thead><tbody></tbody></table></div>
+    <h3 style="font-size:14px;margin:18px 0 6px">Latest reports</h3>
+    <div class="scroll"><table id="recent"><thead><tr><th class="num">When</th><th>Type</th><th>Version</th><th>Device</th><th>Details</th></tr></thead><tbody></tbody></table></div>
+    <p class="notice" style="margin-top:12px"><label><input type="checkbox" id="notrack"> Don't count this browser as a visitor</label></p>
+  </section>
+</main>
+<script>
+(() => {
+  const SUPABASE = 'https://wkzrefbvjxqphkrduyqj.supabase.co', KEY = 'sb_publishable_Gn24T5ilCXGtftxWUOUOMA_C1kd6CPE';
+  const REPO = 'mohdaie/Malaysian-retro-game', BASE = new URL('./', location.href).href;
+  const $ = id => document.getElementById(id);
+  const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* ignore */ } } };
+  const ago = iso => {
+    if (!iso) return '–';
+    const s = Math.round((Date.now() - new Date(iso)) / 1000);
+    if (s < 60) return 'just now'; if (s < 3600) return `${Math.round(s / 60)} min ago`; if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+    return `${Math.round(s / 86400)} d ago`;
+  };
+  const size = n => n == null ? '–' : n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : n > 1024 ? `${Math.round(n / 1024)} KB` : `${n} B`;
+  const status = (s, label) => `<span class="status" data-s="${s}">${esc(label)}</span>`;
+  const tile = (label, value, note = '', s = null) => `<div class="tile"><div class="label">${esc(label)}</div><div class="value">${s ? status(s, value) : esc(value)}</div>${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;
+  const timed = async (url, options = {}) => {
+    const t = performance.now();
+    try { const r = await fetch(url, { cache: 'no-store', ...options }); return { r, ms: Math.round(performance.now() - t) }; }
+    catch (error) { return { error, ms: Math.round(performance.now() - t) }; }
+  };
+  const health = url => url + (url.includes('?') ? '&' : '?') + 'health=' + Date.now();
+
+  // ---------- Game health (public) ----------
+  let liveVersion = null;
+  async function checkHealth() {
+    const tiles = [];
+    const site = await timed(health(BASE + 'index.html'));
+    if (site.r?.ok) {
+      const html = await site.r.text();
+      liveVersion = (html.match(/boot\.js\?v=([0-9.]+)/) || [])[1] || null;
+      tiles[0] = tile('Live site', 'Up', `${site.ms} ms · version ${liveVersion || 'unknown'}`, 'good');
+    } else tiles[0] = tile('Live site', 'Down', site.error ? String(site.error.message) : `HTTP ${site.r?.status}`, 'critical');
+    const sw = await timed(health(BASE + 'sw.js'));
+    if (sw.r?.ok) {
+      const text = await sw.r.text(), release = (text.match(/const RELEASE = '([^']+)'/) || [])[1], count = (text.match(/const PRECACHE = (\[.*?\]);/s) || [])[1];
+      let files = 0; try { files = JSON.parse(count).length; } catch { /* ignore */ }
+      tiles[1] = tile('Offline package', release && release !== 'development' ? 'Ready' : 'Missing', release ? `release ${release.slice(0, 8)} · ${files} files` : 'no release id', release && release !== 'development' ? 'good' : 'warning');
+    } else tiles[1] = tile('Offline package', 'Missing', `HTTP ${sw.r?.status ?? 'error'}`, 'critical');
+    $('health-tiles').innerHTML = tiles.join('') + tile('Publishing', 'Checking…', '', 'pending') + tile('Checks (CI)', 'Checking…', '', 'pending');
+    const v = liveVersion ? `?v=${liveVersion}` : '';
+    const files = [['Game start (boot.js)', `src/boot.js${v}`], ['Game code (main.js)', `src/main.js${v}`], ['Health reporter', `src/telemetry.js${v}`], ['3D engine', 'vendor/three.module.js'],
+      ['Amir model', 'assets/models/amir.glb'], ['Nur model', 'assets/models/nur.glb'], ['Animations', 'assets/models/kids-mocap.glb'], ['Petrol pump', 'assets/models/petrol-pump.glb'], ['Music', 'assets/audio/sore-kampung-loop.mp3']];
+    const rows = await Promise.all(files.map(async ([name, path]) => {
+      const { r, ms, error } = await timed(health(BASE + path), { method: 'HEAD' });
+      const ok = r?.ok, len = r?.headers.get('content-length');
+      return `<tr><td>${esc(name)}<div class="muted"><code>${esc(path)}</code></div></td><td>${ok ? status('good', 'OK') : status('critical', error ? 'Unreachable' : `HTTP ${r.status}`)}</td><td class="num">${size(len == null ? null : Number(len))}</td><td class="num">${ms} ms</td></tr>`;
+    }));
+    $('files').tBodies[0].innerHTML = rows.join('');
+    await checkBuilds();
+  }
+  async function checkBuilds() {
+    const tiles = $('health-tiles');
+    const runsFor = async file => {
+      const { r } = await timed(`https://api.github.com/repos/${REPO}/actions/workflows/${file}/runs?per_page=4&branch=main`);
+      if (!r?.ok) return null;
+      return (await r.json()).workflow_runs;
+    };
+    const [pages, ci] = await Promise.all([runsFor('pages.yml'), runsFor('ci.yml')]);
+    const state = run => !run ? ['warning', 'Unknown'] : run.status !== 'completed' ? ['pending', 'Running'] : run.conclusion === 'success' ? ['good', 'Passed'] : ['critical', run.conclusion || 'Failed'];
+    const parts = [...tiles.children];
+    const set = (i, label, run, fallback) => {
+      const [s, text] = state(run);
+      parts[i].outerHTML = tile(label, run ? text : 'Unknown', run ? `${ago(run.updated_at)} · ${run.head_commit?.message.split('\n')[0].slice(0, 60) || ''}` : fallback, s);
+    };
+    set(2, 'Publishing', pages?.[0], 'GitHub did not answer (rate limit?)');
+    set(3, 'Checks (CI)', ci?.[0], 'GitHub did not answer (rate limit?)');
+    const runs = [...(pages || []).map(r => ['Publish', r]), ...(ci || []).map(r => ['Checks', r])].sort((a, b) => b[1].created_at.localeCompare(a[1].created_at)).slice(0, 6);
+    $('builds').tBodies[0].innerHTML = runs.length ? runs.map(([name, run]) => {
+      const [s, text] = state(run);
+      return `<tr><td>${esc(name)}</td><td>${status(s, text)}</td><td><a href="${esc(run.html_url)}" target="_blank" rel="noopener">${esc(run.head_commit?.message.split('\n')[0].slice(0, 80) || run.head_sha.slice(0, 7))}</a></td><td class="num">${ago(run.created_at)}</td></tr>`;
+    }).join('') : '<tr><td colspan="4" class="muted">GitHub did not answer. It allows 60 checks an hour per network; try again later.</td></tr>';
+  }
+  $('live-run').onclick = () => {
+    const frame = $('live-frame'), label = $('live-status'), button = $('live-run');
+    const started = performance.now();
+    button.disabled = true; label.dataset.s = 'pending'; label.textContent = 'Loading the game…';
+    frame.classList.remove('hidden'); frame.src = BASE + '?healthcheck=' + Date.now();
+    const finish = (s, text) => { clearInterval(timer); label.dataset.s = s; label.textContent = text; button.disabled = false; };
+    const timer = setInterval(() => {
+      const secs = Math.round((performance.now() - started) / 1000);
+      try {
+        const doc = frame.contentDocument, win = frame.contentWindow;
+        const panel = doc?.getElementById('error-panel');
+        if (panel && !panel.hidden) return finish('critical', `Failed after ${secs}s: ${doc.getElementById('error-text')?.textContent || 'error panel shown'}`);
+        if (win?.retroMalaysia && doc.getElementById('loading')?.hidden) return finish('good', `Ready to play in ${secs}s`);
+      } catch (error) { return finish('critical', `Could not inspect the game: ${error.message}`); }
+      if (secs > 90) finish('critical', 'Not ready after 90 s');
+      else label.textContent = `Loading the game… ${secs}s`;
+    }, 500);
+  };
+
+  // ---------- Sign-in (Supabase, email link) ----------
+  const SESSION_KEY = 'retro-admin-session';
+  let session = null;
+  try { session = JSON.parse(store.get(SESSION_KEY)); } catch { session = null; }
+  const saveSession = s => { session = s; store.set(SESSION_KEY, s ? JSON.stringify(s) : null); };
+  const fromTokens = t => ({ access: t.access_token, refresh: t.refresh_token, expires: Date.now() + (Number(t.expires_in) || 3600) * 1000 });
+  const auth = (path, body) => fetch(SUPABASE + '/auth/v1/' + path, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  // Returning from the email link: the session arrives in the address hash.
+  if (location.hash.includes('access_token=') || location.hash.includes('error')) {
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (h.get('access_token')) saveSession(fromTokens(Object.fromEntries(h)));
+    else if (h.get('error_description')) $('login-error').textContent = h.get('error_description');
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  async function token() {
+    if (!session) return null;
+    if (Date.now() < session.expires - 60000) return session.access;
+    const r = await auth('token?grant_type=refresh_token', { refresh_token: session.refresh });
+    if (!r.ok) { saveSession(null); return null; }
+    saveSession(fromTokens(await r.json()));
+    return session.access;
+  }
+  $('login-form').onsubmit = async event => {
+    event.preventDefault();
+    $('login-error').textContent = ''; $('login-note').textContent = 'Sending…';
+    const r = await auth('otp?redirect_to=' + encodeURIComponent(location.origin + location.pathname), { email: $('email').value.trim(), create_user: true });
+    if (r.ok) $('login-note').textContent = 'Check your email and open the sign-in link on this device. It works once and expires in an hour.';
+    else { $('login-note').textContent = ''; $('login-error').textContent = (await r.json().catch(() => ({}))).msg || `Could not send the link (HTTP ${r.status}). Supabase allows only a few emails an hour.`; }
+  };
+  $('paste-go').onclick = async () => {
+    $('login-error').textContent = '';
+    let link; try { link = new URL($('paste').value.trim()); } catch { $('login-error').textContent = 'That is not a link.'; return; }
+    const tokenHash = link.searchParams.get('token') || link.searchParams.get('token_hash');
+    if (!tokenHash) { $('login-error').textContent = 'The link has no sign-in token.'; return; }
+    const r = await auth('verify', { type: link.searchParams.get('type') === 'signup' ? 'signup' : 'magiclink', token_hash: tokenHash });
+    const body = await r.json().catch(() => ({}));
+    if (r.ok && body.access_token) { saveSession(fromTokens(body)); $('paste').value = ''; loadData(); }
+    else $('login-error').textContent = body.msg || body.error_description || 'That link did not work. It may be used or expired; send a new one.';
+  };
+  $('logout').onclick = async () => {
+    const t = session?.access;
+    saveSession(null); showSignedIn(false);
+    if (t) fetch(SUPABASE + '/auth/v1/logout', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t } }).catch(() => {});
+  };
+  function showSignedIn(on) {
+    $('signin').classList.toggle('hidden', on);
+    for (const id of ['visitors', 'debug', 'logout']) $(id).classList.toggle('hidden', !on);
+  }
+
+  // ---------- Visitors and debug (owner only) ----------
+  async function loadData() {
+    const t = await token();
+    if (!t) { showSignedIn(false); return; }
+    const r = await fetch(SUPABASE + '/rest/v1/rpc/retro_dashboard', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_days: Number($('range').value) }) });
+    if (r.status === 401 || r.status === 403) {
+      showSignedIn(false);
+      $('login-error').textContent = r.status === 403 ? 'This email is not the owner account.' : 'Please sign in again.';
+      if (r.status === 401) saveSession(null);
+      return;
+    }
+    if (!r.ok) { $('login-error').textContent = `Could not load the reports (HTTP ${r.status}).`; return; }
+    showSignedIn(true);
+    render(await r.json());
+  }
+  function bars(el, obj) {
+    const entries = Object.entries(obj || {}).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...entries.map(e => e[1]));
+    el.innerHTML = entries.length ? entries.map(([k, n]) => `<div class="bar-row"><span>${esc(k)}</span><span class="track"><div class="fill" style="width:${(n / max) * 100}%"></div></span><span class="n">${n}</span></div>`).join('') : '<p class="muted">No visits yet.</p>';
+  }
+  function daily(rows, days) {
+    // One series: visitors per day, columns from a shared baseline.
+    const byDay = new Map(rows.map(r => [r.day, r]));
+    const list = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(Date.now() + 8 * 3600000 - i * 86400000).toISOString().slice(0, 10);
+      list.push(byDay.get(d) || { day: d, visitors: 0, sessions: 0 });
+    }
+    const W = Math.max(300, Math.round($('daily-chart').clientWidth || 720)), H = 200, L = 34, B = 22, T = 10, max = Math.max(4, ...list.map(r => r.visitors));
+    const step = Math.ceil(max / 4), top = step * 4, slot = (W - L) / list.length, bw = Math.min(24, Math.max(2, slot - 2));
+    const y = v => T + (H - T - B) * (1 - v / top);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitors per day for the last ${days} days">`;
+    for (let g = 0; g <= 4; g++) svg += `<line x1="${L}" x2="${W}" y1="${y(g * step)}" y2="${y(g * step)}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/><text x="${L - 6}" y="${y(g * step) + 4}" text-anchor="end" font-size="11" fill="var(--ink-3)">${g * step}</text>`;
+    list.forEach((r, i) => {
+      const x = L + i * slot + (slot - bw) / 2, h = (H - T - B) - (y(r.visitors) - T), rr = Math.min(4, bw / 2, h);
+      if (r.visitors > 0) svg += `<path d="M${x},${H - B} V${y(r.visitors) + rr} q0,-${rr} ${rr},-${rr} h${bw - 2 * rr} q${rr},0 ${rr},${rr} V${H - B} Z" fill="var(--series)"/>`;
+      svg += `<rect class="hit" data-i="${i}" x="${L + i * slot}" y="${T}" width="${slot}" height="${H - T - B}" fill="transparent"/>`;
+      if (i === list.length - 1 || (days <= 7) || (i % Math.ceil(list.length / Math.max(3, Math.floor(W / 110))) === 0 && list.length - 1 - i >= Math.ceil(list.length / 8))) svg += `<text x="${Math.min(L + i * slot + slot / 2, W - 18)}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--ink-3)">${r.day.slice(5)}</text>`;
+    });
+    svg += '</svg><div class="tip hidden"></div>';
+    const el = $('daily-chart'); el.innerHTML = svg;
+    const tip = el.querySelector('.tip');
+    el.querySelector('svg').addEventListener('pointermove', event => {
+      const hit = event.target.closest('.hit'); if (!hit) { tip.classList.add('hidden'); return; }
+      const r = list[hit.dataset.i], box = el.getBoundingClientRect();
+      tip.innerHTML = `<b>${esc(r.day)}</b> · ${r.visitors} visitor${r.visitors === 1 ? '' : 's'} · ${r.sessions} visit${r.sessions === 1 ? '' : 's'}`;
+      tip.style.left = Math.min(Math.max(event.clientX - box.left, 90), box.width - 90) + 'px'; tip.style.top = (event.clientY - box.top) + 'px'; tip.classList.remove('hidden');
+    });
+    el.querySelector('svg').addEventListener('pointerleave', () => tip.classList.add('hidden'));
+    $('daily-table').tBodies[0].innerHTML = list.slice().reverse().map(r => `<tr><td>${esc(r.day)}</td><td class="num">${r.visitors}</td><td class="num">${r.sessions}</td></tr>`).join('');
+  }
+  let lastData = null;
+  addEventListener('resize', () => { if (lastData) daily(lastData.daily || [], Number($('range').value)); });
+  function render(d) {
+    lastData = d;
+    const days = Number($('range').value), v = d.visitors || {};
+    $('visitor-tiles').innerHTML = tile('Today', v.today ?? 0, 'unique devices') + tile('Last 7 days', v.week ?? 0, 'unique devices') + tile('Last 30 days', v.month ?? 0, 'unique devices') + tile(`Visits (${days} d)`, v.sessions ?? 0, 'game opened');
+    daily(d.daily || [], days);
+    bars($('by-device'), d.devices); bars($('by-mode'), d.modes); bars($('by-version'), d.versions);
+    const p = d.perf || {}, errors = d.errors || [];
+    const fps = p.fps_median == null ? null : Number(p.fps_median);
+    const errorCount = errors.filter(e => e.kind === 'error').reduce((n, e) => n + e.count, 0), fails = errors.filter(e => e.kind === 'load_fail').reduce((n, e) => n + e.count, 0);
+    $('debug-tiles').innerHTML =
+      tile('Errors', String(errorCount), `${errors.filter(e => e.kind === 'error').length} kinds in ${days} days`, errorCount ? 'warning' : 'good') +
+      tile('Failed loads', String(fails), 'error screen shown to a player', fails ? 'critical' : 'good') +
+      tile('Frame rate (median)', fps == null ? 'No data' : `${Math.round(fps)} fps`, p.fps_p10 == null ? 'after a minute of play' : `slowest 10%: ${Math.round(p.fps_p10)} fps · ${p.slow_devices} slow devices`, fps == null ? null : fps >= 40 ? 'good' : fps >= 24 ? 'warning' : 'critical') +
+      tile('Load time (median)', p.load_median_ms == null ? 'No data' : `${(p.load_median_ms / 1000).toFixed(1)} s`, `${p.reports || 0} reports`);
+    $('errors').tBodies[0].innerHTML = errors.length ? errors.map(e => `<tr><td>${status(e.kind === 'load_fail' ? 'critical' : 'warning', e.kind === 'load_fail' ? 'Failed load' : 'Error')}<div>${esc(e.message)}</div><div class="muted"><code>${esc(e.where)}</code></div>${e.sample?.stack ? `<details><summary>Stack</summary><pre>${esc(e.sample.stack)}</pre></details>` : ''}</td><td class="num">${e.count}</td><td class="num">${e.devices}</td><td>${esc((e.versions || []).join(', '))}</td><td class="num">${ago(e.last)}</td></tr>`).join('') : `<tr><td colspan="5">${status('good', 'No errors reported')}</td></tr>`;
+    const describe = r => {
+      const x = r.data || {};
+      if (r.kind === 'open') return [x.form, x.mode, x.os, x.browser, x.screen].filter(Boolean).join(' · ');
+      if (r.kind === 'perf') return `${x.fps} fps · loaded in ${(x.loadMs / 1000).toFixed(1)} s · ${x.w}×${x.h}`;
+      return x.message || '';
+    };
+    $('recent').tBodies[0].innerHTML = (d.recent || []).length ? d.recent.map(r => `<tr><td class="num">${ago(r.at)}</td><td>${esc({ open: 'Visit', perf: 'Performance', error: 'Error', load_fail: 'Failed load' }[r.kind] || r.kind)}</td><td>${esc(r.version)}</td><td><code>${esc(r.device)}</code></td><td>${esc(describe(r))}</td></tr>`).join('') : '<tr><td colspan="5" class="muted">No reports yet.</td></tr>';
+  }
+
+  $('notrack').checked = store.get('retro-malaysia-notrack') === '1';
+  $('notrack').onchange = () => store.set('retro-malaysia-notrack', $('notrack').checked ? '1' : null);
+  $('range').onchange = loadData;
+  $('refresh').onclick = () => { checkHealth(); loadData(); };
+  checkHealth();
+  loadData();
+})();
+</script>
+</body>
+</html>
