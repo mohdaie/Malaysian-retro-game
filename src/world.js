@@ -1,22 +1,22 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.9.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.9.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.9.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.9.0';
-import { createProps } from './props.js?v=2.9.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.9.0';
-import { ACTIONS } from './actions.js?v=2.9.0';
-import { createWalkability } from './collision.js?v=2.9.0';
-import { createStorefronts } from './storefronts.js?v=2.9.0';
-import { createLandmarks } from './landmarks.js?v=2.9.0';
-import { loadTownCars } from './town-cars.js?v=2.9.0';
-import { loadTownBus } from './town-bus.js?v=2.9.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.9.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.9.0';
-import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.9.0';
-import { findWalkRoute } from './map-navigation.js?v=2.9.0';
-import { createTrees } from './trees.js?v=2.9.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.9.0';
+import { createCharacter } from './characters.js?v=2.9.1';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.9.1';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.9.1';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.9.1';
+import { createProps } from './props.js?v=2.9.1';
+import { ROUTINES, createRoutine } from './routines.js?v=2.9.1';
+import { ACTIONS } from './actions.js?v=2.9.1';
+import { createWalkability } from './collision.js?v=2.9.1';
+import { createStorefronts } from './storefronts.js?v=2.9.1';
+import { createLandmarks } from './landmarks.js?v=2.9.1';
+import { loadTownCars } from './town-cars.js?v=2.9.1';
+import { loadTownBus } from './town-bus.js?v=2.9.1';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.9.1';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.9.1';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.9.1';
+import { findWalkRoute } from './map-navigation.js?v=2.9.1';
+import { createTrees } from './trees.js?v=2.9.1';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.9.1';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -688,12 +688,12 @@ export async function makeWorld(canvas) {
     n.errand=createErrand(key,home,routes,at=>createRoutine(ROUTINES[key],at,n.walk,ACTIONS),spot=>createRoutine(AWAY,spot,n.walk,ACTIONS));n.routes=routes;
   }
   // The extras (crowds.js): spots near each gathering place, nudged clear of
-  // walls and everyone else, facing the middle of their group; the paths
+  // walls, everyone's posts and the errand runners' stand spots, facing the middle of their group; the paths
   // they run or walk between doors and spots are planned here once.
   const placeOf=id=>BUILDINGS.find(b=>b.id===id),crowd=[],spots=[];
   function crowdSpot(place,[r,f]){
     const b=placeOf(place),dx=b.door.x-b.x,dz=b.door.z-b.z,len=Math.hypot(dx,dz)||1,ox=dx/len,oz=dz/len,x=b.door.x-oz*r+ox*f,z=b.door.z+ox*r+oz*f;
-    const ok=(px,pz)=>clear(px,pz)&&clear(px+.3,pz)&&clear(px-.3,pz)&&clear(px,pz+.3)&&clear(px,pz-.3)&&people.every(p=>Math.hypot(p.x-px,p.z-pz)>1.4)&&spots.every(p=>Math.hypot(p.x-px,p.z-pz)>.9);
+    const ok=(px,pz)=>clear(px,pz)&&clear(px+.3,pz)&&clear(px-.3,pz)&&clear(px,pz+.3)&&clear(px,pz-.3)&&[...people,...taken].every(p=>Math.hypot(p.x-px,p.z-pz)>1.4)&&spots.every(p=>Math.hypot(p.x-px,p.z-pz)>.9);
     for(const rad of [0,.6,1.2,1.8,2.6])for(let i=0;i<(rad?12:1);i++){const px=x+Math.cos(i*Math.PI/6)*rad,pz=z+Math.sin(i*Math.PI/6)*rad;if(ok(px,pz)){const spot={x:px,z:pz,place};spots.push(spot);return spot;}}
     return null;
   }
