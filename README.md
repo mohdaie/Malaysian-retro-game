@@ -1,6 +1,8 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.10.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.11.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+
+The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
 ## Install Retro Malaysia
 

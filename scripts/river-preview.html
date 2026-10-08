@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>River review · Retro Malaysia</title>
+<script type="importmap">{"imports":{"three":"../vendor/three.module.js","three/addons/":"../vendor/addons/"}}</script>
+<style>
+[hidden]{display:none!important}body{margin:0;background:#192d29;font:14px system-ui;color:#fff}canvas{display:block;width:100vw;height:100vh}header{position:fixed;top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#142a25dd;padding:10px;border-radius:10px}strong{margin-right:auto}button,select{font:inherit;background:#f2e6ce;color:#203c32;border:0;border-radius:6px;padding:6px 10px}#status{position:fixed;bottom:12px;left:12px;background:#142a25dd;padding:8px 12px;border-radius:8px}
+</style>
+<canvas id="view"></canvas>
+<header><strong>River review · v2.11.0 · unmerged</strong><select id="viewpoint"><option value="overview">Overview</option><option value="bridge">Under the bridge</option><option value="bank">At the bank</option></select><select id="light"><option value="840">Afternoon</option><option value="1125">Dusk</option><option value="1260">Night</option></select><button id="animate">Play water</button></header>
+<div id="status">Loading the game scene…</div>
+<script type="module">
+import {makeWorld} from '../src/world.js?v=2.11.0';
+import {skyAt} from '../src/clock.js?v=2.11.0';
+const world=await makeWorld(document.getElementById('view'));
+let minute=840,view='overview',elapsed=6,playing=false,previous;
+const cameras={overview:[[-46,17,57],[-65,-.3,29],48],bridge:[[-74,2.2,47],[-65,-.4,34],53],bank:[[-58.7,1.75,22],[-65,-.5,15],58]};
+function render(options={}){
+ minute=options.minute??minute;view=options.view??view;elapsed=options.time??elapsed;
+ const [position,target,fov]=cameras[view];world.resize();world.camera.fov=fov;world.camera.position.set(...position);world.camera.lookAt(...target);world.camera.updateProjectionMatrix();
+ world.setSky(skyAt(minute));world.updateSun(-65,29);world.wind.value=6;world.updateRiver(elapsed);world.renderer.render(world.scene,world.camera);
+ const river=world.riverSnapshot();document.getElementById('status').textContent=`Air ${Math.round((river.ground-river.water)*100)} cm bawah tanah · ${river.rocks} batu · ${river.grass} rumpun rumput`;
+}
+document.getElementById('viewpoint').onchange=e=>render({view:e.target.value});
+document.getElementById('light').onchange=e=>render({minute:Number(e.target.value)});
+function frame(now){if(!playing)return;elapsed+=previous?(now-previous)/1000:0;previous=now;render();requestAnimationFrame(frame);}
+document.getElementById('animate').onclick=e=>{playing=!playing;previous=undefined;e.target.textContent=playing?'Pause water':'Play water';if(playing)requestAnimationFrame(frame);};
+window.addEventListener('resize',()=>render());window.riverReview={world,render};render();
+</script>
+</html>
