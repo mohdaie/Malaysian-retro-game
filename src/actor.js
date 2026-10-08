@@ -482,7 +482,7 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
 // lengths. A ground lock keeps the feet on the floor.
 const STAND = .065, LEG = .673;
 // Where each drawn face sits, as fractions of the head's bind-pose bounds.
-const FACE_RECTS = { amir: { halfWidth: .42, bottom: .0, top: .6 } };
+const FACE_RECTS = { amir: { kind: 'amir', halfWidth: .42, bottom: .0, top: .6 }, nur: { kind: 'nur', halfWidth: .42, bottom: .0, top: .6 } };
 function createModelActor(scene, x, z, kind, rig, model) {
   const { joints: J, bones: order, height = 1.5 } = model.parser.json.extras;
   const root = new T.Group(); root.position.set(x, 0, z); scene.add(root);
@@ -514,7 +514,7 @@ function createModelActor(scene, x, z, kind, rig, model) {
   root.add(figure); root.updateMatrixWorld(true); figure.bind(new T.Skeleton(bones), figure.matrixWorld);
   outline(figure, 1.6);
   const outfit = dressModel({ kind, root, material, geometry, skinIndex: source, order, joints: J, headBone: bone('head'), stand: STAND });
-  // Amir's face is drawn over the model's soft painted one (see face.js).
+  // The kids' faces are drawn over the model's soft painted ones (face.js).
   const face = FACE_RECTS[kind] ? createFace({ root, geometry, skinIndex: source, order, headBone: bone('head'), map: mesh.material.map, rect: FACE_RECTS[kind] }) : null;
   const shadow = new T.Mesh(new T.PlaneGeometry(.62, .62), new T.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = .075; root.add(shadow);
