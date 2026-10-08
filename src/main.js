@@ -30,7 +30,7 @@ import { TOWN_BOUNDS } from './town-layout.js?v=2.8.0';
 import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.8.0';
 import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.8.0';
 import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.8.0';
-import { NOSTALGIA_QUESTS, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.8.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.8.0';
 import { memoryQuestCard } from './nostalgia-ui.js?v=2.8.0';
 import { renderQuestJournal } from './journal-ui.js?v=2.8.0';
 import { CHAPTER_BRIEFS } from './journal.js?v=2.8.0';
@@ -113,8 +113,10 @@ function personAt(place) {
 // they are out on an errand, or whichever of the two the player walked up to.
 function doorContact(place) {
   const c = contactAt(place), k = keeperAt(place); if (!c || !k) return c;
-  const out = world.residents.find(n => n.id === RESIDENTS[place]?.key)?.errand?.away();
-  return out || counter?.place === place && counter.who === k ? { ...KEEPERS[k], key: null } : c;
+  const out = world.residents.find(n => n.id === RESIDENTS[place]?.key)?.errand?.away(), trip = out && tripAt(RESIDENTS[place].key, time.minute);
+  const back = storyNeedsHome(eco, place) ? ` ${RESIDENTS[place].name} dalam perjalanan balik.` : trip ? ` ${RESIDENTS[place].name} balik lebih kurang ${timeLabel(trip.until)}.` : '';
+  if (out) return { ...KEEPERS[k], key: null, standIn: true, hello: KEEPERS[k].hello + back };
+  return counter?.place === place && counter.who === k ? { ...KEEPERS[k], key: null, standIn: true } : c;
 }
 // The name a resident or keeper's body goes by: Amir's and Nur's mothers are
 // Mak and Ibu to their own child.
@@ -309,7 +311,8 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   const body=$('counter-body');body.replaceChildren();
   const add=(label,onclick,cls,disabled)=>counterButton(body,label,onclick,cls,disabled);
   const memoryContext={place,npc:person?.key||null};
-  const memories=nostalgiaAt(eco,memoryContext);
+  // A keepsake story is the resident's own to tell, not the family's standing in.
+  const memories=npcKey||!doorContact(place)?.standIn?nostalgiaAt(eco,memoryContext):[];
   // A closed shop takes parcels at the door but hands nothing out.
   const shut=closedShop||!away&&npcAt(place)&&!atPost(npcBody(npcAt(place)))&&npcBody(npcAt(place)).post===place;
   const here=away?{collect:[],deliver:[]}:jobsAt(eco,place);if(shut)here.collect=[];
@@ -946,7 +949,7 @@ function tick(){
     const waving=n.waveUntil>elapsed&&n.waveUntil-elapsed<2.1,pause=talking||waving||mode!=='explore'&&mode!=='title';
     // Walkers only stop in the street when greeted, not whenever you pass.
     const look=mode==='explore'&&((gap<2.4&&!n.errand?.walking())||n.waveUntil>elapsed)?pp:null;
-    const s=n.errand?n.errand.update(dt,time.minute,{sync,pause,look,free:(x,z)=>n.walk(x,z)&&Math.hypot(x-pp.x,z-pp.z)>.6}):n.routine.update(dt,{pause,look});
+    const s=n.errand?n.errand.update(dt,time.minute,{sync,pause,look,stay:storyNeedsHome(eco,n.place),free:(x,z)=>n.walk(x,z)&&Math.hypot(x-pp.x,z-pp.z)>.6}):n.routine.update(dt,{pause,look});
     n.x=s.x;n.z=s.z;n.collider.x=s.x;n.collider.z=s.z;gap=Math.hypot(n.x-pp.x,n.z-pp.z);
     // Townsfolk past 42 m (about 14 px tall) are hidden; only those within 20 m
     // cast sun shadows, and past 30 m their face drawing and ground shadow

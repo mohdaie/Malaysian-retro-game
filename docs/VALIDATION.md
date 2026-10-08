@@ -309,3 +309,15 @@ In the browser (no page errors):
 - At 15:05: Mak Cik Salmah at the warung, Mak Cik Kiah at Kedai Runcit 99.
 
 With the six keepers (44 bodies), the same five spots: 246–515 draw calls (+2 to +14 over the residents alone) and 354k–655k triangles (+2 to +9%).
+
+### Storyline cross-check
+
+Chapter 1's steps all point at the original 14 NPCs, so their markers, dialogue and counters are unchanged. Keepsake stories are tied to places, and two errand runners sit on story paths: Abang Kamal gives *The Tape with No Label* at Rumah Jiran B, and Pak Abu holds the first clue of *A Name Saved as Home* and *The Trip We Never Took* at Rumah Pak Abu. Before this fix, Kak Midah or Mak Cik Esah would have offered those stories in the resident's own voice while he was out. Now a resident stays home (or heads straight home) while a story in progress needs his door, and family members standing in never offer keepsake stories. People named in the clues and exhibition texts (Pak Karim, Cik Azura, Kak Lina, Pak Abu, Abang Kamal) now have bodies at the places the clues send you to.
+
+`npm test`: **172 tests passed**, including a test that lists exactly which stories touch an errand runner's door, so a new one cannot slip in unnoticed.
+
+In the browser (no page errors):
+- Step 0 at 17:30, with Abang Hafiz and Encik Faizal on the padang: the prompt is "Talk to Faiz", the friends' scene plays and the chapter moves to step 1.
+- Step 1 at 14:45, with Mak Cik Kiah shopping at Kedai Runcit 99: "Talk to Pak Rahman" opens his counter with Delivery work.
+- The Walkman ready at 10:15, during Abang Kamal's kiosk errand: he stays home, and his door offers "Ada kisah untuk dicerita".
+- Nothing pending at 10:15: he is at the kiosk, and Kak Midah answers "…Abang Kamal balik lebih kurang 11:00." with no story offered.

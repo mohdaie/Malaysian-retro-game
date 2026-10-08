@@ -39,6 +39,7 @@ const angleTo = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from
 // returns the same shape of state as a routine.
 //   options.sync   jump straight to where the clock says (load, sleep, prayer)
 //   options.free   (x, z) => false while another person stands in the way
+//   options.stay   a story needs them at their door: skip errands, go home
 export function createErrand(key, home, routes, homeRoutine, awayRoutine) {
   const state = { x: home.x, z: home.z, heading: home.heading, moving: 0, travel: 0, action: null, actionTime: 0, phase: 'home', at: null };
   let routine = homeRoutine(home), path = null, index = 0, wait = 0;
@@ -50,8 +51,8 @@ export function createErrand(key, home, routes, homeRoutine, awayRoutine) {
     copy(routine.state); path = null;
   }
   function walk(points, phase, at) { state.phase = phase; state.at = at; path = [{ x: state.x, z: state.z }, ...points]; index = 1; wait = 0; }
-  function update(dt, minute, { sync = false, pause = false, look = null, free = () => true } = {}) {
-    const trip = tripAt(key, minute), route = trip && routes[trip.to];
+  function update(dt, minute, { sync = false, pause = false, look = null, free = () => true, stay = false } = {}) {
+    const trip = stay ? null : tripAt(key, minute), route = trip && routes[trip.to];
     if (sync) settle(trip);
     // Time to go out, or time to come home.
     if (state.phase === 'home' && route) walk(route.path, 'out', trip.to);

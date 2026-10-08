@@ -125,6 +125,12 @@ export function nostalgiaStatus(eco,id) {
   if(p.stage==='ready')return {stage:p.stage,text:`Challenge complete. Return to ${q.giver} for your keepsake.`};
   return {stage:'earned',text:`Given by ${q.giver} · Game day ${eco.nostalgia.earned[id].day}`};
 }
+// A resident's door a story in progress needs right now (its next clue, or
+// a keepsake ready to collect): that resident stays home instead of
+// running errands (errands.js), so the gold marker always finds them.
+export function storyNeedsHome(eco,place) {
+  return Object.entries(NOSTALGIA_QUESTS).some(([id,q])=>{const p=eco.nostalgia.quests[id];return !q.npc&&q.place===place&&p?.stage==='ready'||p?.stage==='trail'&&q.trail[p.trail]?.place===place;});
+}
 export function nostalgiaAt(eco,context) {
   return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
 }

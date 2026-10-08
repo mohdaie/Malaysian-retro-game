@@ -88,7 +88,7 @@ Six residents leave their door at set times, walk the town's paths to a shop, ch
 | Encik Faizal | Kedai Runcit 11:00–12:00, the padang 17:00–18:30 | Puan Rozita, his wife |
 | Mak Cik Kiah | Kedai Roti 9:00–10:00, Kedai Runcit 14:30–15:30 | Wan Som, her mother |
 
-The schedule is plain data in `src/errands.js`. Routes are planned once at load against walls, fences and props; walkers wait for anyone in their way and then squeeze past.
+Keepsake stories come first: a resident whose door a story in progress needs (Abang Kamal with the Walkman ready to collect, Pak Abu while his clue is next) stays home instead of going out, and the family never tells the resident's part of a story. If you call while they are out, the family says when they will be back. The schedule is plain data in `src/errands.js`. Routes are planned once at load against walls, fences and props; walkers wait for anyone in their way and then squeeze past.
 
 Their loops are in `src/routines.js` next to the NPCs'. Six new actions cover the trades: snip, sew, pump, sweep, rock (the baby) and cast. Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
 

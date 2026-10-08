@@ -55,3 +55,31 @@ test('a walker leaves on time, waits at the shop, walks home and settles', () =>
   w.update(1 / 30, trip.until + 60, { sync: true }); assert.equal(w.state.phase, 'home'); assert.equal(w.state.x, 0);
   assert.equal(tripAt(key, trip.from - 1), null); assert.equal(tripAt(key, trip.from), trip);
 });
+
+test('a resident a story needs stays home: no keeper ever tells their part', async () => {
+  const { NOSTALGIA_QUESTS, storyNeedsHome, newNostalgia } = await import('../src/nostalgia-quests.js');
+  // Which stories put an errand runner's door on their path?
+  const homes = new Map(ERRAND_KEYS.map(k => [residentPlace(k), k])), touched = [];
+  for (const [id, q] of Object.entries(NOSTALGIA_QUESTS)) {
+    if (!q.npc && homes.has(q.place)) touched.push([id, 'giver', homes.get(q.place)]);
+    q.trail.forEach((t, i) => { if (homes.has(t.place)) touched.push([id, `clue ${i}`, homes.get(t.place)]); });
+  }
+  assert.deepEqual(touched.map(t => t.join(' ')).sort(), ['nostalgia_G01 clue 0 abu', 'nostalgia_G04 giver kamal', 'nostalgia_I01 clue 0 abu']);
+  const eco = { nostalgia: newNostalgia() };
+  assert.equal(storyNeedsHome(eco, 6), false, 'an untaken story does not keep anyone in');
+  eco.nostalgia.quests.nostalgia_G04 = { stage: 'grind', trail: 0 };
+  assert.equal(storyNeedsHome(eco, 6), false, 'nor do errands far from the giver');
+  eco.nostalgia.quests.nostalgia_G04.stage = 'ready';
+  assert.equal(storyNeedsHome(eco, 6), true, 'Abang Kamal waits at home to hand over the Walkman');
+  eco.nostalgia.quests.nostalgia_G01 = { stage: 'trail', trail: 0 };
+  assert.equal(storyNeedsHome(eco, 13), true, 'Pak Abu waits at home with the address');
+  eco.nostalgia.quests.nostalgia_G01.trail = 1;
+  assert.equal(storyNeedsHome(eco, 13), false, 'and goes out again once the clue is found');
+  // A walker told to stay heads home even in the middle of a trip.
+  const trip = ERRANDS.abu.trips[0], free = () => true, home = { x: 0, z: 0, heading: 0 };
+  const routes = { [trip.to]: { path: [{ x: 0, z: 0 }, { x: 8, z: 0 }], spot: { x: 8, z: 0, heading: 0 } } };
+  const w = createErrand('abu', home, routes, at => createRoutine(ROUTINES.abu, at, free, ACTIONS), at => createRoutine({ steps: [['stand', 2]] }, at, free, ACTIONS));
+  w.update(1 / 30, trip.from + 10, { sync: true }); assert.equal(w.state.phase, 'away');
+  for (let i = 0; i < 30 * 12; i++) w.update(1 / 30, trip.from + 10, { stay: true });
+  assert.equal(w.state.phase, 'home'); assert.equal(w.away(), false);
+});
