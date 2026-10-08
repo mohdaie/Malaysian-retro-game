@@ -1,6 +1,12 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.8.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.8.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+
+## Install Retro Malaysia
+
+Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chrome, then choose **Install app** from the browser menu or **Install Retro Malaysia** when the game offers it. The app has its own RM icon and opens fullscreen in landscape. iPhone users can use Safari → Share → Add to Home Screen.
+
+The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
 
 ## Chapter 01 · Cuti Sekolah
 
