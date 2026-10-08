@@ -277,3 +277,47 @@ In the browser, starting from an old single save (Amir, RM 7.77, Hari 3):
 6. Starting another Nur story warned that it replaces Nur's journey and that Amir's is kept.
 
 No page errors.
+
+## v2.8.0 · bodies for the 24 residents
+
+`npm test`: **166 tests passed**. New checks: every resident has a unique key that never clashes with an NPC, a body and a work loop of known actions; each stands at their own place within 3.5 m of its door; the NPCs' posts (and so the planted trees and props) are unchanged.
+
+Before adding them, one townsperson was measured in the browser: one merged skinned figure plus its ink hull, face drawing and ground shadow (4 meshes, about 13–19k triangles, 7–24 ms to build, animation under 0.02 ms a frame). The existing rules already hide townsfolk past 42 m and keep sun shadows within 20 m; they now cover the residents too. Two cheap additions: past 30 m the face drawing and ground shadow are skipped (two draws each), and identical face drawings share one texture.
+
+Headless Chromium, software WebGL, 932×430, Hari 2 at 15:00, standing outside five places (v2.7.1 → v2.8.0):
+
+| Spot | Draw calls | Triangles | Residents in view | Frame (software) |
+|---|---|---|---|---|
+| Gelanggang | 492 → 507 | 559k → 633k | 8 | 584 → 644 ms |
+| Kedai Gunting | 463 → 478 | 477k → 542k | 6 | 501 → 556 ms |
+| Kampung | 226 → 241 | 276k → 329k | 7 | 300 → 348 ms |
+| Taman | 441 → 453 | 400k → 473k | 9 | 479 → 519 ms |
+| Klinik | 455 → 476 | 483k → 566k | 14 | 521 → 591 ms |
+
+About +3–5% draw calls and +12–19% triangles. Software frame times only show the relative cost; real GPUs are far faster. JS heap rose from about 189 MB to 227 MB.
+
+In the browser: "Talk to Abang Muthu" shows beside the barber, and Talk opens Kedai Gunting with his line. At 21:00 every resident except Pak Usop (pasar malam until 22:30) is indoors and hidden, and the door still answers with their name. No page errors. Emulated checks only; a real phone still needs a check.
+
+### Errands and the families who keep house
+
+`npm test`: **171 tests passed**. New `tests/errands.test.js`: every runner's house has a keeper and every keeper has a runner; trips are in order, never overlap and end at least 30 minutes before dark; a walker leaves on time, arrives at its stand spot, counts as away, walks home and settles at the door; it waits about 3 s for someone in its path and then squeezes past; paused, it does not move; and a sync (load, sleep, prayer) puts it straight where the clock says.
+
+In the browser (no page errors):
+- All 12 trips found a walking route. Loaded at 07:57 by Rumah Pak Mail, he set off at 08:00 and was about 5 m down the lane a few minutes later, cangkul in hand.
+- Loaded at 09:00: Pak Mail at the kebun, Pak Abu at the library, Mak Cik Kiah at the bakery, everyone else at home. At Rumah Pak Mail the prompt read "Talk to Mak Cik Senah" and the door opened with her line. Beside Pak Mail at the kebun, Talk gave his street line.
+- At 11:00, approaching Pak Mail at home opened his own door counter.
+- At 15:05: Mak Cik Salmah at the warung, Mak Cik Kiah at Kedai Runcit 99.
+
+With the six keepers (44 bodies), the same five spots: 246–515 draw calls (+2 to +14 over the residents alone) and 354k–655k triangles (+2 to +9%).
+
+### Storyline cross-check
+
+Chapter 1's steps all point at the original 14 NPCs, so their markers, dialogue and counters are unchanged. Keepsake stories are tied to places, and two errand runners sit on story paths: Abang Kamal gives *The Tape with No Label* at Rumah Jiran B, and Pak Abu holds the first clue of *A Name Saved as Home* and *The Trip We Never Took* at Rumah Pak Abu. Before this fix, Kak Midah or Mak Cik Esah would have offered those stories in the resident's own voice while he was out. Now a resident stays home (or heads straight home) while a story in progress needs his door, and family members standing in never offer keepsake stories. People named in the clues and exhibition texts (Pak Karim, Cik Azura, Kak Lina, Pak Abu, Abang Kamal) now have bodies at the places the clues send you to.
+
+`npm test`: **172 tests passed**, including a test that lists exactly which stories touch an errand runner's door, so a new one cannot slip in unnoticed.
+
+In the browser (no page errors):
+- Step 0 at 17:30, with Abang Hafiz and Encik Faizal on the padang: the prompt is "Talk to Faiz", the friends' scene plays and the chapter moves to step 1.
+- Step 1 at 14:45, with Mak Cik Kiah shopping at Kedai Runcit 99: "Talk to Pak Rahman" opens his counter with Delivery work.
+- The Walkman ready at 10:15, during Abang Kamal's kiosk errand: he stays home, and his door offers "Ada kisah untuk dicerita".
+- Nothing pending at 10:15: he is at the kiosk, and Kak Midah answers "…Abang Kamal balik lebih kurang 11:00." with no story offered.

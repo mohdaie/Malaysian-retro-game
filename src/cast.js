@@ -54,38 +54,54 @@ export const NPC_KEYS = Object.keys(NPCS);
 export const npcAt = place => NPC_KEYS.find(k => NPCS[k].place === place) || null;
 
 // Every other place has a resident or keeper. Houses follow the guide's
-// household templates, which set what they ask for.
+// household templates, which set what they ask for. `key` names their body,
+// look and work loop; they stand at their own door, so someone is always
+// there to take a parcel.
 export const RESIDENTS = {
-  1: { name: 'Mak Cik Zaitun', role: 'Amir’s mother', household: 'school', hello: 'Dah balik? Basuh tangan dulu.' },
-  3: { name: 'Pak Mail', role: 'Kampung farmer', household: 'garden', hello: 'Hah, mind my chilli seedlings.' },
-  4: { name: 'Mak Cik Salmah', role: 'Neighbour who sells kuih', household: 'kenduri', hello: 'Eh, {name}. Mak Cik just fried cucur.' },
-  5: { name: 'Kak Rohani', role: 'Neighbour', household: 'baby', hello: 'Shh, the baby just fell asleep.' },
-  6: { name: 'Abang Kamal', role: 'Lorry driver', household: 'working', hello: 'Rest day. The lorry needs it more than me.' },
-  7: { name: 'Mak Long Timah', role: 'Neighbour', household: 'visitors', hello: 'My sister’s family comes tonight. So much to prepare!' },
-  10: { name: 'Pak Long Ismail', role: 'River fisherman', hello: 'Shh. The ikan keli are shy today.' },
-  11: { name: 'Cik Aminah', role: 'Nur’s mother', household: 'school', hello: 'Masuklah, have some air sirap.' },
-  12: { name: 'Kak Lina', role: 'Neighbour', household: 'cleaning', hello: 'Spring cleaning! Everything out, everything washed.' },
-  13: { name: 'Pak Abu', role: 'Retired postman', household: 'garden', hello: 'Thirty years of letters. Every house, every name.' },
-  16: { name: 'Kak Yati', role: 'Neighbour', household: 'baby', hello: 'Cakap perlahan sikit, the baby is sleeping.' },
-  17: { name: 'Encik Faizal', role: 'Office clerk', household: 'working', hello: 'Saturday at last. No files, no phone calls.' },
-  18: { name: 'Mak Cik Kiah', role: 'Neighbour', household: 'visitors', hello: 'Kenapa tercegat? Come in, come in.' },
-  19: { name: 'Kak Ani', role: 'Runs the corner shop', hello: 'Kedai Sudut Mini, open till late.' },
-  20: { name: 'Cikgu Hani', role: 'Tadika teacher', hello: 'The little ones are colouring. Quietly, for once.' },
-  23: { name: 'Abang Muthu', role: 'Barber', hello: 'Short at the sides, like always?' },
-  24: { name: 'Pak Hussin', role: 'Bicycle repairer', hello: 'Tayar pancit? Five minutes.' },
-  26: { name: 'Mak Cik Normah', role: 'Tailor', hello: 'Baju Raya orders already, and it is only Rejab.' },
-  27: { name: 'Dr. Kumar', role: 'Town doctor', hello: 'Not sick, I hope? Drink more water.' },
-  28: { name: 'Mak Jah', role: 'Baker', hello: 'Roti just out of the oven. Smell that?' },
-  33: { name: 'Cik Azura', role: 'Librarian', hello: 'Shh. The new comics are on the bottom shelf.' },
-  34: { name: 'Abang Hafiz', role: 'Looks after the padang', hello: 'Padang’s open. Mind the takraw net.' },
-  35: { name: 'Pak Karim', role: 'Bus driver', hello: 'Next bus to the bandar at four.' },
-  38: { name: 'Pak Usop', role: 'Night market organiser', hello: 'Saturday night the whole town comes here.' }
+  1: { key: 'zaitun', name: 'Mak Cik Zaitun', role: 'Amir’s mother', household: 'school', hello: 'Dah balik? Basuh tangan dulu.' },
+  3: { key: 'mail', name: 'Pak Mail', role: 'Kampung farmer', household: 'garden', hello: 'Hah, mind my chilli seedlings.' },
+  4: { key: 'salmah', name: 'Mak Cik Salmah', role: 'Neighbour who sells kuih', household: 'kenduri', hello: 'Eh, {name}. Mak Cik just fried cucur.' },
+  5: { key: 'rohani', name: 'Kak Rohani', role: 'Neighbour', household: 'baby', hello: 'Shh, the baby just fell asleep.' },
+  6: { key: 'kamal', name: 'Abang Kamal', role: 'Lorry driver', household: 'working', hello: 'Rest day. The lorry needs it more than me.' },
+  7: { key: 'timah', name: 'Mak Long Timah', role: 'Neighbour', household: 'visitors', hello: 'My sister’s family comes tonight. So much to prepare!' },
+  10: { key: 'ismail', name: 'Pak Long Ismail', role: 'River fisherman', hello: 'Shh. The ikan keli are shy today.' },
+  11: { key: 'aminah', name: 'Cik Aminah', role: 'Nur’s mother', household: 'school', hello: 'Masuklah, have some air sirap.' },
+  12: { key: 'lina', name: 'Kak Lina', role: 'Neighbour', household: 'cleaning', hello: 'Spring cleaning! Everything out, everything washed.' },
+  13: { key: 'abu', name: 'Pak Abu', role: 'Retired postman', household: 'garden', hello: 'Thirty years of letters. Every house, every name.' },
+  16: { key: 'yati', name: 'Kak Yati', role: 'Neighbour', household: 'baby', hello: 'Cakap perlahan sikit, the baby is sleeping.' },
+  17: { key: 'faizal', name: 'Encik Faizal', role: 'Office clerk', household: 'working', hello: 'Saturday at last. No files, no phone calls.' },
+  18: { key: 'kiah', name: 'Mak Cik Kiah', role: 'Neighbour', household: 'visitors', hello: 'Kenapa tercegat? Come in, come in.' },
+  19: { key: 'ani', name: 'Kak Ani', role: 'Runs the corner shop', hello: 'Kedai Sudut Mini, open till late.' },
+  20: { key: 'hani', name: 'Cikgu Hani', role: 'Tadika teacher', hello: 'The little ones are colouring. Quietly, for once.' },
+  23: { key: 'muthu', name: 'Abang Muthu', role: 'Barber', hello: 'Short at the sides, like always?' },
+  24: { key: 'hussin', name: 'Pak Hussin', role: 'Bicycle repairer', hello: 'Tayar pancit? Five minutes.' },
+  26: { key: 'normah', name: 'Mak Cik Normah', role: 'Tailor', hello: 'Baju Raya orders already, and it is only Rejab.' },
+  27: { key: 'kumar', name: 'Dr. Kumar', role: 'Town doctor', hello: 'Not sick, I hope? Drink more water.' },
+  28: { key: 'jah', name: 'Mak Jah', role: 'Baker', hello: 'Roti just out of the oven. Smell that?' },
+  33: { key: 'azura', name: 'Cik Azura', role: 'Librarian', hello: 'Shh. The new comics are on the bottom shelf.' },
+  34: { key: 'hafiz', name: 'Abang Hafiz', role: 'Looks after the padang', hello: 'Padang’s open. Mind the takraw net.' },
+  35: { key: 'karim', name: 'Pak Karim', role: 'Bus driver', hello: 'Next bus to the bandar at four.' },
+  38: { key: 'usop', name: 'Pak Usop', role: 'Night market organiser', hello: 'Saturday night the whole town comes here.' }
 };
+// The family who keep a house while its resident is out on an errand
+// (errands.js), so there is always someone at the door to take a parcel.
+export const KEEPERS = {
+  senah: { place: 3, name: 'Mak Cik Senah', role: 'Pak Mail’s wife', hello: 'Pak Mail ke kebun. Ada barang? Mak Cik ambilkan.' },
+  jalil: { place: 4, name: 'Pak Jalil', role: 'Mak Cik Salmah’s husband, retired', hello: 'Salmah hantar kuih. Duduk dulu, {name}.' },
+  midah: { place: 6, name: 'Kak Midah', role: 'Abang Kamal’s wife', hello: 'Abang Kamal keluar sekejap. Nak hantar barang?' },
+  esah: { place: 13, name: 'Mak Cik Esah', role: 'Pak Abu’s wife', hello: 'Pak Abu tu, tak boleh duduk diam. Ada apa, nak?' },
+  rozita: { place: 17, name: 'Puan Rozita', role: 'Encik Faizal’s wife', hello: 'Suami saya keluar. Barang boleh tinggal dengan saya.' },
+  som: { place: 18, name: 'Wan Som', role: 'Mak Cik Kiah’s mother', hello: 'Kiah pergi kedai. Wan ada, Wan ada.' }
+};
+export const KEEPER_KEYS = Object.keys(KEEPERS);
+export const keeperAt = place => KEEPER_KEYS.find(k => KEEPERS[k].place === place) || null;
+export const RESIDENT_KEYS = Object.values(RESIDENTS).map(r => r.key);
+export const residentPlace = key => Number(Object.keys(RESIDENTS).find(place => RESIDENTS[place].key === key));
 // The contact who answers at a place: its NPC, else its resident.
 export function contactAt(place) {
   const key = npcAt(place);
   if (key) return { key, ...NPCS[key] };
-  return RESIDENTS[place] ? { key: null, ...RESIDENTS[place] } : null;
+  return RESIDENTS[place] ? { ...RESIDENTS[place], key: null } : null;
 }
 export const line = (text, name) => text.replaceAll('{name}', name);
 
@@ -97,12 +113,21 @@ export const PADANG = 34;
 // Returns candidate spots in order of preference; the game takes the first
 // one that is clear of walls and props.
 export function npcPosts(buildings) {
+  return postsFor(buildings, NPC_KEYS.map(key => ({ key, place: NPCS[key].place, post: NPCS[key].post })));
+}
+// The residents and the families who keep house keep to their own doors,
+// with more spots to try because shopfronts and verandas are busier than
+// the NPCs' posts.
+export function residentPosts(buildings) {
+  return postsFor(buildings, [...RESIDENT_KEYS.map(key => ({ key, place: residentPlace(key) })), ...KEEPER_KEYS.map(key => ({ key, place: KEEPERS[key].place }))], [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2], [2.2, 1], [-2.2, 1], [1, 2.6], [-1, 2.6], [0, 3.2]]);
+}
+function postsFor(buildings, people, around = [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2]]) {
   const byId = new Map(buildings.map(b => [b.id, b])), posts = {}, shared = {};
-  for (const key of NPC_KEYS) {
-    const npc = NPCS[key], b = byId.get(npc.post || npc.place); if (!b) continue;
+  for (const { key, place, post } of people) {
+    const b = byId.get(post || place); if (!b) continue;
     const dx = b.door.x - b.x, dz = b.door.z - b.z, len = Math.hypot(dx, dz) || 1, ox = dx / len, oz = dz / len, rx = -oz, rz = ox;
     const slot = shared[b.id] = (shared[b.id] ?? -1) + 1;
-    const offsets = npc.post ? [[(slot - 1) * 2.6, 1.8], [(slot - 1) * 2.6, 3.2], [(slot - 1) * 2.6 + 1.3, 2.4]] : [[1.3, .6], [-1.3, .6], [1.6, 1.4], [-1.6, 1.4], [0, 2.2]];
+    const offsets = post ? [[(slot - 1) * 2.6, 1.8], [(slot - 1) * 2.6, 3.2], [(slot - 1) * 2.6 + 1.3, 2.4]] : around;
     posts[key] = { place: b.id, heading: Math.atan2(ox, oz), spots: offsets.map(([r, f]) => ({ x: b.door.x + rx * r + ox * f, z: b.door.z + rz * r + oz * f })) };
   }
   return posts;

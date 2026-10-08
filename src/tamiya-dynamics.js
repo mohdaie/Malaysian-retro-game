@@ -1,4 +1,4 @@
-import { STOCK_BUILD, partStats } from './tamiya-parts.js?v=2.7.3';
+import { STOCK_BUILD, partStats } from './tamiya-parts.js?v=2.8.0';
 // Analytic distance stages: frame rate never changes charge, a pit or a result.
 // A pit cuts the existing future at its timestamp; the past is kept verbatim.
 export function dynamicPlan(track,car,setup,contact,key,loadout,pits,setups){

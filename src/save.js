@@ -1,6 +1,6 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.7.3';
-import { PLAYERS, DONE, cleanExhibition, syncChapter } from './story.js?v=2.7.3';
-import { cleanClock, newClock } from './clock.js?v=2.7.3';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.8.0';
+import { PLAYERS, DONE, cleanExhibition, syncChapter } from './story.js?v=2.8.0';
+import { cleanClock, newClock } from './clock.js?v=2.8.0';
 // One save per character (v2.5): Amir and Nur each keep their own journey.
 // The single save from earlier versions moves into its character's slot the
 // first time that character saves.

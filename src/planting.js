@@ -1,5 +1,5 @@
-import { TOWN_BOUNDS, RIVER, PROPS } from './town-layout.js?v=2.7.3';
-import { npcPosts } from './cast.js?v=2.7.3';
+import { TOWN_BOUNDS, RIVER, PROPS } from './town-layout.js?v=2.8.0';
+import { npcPosts } from './cast.js?v=2.8.0';
 
 // Where every tree goes, worked out from the town plan alone so the tests can
 // check it and the planting follows the editor when buildings move.

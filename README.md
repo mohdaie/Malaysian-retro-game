@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.7.3**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.8.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Chapter 01 · Cuti Sekolah
 
@@ -53,7 +53,44 @@ Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, 
 
 Each of the 14 has their own afternoon loop around their post (v1.2): Kak Ita stirs her pot, walks over to wipe a table and fans herself; Pak Mat bends over his beds; Uncle Lim reads with his arms folded; Faiz waves and stretches. They stop and turn to you when you come close, and wait while you talk. You decide the loops in `src/routines.js`, a plain list per person of steps (`stand`, `do` an action, `walk` to a spot, `face` a way). There are 15 actions: wave, look, stir, wipe, write, read, fan, stretch, hips, fold, talk, bend, scratch, check and nod.
 
-Every other place has a named household contact (Mak Cik Zaitun at Rumah Amir, Cik Aminah at Rumah Nur, and so on). Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
+### The residents (v2.8)
+
+Every other place has a named household contact, and since v2.8 all 24 of them stand at their own door in daylight, dressed for their trade, carrying its tools and working through their own loop. Walk up and press Talk to open their place's counter. After dark they go indoors but still answer at the door, so a parcel can always be handed over.
+
+| Place | Who | Look and work |
+|---|---|---|
+| Kedai Gunting | Abang Muthu, barber | White shirt, scissors; snips and wipes down the chair |
+| Kedai Basikal | Pak Hussin, bicycle repairer | Overalls, cap, spanner and rag; pumps tyres |
+| Kedai Jahit | Mak Cik Normah, tailor | Baju kurung, glasses, measuring tape round her neck; sews by hand |
+| Klinik & Farmasi | Dr. Kumar, town doctor | Long-sleeved white shirt, glasses, stethoscope |
+| Kedai Roti & Kuih | Mak Jah, baker | Apron, a bag with a long loaf |
+| Kedai Sudut Mini | Kak Ani, corner shop | Blue shop apron; wipes and writes the stock book |
+| Tadika Kenangan | Cikgu Hani, tadika teacher | Pink baju kurung, folder |
+| Perpustakaan Mini | Cik Azura, librarian | Glasses, an armful of books |
+| Gelanggang | Abang Hafiz, padang keeper | Red jersey, track pants, whistle on a lanyard |
+| Perhentian Bas | Pak Karim, bus driver | Uniform shirt, cap, name tag; checks his watch |
+| Tapak Pasar Malam | Pak Usop, night market | Songkok, kain pelikat, money pouch; from 4 pm to 10.30 pm |
+| Pondok Tepi Sungai | Pak Long Ismail, fisherman | Straw hat, kain pelikat, bamboo rod; casts over the river |
+| Rumah Amir / Rumah Nur | Mak Cik Zaitun / Cik Aminah | The two mothers: sweeping, or tidying the porch |
+| Kampung houses | Pak Mail, Mak Cik Salmah, Kak Rohani, Abang Kamal, Mak Long Timah | Cangkul; tiffin carrier of kuih; a baby in a sling; lorry driver's towel; sweeping |
+| Taman houses | Kak Lina, Pak Abu, Kak Yati, Encik Faizal, Mak Cik Kiah | Penyapu lidi; the newspaper; a baby in a sling; Saturday newspaper; tidying for visitors |
+
+### Errands: someone is always home
+
+Six residents leave their door at set times, walk the town's paths to a shop, chat there a while and walk home. A family member keeps each of their houses all day and answers the door while they are out, so a parcel can always be handed over. Stop a walker in the street and they tell you where they are going and who is at home. Load a save, sleep or pray and they are already where the clock says.
+
+| Resident | Out | Keeps the house |
+|---|---|---|
+| Pak Mail | Wakaf Kebun 8:00–10:00 and 16:30–18:00 | Mak Cik Senah, his wife |
+| Mak Cik Salmah | Warung Kak Ita 9:30–10:30 and 15:00–16:00, with kuih | Pak Jalil, her husband |
+| Abang Kamal | Kiosk Petrol 10:00–11:00, Bengkel 17:00–18:15 | Kak Midah, his wife |
+| Pak Abu | Perpustakaan 8:30–10:00, Masjid 12:40–14:00 | Mak Cik Esah, his wife |
+| Encik Faizal | Kedai Runcit 11:00–12:00, the padang 17:00–18:30 | Puan Rozita, his wife |
+| Mak Cik Kiah | Kedai Roti 9:00–10:00, Kedai Runcit 14:30–15:30 | Wan Som, her mother |
+
+Keepsake stories come first: a resident whose door a story in progress needs (Abang Kamal with the Walkman ready to collect, Pak Abu while his clue is next) stays home instead of going out, and the family never tells the resident's part of a story. If you call while they are out, the family says when they will be back. The schedule is plain data in `src/errands.js`. Routes are planned once at load against walls, fences and props; walkers wait for anyone in their way and then squeeze past.
+
+Their loops are in `src/routines.js` next to the NPCs'. Six new actions cover the trades: snip, sew, pump, sweep, rock (the baby) and cast. Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
 
 ## Duit Poket and deliveries
 

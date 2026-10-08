@@ -18,7 +18,8 @@ export const HOURS = {
   din: [6 * 60 + 30, 21 * 60],        // the kiosk sells snacks into the evening
   ita: [7 * 60, 22 * 60],             // warung and pasar malam
   hassan: [5 * 60 + 30, 21 * 60 + 30], // Subuh to Isyak at the masjid
-  nenek: [6 * 60 + 30, 21 * 60 + 30]  // on her own veranda
+  nenek: [6 * 60 + 30, 21 * 60 + 30], // on her own veranda
+  usop: [16 * 60, 22 * 60 + 30]       // sets up the pasar malam from late afternoon
 };
 
 export const newClock = () => ({ day: 1, minute: NEW_GAME });

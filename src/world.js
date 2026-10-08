@@ -1,19 +1,21 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.7.3';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.7.3';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.7.3';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.7.3';
-import { createProps } from './props.js?v=2.7.3';
-import { ROUTINES, createRoutine } from './routines.js?v=2.7.3';
-import { ACTIONS } from './actions.js?v=2.7.3';
-import { createWalkability } from './collision.js?v=2.7.3';
-import { createStorefronts } from './storefronts.js?v=2.7.3';
-import { createLandmarks } from './landmarks.js?v=2.7.3';
-import { loadTownCars } from './town-cars.js?v=2.7.3';
-import { loadTownBus } from './town-bus.js?v=2.7.3';
-import { NPCS, NPC_KEYS, npcPosts } from './cast.js?v=2.7.3';
-import { createTrees } from './trees.js?v=2.7.3';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.7.3';
+import { createCharacter } from './characters.js?v=2.8.0';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.8.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.8.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.8.0';
+import { createProps } from './props.js?v=2.8.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.8.0';
+import { ACTIONS } from './actions.js?v=2.8.0';
+import { createWalkability } from './collision.js?v=2.8.0';
+import { createStorefronts } from './storefronts.js?v=2.8.0';
+import { createLandmarks } from './landmarks.js?v=2.8.0';
+import { loadTownCars } from './town-cars.js?v=2.8.0';
+import { loadTownBus } from './town-bus.js?v=2.8.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.8.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.8.0';
+import { findWalkRoute } from './map-navigation.js?v=2.8.0';
+import { createTrees } from './trees.js?v=2.8.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.8.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -645,17 +647,45 @@ export async function makeWorld(canvas) {
   for(const who of ['amir','nur']){const s=spawns[who];bodies[who]=character(s.x,s.z,who);bodies[who].group.rotation.y=s.heading;}
   let player=bodies.amir;bodies.nur.group.visible=false;
   function choosePlayer(who){player=bodies[who]||bodies.amir;for(const [k,b] of Object.entries(bodies))b.group.visible=b===player;return player;}
-  // The 14 NPCs stand at their posts, on the first clear spot beside it.
-  const clear=createWalkability(colliders),posts=npcPosts(BUILDINGS),npcs=[];
-  for(const key of NPC_KEYS){
-    const post=posts[key];if(!post)continue;
+  // The 14 NPCs stand at their posts, then the 24 residents at their own
+  // doors, each on the first clear spot beside it.
+  const clear=createWalkability(colliders),npcs=[],residents=[];
+  function stand(list,key,post,place){
     const spot=post.spots.find(p=>clear(p.x,p.z)&&clear(p.x+.35,p.z)&&clear(p.x-.35,p.z)&&clear(p.x,p.z+.35)&&clear(p.x,p.z-.35))||post.spots[0];
     const body=character(spot.x,spot.z,key);body.group.rotation.y=post.heading;
     const collider={x:spot.x,z:spot.z,r:.27,kind:'npc'};colliders.push(collider);
-    npcs.push({id:key,place:NPCS[key].place,post:post.place,x:spot.x,z:spot.z,heading:post.heading,character:body,collider});
+    list.push({id:key,place,post:post.place,x:spot.x,z:spot.z,heading:post.heading,character:body,collider});
   }
-  // Each NPC's own loop (routines.js), checked against everything but themselves.
-  for(const n of npcs){const others=colliders.filter(c=>c!==n.collider);n.routine=createRoutine(ROUTINES[n.id],{x:n.x,z:n.z,heading:n.heading},createWalkability(others),ACTIONS);}
+  const posts=npcPosts(BUILDINGS),homes=residentPosts(BUILDINGS);
+  for(const key of NPC_KEYS)if(posts[key])stand(npcs,key,posts[key],NPCS[key].place);
+  for(const key of RESIDENT_KEYS)if(homes[key])stand(residents,key,homes[key],residentPlace(key));
+  // The families who keep house, beside the residents who run errands.
+  for(const key of KEEPER_KEYS)if(homes[key]){stand(residents,key,homes[key],KEEPERS[key].place);residents.at(-1).keeper=true;}
+  // Each one's own loop (routines.js), checked against everything but themselves.
+  for(const n of [...npcs,...residents]){const others=colliders.filter(c=>c!==n.collider);n.walk=createWalkability(others);n.routine=createRoutine(ROUTINES[n.id],{x:n.x,z:n.z,heading:n.heading},n.walk,ACTIONS);}
+  // Six residents run errands (errands.js). Their routes are planned once
+  // against walls, fences and props; at the far end they stand a little out
+  // from the door, clear of whoever works there, facing in to chat.
+  const solid=createWalkability(colliders.filter(c=>c.kind!=='npc')),taken=[],people=[...npcs,...residents];
+  const AWAY={steps:[['do','talk',5],['do','nod',2],['do','look',4],['stand',3],['do','check',2],['do','talk',4]]};
+  function errandSpot(place){
+    const b=BUILDINGS.find(b=>b.id===place),dx=b.door.x-b.x,dz=b.door.z-b.z,len=Math.hypot(dx,dz)||1,ox=dx/len,oz=dz/len,rx=-oz,rz=ox;
+    for(const [r,f] of [[2.4,2.2],[-2.4,2.2],[0,3.2],[3.2,1.2],[-3.2,1.2],[1.6,3.8],[-1.6,3.8],[0,4.6],[3.6,3],[-3.6,3]]){
+      const x=b.door.x+rx*r+ox*f,z=b.door.z+rz*r+oz*f;
+      if(clear(x,z)&&clear(x+.35,z)&&clear(x-.35,z)&&clear(x,z+.35)&&clear(x,z-.35)&&people.every(p=>Math.hypot(p.x-x,p.z-z)>1.8)&&taken.every(p=>Math.hypot(p.x-x,p.z-z)>1.2)){const spot={x,z,heading:Math.atan2(b.door.x-x,b.door.z-z)};taken.push(spot);return spot;}
+    }
+    return null;
+  }
+  for(const key of ERRAND_KEYS){
+    const n=residents.find(r=>r.id===key);if(!n)continue;
+    const home={x:n.x,z:n.z,heading:n.heading},routes={};
+    for(const {to} of ERRANDS[key].trips){
+      if(routes[to])continue;
+      const spot=errandSpot(to),path=spot&&findWalkRoute(home,spot,solid,TOWN_BOUNDS);
+      if(path)routes[to]={path,spot};
+    }
+    n.errand=createErrand(key,home,routes,at=>createRoutine(ROUTINES[key],at,n.walk,ACTIONS),spot=>createRoutine(AWAY,spot,n.walk,ACTIONS));n.routes=routes;
+  }
   // A gold diamond marks the story's next person; parcels mark job stops.
   const marker=(geometry,color)=>{const m=mesh(geometry,color,0,0,0,scene);m.visible=false;m.userData.height=0;animated.push(m);return m;};
   const storyMarker=marker(new T.OctahedronGeometry(.19,0),0xe4bc68);
@@ -705,5 +735,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }
