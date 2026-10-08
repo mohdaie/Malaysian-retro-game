@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.8.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.9.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 ## Install Retro Malaysia
 
@@ -95,6 +95,23 @@ Six residents leave their door at set times, walk the town's paths to a shop, ch
 | Mak Cik Kiah | Kedai Roti 9:00–10:00, Kedai Runcit 14:30–15:30 | Wan Som, her mother |
 
 Keepsake stories come first: a resident whose door a story in progress needs (Abang Kamal with the Walkman ready to collect, Pak Abu while his clue is next) stays home instead of going out, and the family never tells the resident's part of a story. If you call while they are out, the family says when they will be back. The schedule is plain data in `src/errands.js`. Routes are planned once at load against walls, fences and props; walkers wait for anyone in their way and then squeeze past.
+
+### Crowds by the clock (v2.9)
+
+Ten extras fill the town at the right hours, from plain data in `src/crowds.js`. It is the school holidays, so the kids are out in the afternoon:
+
+| When | Where | Who |
+|---|---|---|
+| 7:00–9:30 | Warung Kak Ita | Pak Seman and Pak Daud at breakfast |
+| 8:30–10:30 | Kedai Runcit 99 | Siti on an errand, Mak Cik Gayah shopping |
+| 10:00–11:30, 15:00–16:20 | Kedai Sudut Mini | Aisyah and Ah Keong hanging about |
+| 14:00–16:10 | Five-foot way by Kedai Basikal | Adam and Hakim playing guli |
+| about 16:15–18:40 | The padang | Six kids run over to play, then run home |
+| 16:30–18:30 | Warung Kak Ita | Pak Rashid's teh petang |
+| 18:55–19:50 | Masjid | Pak Seman and Pak Rashid at Maghrib |
+| Saturday 18:30–21:30 | Pasar malam | Pak Daud, Mak Cik Gayah, Siti and Ravi |
+
+Kids run out of their front doors and back home along paths planned at load; adults appear and leave only while you are more than 25 m away. Everyone's position comes from the clock, so loads and sleeps put them straight in place.
 
 Their loops are in `src/routines.js` next to the NPCs'. Six new actions cover the trades: snip, sew, pump, sweep, rock (the baby) and cast. Shopkeepers offer Buy / Delivery work / Talk; houses and services offer Requests / Talk. Talking once a day, finishing errands and story moments raise friendship from Baru kenal to Kenal, Kawan and Dipercayai.
 

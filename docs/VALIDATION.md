@@ -321,3 +321,14 @@ In the browser (no page errors):
 - Step 1 at 14:45, with Mak Cik Kiah shopping at Kedai Runcit 99: "Talk to Pak Rahman" opens his counter with Delivery work.
 - The Walkman ready at 10:15, during Abang Kamal's kiosk errand: he stays home, and his door offers "Ada kisah untuk dicerita".
 - Nothing pending at 10:15: he is at the kiosk, and Kak Midah answers "…Abang Kamal balik lebih kurang 11:00." with no story offered.
+
+## v2.9.0 · crowds by the clock
+
+`npm test`: **186 tests passed**. New `tests/crowds.test.js`: every extra has its own body, outings in order and ending by 22:00, known loops and places, and no kid out before 08:00 (school holidays); positions follow the clock out of the door, at each stop and home again; the pasar malam outing happens only on Saturdays.
+
+In the browser (no page errors): all 10 extras found every gathering spot and every running route. Loaded beside each place:
+- 07:30 Warung Kak Ita: Pak Seman and Pak Daud.
+- 15:00 Kedai Basikal: Adam and Hakim at guli; Aisyah and Ah Keong running to Kedai Sudut Mini.
+- 16:13: four kids running to the padang.
+- 17:20 the padang: six kids playing.
+- Saturday (day 8) 20:00 pasar malam: Siti, Ravi, Pak Daud and Mak Cik Gayah. Sunday (day 9): nobody.

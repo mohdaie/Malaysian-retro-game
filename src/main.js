@@ -1,39 +1,40 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.8.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.9.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.8.0';
-import { createBicycle, stepBike } from './bicycle.js?v=2.8.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.8.0';
-import { readSave, readSaves, writeSave } from './save.js?v=2.8.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.8.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.8.0';
-import { createSoundscape } from './soundscape.js?v=2.8.0';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.8.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.8.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.8.0';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.8.0';
-import { tripAt } from './errands.js?v=2.8.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.8.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.8.0';
-import { ITEM_KINDS } from './item-art.js?v=2.8.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.8.0';
-import { createGasingUI } from './gasing-ui.js?v=2.8.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.8.0';
-import { createDamUI } from './dam-ui.js?v=2.8.0';
-import { DAM_QUESTS } from './dam-progress.js?v=2.8.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.8.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.8.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.8.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.8.0';
-import { createTownMap } from './town-map-ui.js?v=2.8.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.8.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.8.0';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.8.0';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.8.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.8.0';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.8.0';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.8.0';
-import { renderQuestJournal } from './journal-ui.js?v=2.8.0';
-import { chapterBrief } from './journal.js?v=2.8.0';
+import { makeWorld } from './world.js?v=2.9.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.9.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.9.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.9.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.9.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.9.0';
+import { createSoundscape } from './soundscape.js?v=2.9.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.9.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.9.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.9.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.9.0';
+import { tripAt } from './errands.js?v=2.9.0';
+import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.9.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.9.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.9.0';
+import { ITEM_KINDS } from './item-art.js?v=2.9.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.9.0';
+import { createGasingUI } from './gasing-ui.js?v=2.9.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.9.0';
+import { createDamUI } from './dam-ui.js?v=2.9.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.9.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.9.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.9.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.9.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.9.0';
+import { createTownMap } from './town-map-ui.js?v=2.9.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.9.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.9.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.9.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.9.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.9.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.9.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.9.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.9.0';
+import { chapterBrief } from './journal.js?v=2.9.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -666,7 +667,7 @@ function sayHi(){
   if(mode!=='explore')return;
   if(riding){audio?.bell?.();return;}
   player.wave?.();const p=player.group.position;
-  for(const n of townsfolk())if(atPost(n)&&Math.hypot(n.x-p.x,n.z-p.z)<8)n.waveUntil=elapsed+.5+2.1;
+  for(const n of [...townsfolk().filter(atPost),...world.crowd.filter(c=>c.pose)])if(Math.hypot(n.x-p.x,n.z-p.z)<8)n.waveUntil=elapsed+.5+2.1;
 }
 function toggleBike(){
   if(mode!=='explore')return;
@@ -962,6 +963,28 @@ function tick(){
     character.group.position.set(s.x,world.groundHeight(s.x,s.z)-.065,s.z);if(!talking)character.group.rotation.y=s.heading;
     character.animate(dt,s.moving,false,s.travel,waving?'wave':s.action,waving?2.1-(n.waveUntil-elapsed):s.actionTime);
   }
+  // The extras (crowds.js), placed by the clock alone. Running and walking
+  // is continuous; otherwise they only appear, vanish or move to another
+  // gathering while both spots are over 25 m from the player.
+  for(const c of world.crowd){
+    const pp=player.group.position,{character}=c,far=q=>!q||Math.hypot(q.x-pp.x,q.z-pp.z)>25;
+    let pose=mode==='title'?null:crowdPose(c.id,time.minute,time.day,c.legs);
+    const spot=pose?.stop&&c.stops.find(q=>q.o===pose.stop.outing&&q.i===pose.stop.index)?.spot;if(pose?.stop&&!spot)pose=null;
+    if((pose?.key??null)!==(c.pose?.key??null)){
+      if(sync||pose?.moving||c.pose?.moving||mode==='title'||far(c.pose&&c)&&far(spot||pose)){c.pose=pose;c.routine=pose?.stop?c.routineAt(pose.stop.outing,pose.stop.index):null;}
+    }
+    if(!c.pose){character.group.visible=false;c.collider.x=1e4;continue;}
+    const px=c.x,pz=c.z,waving=c.waveUntil>elapsed&&c.waveUntil-elapsed<2.1;let s;
+    if(c.routine){let gap=Math.hypot(c.x-pp.x,c.z-pp.z);s=c.routine.update(dt,{pause:waving||mode!=='explore',look:mode==='explore'&&(gap<2.4||c.waveUntil>elapsed)?pp:null});}
+    else s=pose?.key===c.pose.key?pose:c.pose;
+    c.x=s.x;c.z=s.z;c.collider.x=s.x;c.collider.z=s.z;
+    const gap=Math.hypot(c.x-pp.x,c.z-pp.z);character.group.visible=gap<42;if(!character.group.visible)continue;
+    const near=gap<20,detail=gap<30;if(character.figure.castShadow!==near)character.figure.castShadow=near;
+    if(c.detail!==detail){c.detail=detail;for(const d of character.details)d.visible=detail;}
+    character.group.position.set(s.x,world.groundHeight(s.x,s.z)-.065,s.z);character.group.rotation.y=s.heading;
+    const travel=c.routine?s.travel:Math.min(Math.hypot(s.x-px,s.z-pz),(c.pose.run?KID_RUN:CROWD_WALK)*dt*2);
+    character.animate(dt,c.routine?s.moving:1,!c.routine&&c.pose.run,travel,waving?'wave':c.routine?s.action:null,waving?2.1-(c.waveUntil-elapsed):c.routine?s.actionTime:0);
+  }
   world.wind.value=elapsed;
   for(const marker of world.animated){marker.rotation.y+=dt*.8;marker.position.y=marker.userData.height+Math.sin(elapsed*2)*.12;}
   const p=player.group.position;
@@ -994,4 +1017,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({audio:{music:music.snapshot(),ambience:audio?.context.state??'off'},riding,bike:{...bike},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),residents:world.residents.map(n=>({id:n.id,place:n.place,keeper:!!n.keeper,phase:n.errand?.state.phase??'home',at:n.errand?.state.at??null,routes:n.routes?Object.keys(n.routes).map(Number):null,onDuty:atPost(n),visible:n.character.group.visible,x:+n.x.toFixed(2),z:+n.z.toFixed(2)})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({audio:{music:music.snapshot(),ambience:audio?.context.state??'off'},riding,bike:{...bike},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),crowd:world.crowd.map(c=>({id:c.id,key:c.pose?.key??null,visible:c.character.group.visible,x:+c.x.toFixed(2),z:+c.z.toFixed(2),spots:c.stops.filter(q=>q.spot).length,stops:c.stops.length,at:c.stops.map(q=>q.spot&&[q.spot.place,+q.spot.x.toFixed(1),+q.spot.z.toFixed(1)]),legs:c.legs.map(l=>Object.keys(l).length)})),residents:world.residents.map(n=>({id:n.id,place:n.place,keeper:!!n.keeper,phase:n.errand?.state.phase??'home',at:n.errand?.state.at??null,routes:n.routes?Object.keys(n.routes).map(Number):null,onDuty:atPost(n),visible:n.character.group.visible,x:+n.x.toFixed(2),z:+n.z.toFixed(2)})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
