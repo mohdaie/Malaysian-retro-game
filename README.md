@@ -26,7 +26,7 @@ The gold chapter marker follows the next known delivery, clue, challenge host or
 
 ## Buku: a journal of discoveries
 
-Three tabs replace the long quest list: **Tugasan** holds the short chapter goal, active deliveries and accepted stories; **Kenangan** holds earned keepsakes and their photos; **Pekan** records games played and people met. Cards show one current phase, with expandable automatic task checkmarks and discovered notes. Future clue stops, challenges and rewards stay hidden until their phase or earning. Unowned catalogue keepsakes use an anonymous locked cover. No progress, grind requirements or saves are reset. See [journal design and validation](docs/JOURNAL.md).
+Three tabs replace the long quest list: **Tugasan** holds the short chapter goal, active deliveries and accepted stories; **Kenangan** holds earned keepsakes and their photos; **Pekan** records games played and people met. Current tasks open automatically with exact menu actions, item quantities, locations, independent progress counts and automatic tick marks. Completed delivery gates and revealed clues remain recorded. Every discovered game achievement is listed, including pending objectives; game cards also appear in Tugasan. Next-action directions follow pickup, handover, clue, challenge, claim and exhibition stages. The HUD shows live delivery, destination and long-route counts. Notes stay expandable. Future clue stops, challenges and rewards stay hidden until their phase or earning. Unowned catalogue keepsakes use an anonymous locked cover. No progress, grind requirements or saves are reset. See [journal design and validation](docs/JOURNAL.md).
 
 ## Long-term keepsake quests
 

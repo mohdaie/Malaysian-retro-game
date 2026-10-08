@@ -1,7 +1,7 @@
 import { ITEMS } from './economy.js?v=2.8.0';
 import { NOSTALGIA_QUESTS } from './nostalgia-quests.js?v=2.8.0';
 import { itemThumbnail } from './item-ui.js?v=2.8.0';
-import { memoryJournal } from './journal.js?v=2.8.0';
+import { memoryJournal, memoryNext } from './journal.js?v=2.8.0';
 import { DONE } from './story.js?v=2.8.0';
 export const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 export function taskChecklist(tasks,placeName){
@@ -9,7 +9,7 @@ export function taskChecklist(tasks,placeName){
  for(const task of tasks){
   const li=el('li',task.done?'task-done':'task-pending');li.dataset.task=task.id;
   const mark=el('span','task-mark',task.done?'✓':'○');mark.setAttribute('role','checkbox');mark.setAttribute('aria-checked',String(task.done));mark.setAttribute('aria-readonly','true');mark.setAttribute('aria-label',task.label);
-  const label=el('span','task-label',task.place?`${task.label} · ${placeName(task.place)}`:task.label),count=el('small','task-count',task.total>1?`${task.current}/${task.total}`:task.done?'Siap':'');
+  const label=el('span','task-label');label.append(el('span','',task.place?`${task.label} · ${placeName(task.place)}`:task.label));if(task.detail)label.append(el('small','task-instruction',task.detail));if(task.places?.length)label.append(el('small','task-instruction','Sudah dihantar: '+task.places.map(placeName).join(', ')));const count=el('small','task-count',`${task.current}/${task.total}${task.done?' ✓':''}`);
   li.append(mark,label,count);list.append(li);
  }
  return list;
@@ -27,10 +27,11 @@ export function memoryQuestCard(id,eco,{placeName,inspect,context,start,clue,cla
  const button=(label,fn,primary=false)=>{const b=el('button',primary?'primary':'secondary',label);b.type='button';b.onclick=fn;actions.append(b);};
  if(!p){card.append(el('p','conversation-intro',q.intro));button('Terima tugas',()=>start(id),true);card.append(actions);return card;}
  if(chapter?.focus===id&&chapter.step>=7&&chapter.step<DONE){card.dataset.chapterFocus='true';card.append(el('small','journal-tag','Untuk pameran · Chapter 1'));}
- card.append(el('p','journal-next',journal.nextPlace?`Petunjuk: ${placeName(journal.nextPlace)}`:journal.phase));
+ card.append(el('small','journal-tag',journal.phase));const next=memoryNext(eco,id,placeName);card.append(el('p','journal-next',next.text));if(p.stage==='grind')card.append(el('p','journal-rule','Kiraan bermula selepas Terima tugas. Semua 3 syarat mesti siap; satu delivery boleh memenuhi beberapa syarat.'));if(p.stage==='challenge')card.append(el('p','journal-rule','Kemenangan yang layak sejak Terima tugas sudah dikira. Habiskan cabaran yang masih kosong.'));
  const progress=el('progress','journal-progress');progress.max=1;progress.value=journal.progress;progress.setAttribute('aria-label',journal.phase+' progress');card.append(progress);
- const details=el('details','journal-details');details.append(el('summary','',`Task · ${journal.done}/${journal.tasks.length} siap`),taskChecklist(journal.tasks,placeName));card.append(details);
+ const details=el('details','journal-details');details.open=p.stage!=='earned';details.append(el('summary','',`Task · ${journal.done}/${journal.tasks.length} siap`),taskChecklist(journal.tasks,placeName));card.append(details);
  if(p.stage!=='earned'){const notes=el('details','journal-notes');notes.append(el('summary','','Catatan yang ditemui'),el('p','',journal.note));card.append(notes);}
+ if(['grind','challenge'].includes(p.stage))button('Tunjuk arah · langkah seterusnya',()=>navigate(next.route),true);
  if(p.stage==='trail'){
   if(context?.place===journal.nextPlace)button('Baca petunjuk',()=>clue(id),true);
   else button('Tunjuk arah',()=>navigate(`place:${journal.nextPlace}`));

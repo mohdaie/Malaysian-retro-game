@@ -85,6 +85,8 @@ export function chapterGuide(step, eco, exhibition = null) {
   const q = NOSTALGIA_QUESTS[questId], p = eco.nostalgia?.quests[questId];
   const phase = current < 6 ? 'KENAL PEKAN' : current < 9 ? 'BINA KEPERCAYAAN' : 'PAMERAN KENANGAN';
   let target = base.target, text = base.text;
+  if(current===2&&!eco.jobs.some(j=>j.story==='first-parcel'))target='rahman';
+  if(current===3&&!eco.jobs.some(j=>j.story==='tea'))target='nenek';
   if (target === 'memory') {
     if (!q) target = null;
     else if (p.stage === 'grind') {
@@ -105,7 +107,7 @@ export function chapterGuide(step, eco, exhibition = null) {
 export function storyOffers(step, eco) {
   const has = tag => eco.jobs.some(j => j.story === tag);
   const out = [];
-  if (step === 1 && !has('first-parcel')) out.push({ id: 'S-first-parcel', story: 'first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], item: 'gula', qty: 2, cost: 0, upah: 100, route: 45, note: 'Nenek’s monthly order, already paid for. Two bags of gula. Upah is for the walk.' });
+  if ([1,2].includes(step) && !has('first-parcel')) out.push({ id: 'S-first-parcel', story: 'first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], item: 'gula', qty: 2, cost: 0, upah: 100, route: 45, note: 'Nenek’s monthly order, already paid for. Two bags of gula. Upah is for the walk.' });
   if (step === 3 && !has('tea')) out.push({ id: 'S-tea', story: 'tea', kind: 'purchase', requester: 2, from: 22, to: 2, stops: [2], item: 'teh', qty: 1, cost: 70, upah: 100, route: 45, note: 'Nenek’s tea tin is empty. Buy one packet at Pak Rahman’s; Nenek repays the RM 0.70 and your upah.' });
   return out;
 }

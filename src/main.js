@@ -33,7 +33,7 @@ import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.8.0';
 import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from './nostalgia-quests.js?v=2.8.0';
 import { memoryQuestCard } from './nostalgia-ui.js?v=2.8.0';
 import { renderQuestJournal } from './journal-ui.js?v=2.8.0';
-import { CHAPTER_BRIEFS } from './journal.js?v=2.8.0';
+import { chapterBrief } from './journal.js?v=2.8.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -138,7 +138,8 @@ function refreshQuest() {
   const guide = chapterGuide(state.story, eco, state.exhibition);state.story=guide.step;
   const gone = typeof guide.target==='string' && NPCS[guide.target] && !atPost(npcBody(guide.target)) && !storyTarget();
   $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = guide.title;
-  $('quest-description').textContent = gone ? `${CHAPTER_BRIEFS[guide.step]} ${NPCS[guide.target].name} ${time.minute>=(HOURS[guide.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[guide.target]||HOURS.default)[0])}.`}` : CHAPTER_BRIEFS[guide.step];
+  const brief=chapterBrief(guide,eco,placeName);
+  $('quest-description').textContent = gone ? `${brief} ${NPCS[guide.target].name} ${time.minute>=(HOURS[guide.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[guide.target]||HOURS.default)[0])}.`}` : brief;
   $('quest-phase').textContent=guide.phase;
   $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `${String(state.story + 1).padStart(2,'0')} / ${String(DONE).padStart(2,'0')}`;
   $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;

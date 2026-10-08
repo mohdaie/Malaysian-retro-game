@@ -38,7 +38,7 @@ try {
  await until('!!window.retroMalaysia');await fixture(7,'salleh');
  await click('document.getElementById("book-button")');
  assert.equal(await evaluate('document.querySelectorAll("#book-content [data-nostalgia]").length'),0);
- assert.equal(await evaluate('[...document.querySelectorAll("#book-content button")].some(b=>b.textContent==="Tunjuk arah")'),false);
+ assert.equal(await evaluate('[...document.querySelectorAll("#book-content button")].some(b=>b.textContent.startsWith("Tunjuk arah"))'),false);
  assert.doesNotMatch(await evaluate('document.getElementById("book-content").textContent'),/Too Phat|Nokia|Walkman|Lightning|six|Faiz/i);
  assert.equal(await evaluate('document.querySelectorAll("#book-tabs button").length'),3);
  await screenshot('journal-discovery.png');
@@ -50,13 +50,13 @@ try {
  await click('document.getElementById("item-close")');await click('document.getElementById("catalogue-close")');await click('document.getElementById("bag-close")');
  await fixture(7,'farid',`startNostalgia(eco,id,context);for(let i=0;i<q.grind.deliveries;i++){const job=accept(eco,{id:'b-'+i,kind:'parcel',requester:22,from:22,to:1+i%18,stops:[1+i%18],item:'gula',qty:1,cost:0,upah:100,route:90}).job;collect(eco,job.id,22);deliver(eco,job.id,job.to);}followNostalgiaClue(eco,id,q.trail[0].place);const job=accept(eco,{id:'multi',kind:'parcel',requester:22,from:22,to:3,stops:[1,2,3],item:'gula',qty:3,cost:0,upah:200,route:90}).job;collect(eco,job.id,22);deliver(eco,job.id,1);`);
  await click('document.getElementById("book-button")');assert.equal(await evaluate('document.querySelectorAll("#book-content [data-nostalgia]").length'),1);
- assert.equal(await evaluate('document.querySelector("#book-content [data-nostalgia]").dataset.stage'),'trail');assert.equal(await evaluate('document.querySelector("#book-content .journal-details").open'),false);
+ assert.equal(await evaluate('document.querySelector("#book-content [data-nostalgia]").dataset.stage'),'trail');assert.equal(await evaluate('document.querySelector("#book-content .journal-details").open'),true);
  assert.equal(await evaluate('document.querySelectorAll("[data-nostalgia] [data-task^=clue-]").length'),2);
  assert.equal(await evaluate('document.querySelectorAll("[data-job] [aria-checked=true]").length'),2);
- assert.equal(await evaluate('document.querySelectorAll("[data-nostalgia] [aria-checked=true]").length'),2);
+ assert.equal(await evaluate('document.querySelectorAll("[data-nostalgia] [aria-checked=true]").length'),4);
  assert.doesNotMatch(await evaluate('document.getElementById("book-content").textContent'),/Too Phat|Plan B|Nokia|Walkman|Uncle Lim’s championship|Tamiya.*4/);
  await evaluate('document.querySelector("[data-nostalgia] .journal-details").open=true; document.querySelector("[data-job] .journal-details").open=true;document.getElementById("book-content").scrollTop=180');await screenshot('journal-checklist.png');
- await click('document.getElementById("book-close")');await reload();await click('document.getElementById("book-button")');assert.equal(await evaluate('document.querySelectorAll("[data-nostalgia] [aria-checked=true]").length'),2);
+ await click('document.getElementById("book-close")');await reload();await click('document.getElementById("book-button")');assert.equal(await evaluate('document.querySelectorAll("[data-nostalgia] [aria-checked=true]").length'),4);
  await fixture(7,'farid',`startNostalgia(eco,id,context);for(let i=0;i<q.grind.deliveries;i++){const job=accept(eco,{id:'c-'+i,kind:'parcel',requester:22,from:22,to:1+i%18,stops:[1+i%18],item:'gula',qty:1,cost:0,upah:100,route:90}).job;collect(eco,job.id,22);deliver(eco,job.id,job.to);}for(const stop of q.trail)followNostalgiaClue(eco,id,stop.place);for(let i=0;i<1;i++)recordNostalgiaWin(eco,{game:'congkak'});claimNostalgia(eco,id,context,1,'Aie',4);eco.congkak.played=1;eco.congkak.won=1;eco.friends.faiz=8;`);
  await click('document.getElementById("book-button")');assert.equal(await evaluate('document.querySelectorAll("#book-memories [data-nostalgia]").length'),0);
  await click('document.getElementById("book-tab-memories")');assert.equal(await evaluate('document.querySelectorAll("#book-keepsakes [data-nostalgia]").length'),1);
