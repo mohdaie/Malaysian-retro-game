@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.12.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.13.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -12,31 +12,17 @@ Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chr
 
 The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
 
-## Opening film (v2.12)
+## Chapter 01 · Kawan Sebelum Garis Penamat
 
-Starting a new story (after choosing Amir or Nur) plays a 54-second intro: a 2026 night, a phone gallery of *Cuti Sekolah 2000*, and a notification asking *Nak balik zaman 2000?* The tap fades from black into the town. **Langkau ›** skips it, and Escape does too on desktop. Continue goes straight back to the saved journey. The film (`assets/video/intro.mp4`, 7.4 MB) streams on demand and is not part of the offline download; offline or if it cannot play, the game starts directly. It is built with HyperFrames in [`intro/`](intro/README.md).
+Begin with your mother at Amir's home (#1) or Nur's home (#11). Four initial prepaid deliveries introduce Pak Rahman, Nenek and the school-day friends. Finish one practice race; winning is optional.
 
-## Chapter 01 · Cuti Sekolah
+After shop stock goes missing, explore three investigation routes in any order: Faiz's alibi, the box's journey, and the stock records. Evidence cards separate hearsay from records and show each witness's limits. Select supporting cards and a conclusion in Buku. Wrong answers cost nothing. Optional three-level hints reveal a location only when requested. Badrul, Johnny and Logeswaran reuse the existing Hakim, Ah Keong and Ravi crowd bodies and can also be called at doors #17, #18 and #5.
 
-The first afternoon of the school holidays, the same for both characters. Amir starts outside Rumah Amir in the kampung, Nur outside Rumah Nur in the taman.
+Finish all 20 main deliveries (RM26.80 total), arrange the supervised inspection, and correct the rumour publicly. The school tournament then requires an overall win across Oval, Eight and Jaguh with five entrants: player, Faiz, Badrul, Johnny and Logeswaran. Mei Ling manages registration. Points are 5/3/2/1/0; ties use total time and an Eight decision race. The free loaner can win with RM9.50 tyres/brake upgrades and a good launch. Races, pits and standings resume after reload; retries are free and leave the solved case intact. Only the championship and delivered certificate unlock Lightning Magnum and the chapter ending.
 
-1. **Kawan lama**: meet Faiz and Mei Ling at the padang by the gelanggang.
-2. **Kerja pertama**: ask Pak Rahman at Kedai Runcit 99 for delivery work and take his parcel for Nenek.
-3. **Hantar ke rumah Nenek**: carry the two bags of gula to Nenek at Rumah Tok. Upah RM 1.00.
-4. **Teh untuk Nenek**: buy her tea at Pak Rahman's with your own money. She repays the RM 0.70 and the upah.
-5. **Congkak di beranda**: play a round of congkak with Nenek on her veranda.
-6. **Simpan sikit-sikit**: spend a little of your upah on your first collectible at Uncle Lim's.
+Six optional relationship deliveries unlock spare Walkman and Too Phat gifts, three practice tracks for Digimon, a consensual duplicate-card trade for Charizard, two game-day visits for Tamagotchi, and Badrul's follow-through. Unique gifts and payments settle once. KLCC, Proton Wira and Telekom stories await Chapter 2; existing ownership is retained. Save revision 3 restarts the rewritten chapter while preserving ordinary money, jobs, collections and earned keepsakes.
 
-These six steps introduce the town. Chapter 1 then continues with **Pameran Kenangan**, Pak Salleh's school-holiday exhibition:
-
-7. Meet Pak Salleh at the balai raya and hear the invitation.
-8. Explore the town, discover a keepsake story through conversation and accept it from its giver.
-9. Complete its varied deliveries and long-route requirements to earn trust.
-10. Follow its ordered clues to learn the story behind the object.
-11. Win its game challenges, then collect the keepsake and personal dedication.
-12. Return to Pak Salleh and share that story at the exhibition to complete Chapter 1.
-
-The gold chapter marker follows the next known delivery, clue, challenge host or giver. Before a story is discovered, the player explores without a keepsake marker. Buku records accepted stories with a small exhibition tag. Only one earned keepsake is required for the ending; all six stories remain available. Sharing keeps the item in the player's collection and saves a personal exhibition display. Existing saves at the former ending (step 6) continue at the invitation, preserving all money, items and quest progress. See [chapter flow and validation](docs/CHAPTER-1.md).
+See [the approved complete dialogue, storyboard and job details](docs/chapter-1-kawan-sebelum-garis-penamat.md).
 
 ## Buku: a journal of discoveries
 
@@ -44,7 +30,7 @@ Three tabs replace the long quest list: **Tugasan** holds the short chapter goal
 
 ## Long-term keepsake quests
 
-Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, Nokia 3310, Sony Walkman WM-EX9, Lightning Magnum and a KLCC miniature. Start with Ujang (3 deliveries) or Nenek’s KLCC story (4). Earning a first keepsake opens Nokia and Walkman (6 each), Too Phat’s album (8), and the playable Lightning Magnum championship (12). Follow 3–5 clues and win one game challenge; Lightning needs a win on every track. Qualifying wins count from acceptance, even before the clues. Existing saves retain accepted quests, earned keepsakes and discovered clue progress. Progress survives losses and reloads. Rewards include a personal dedication; Lightning Magnum is playable in the Tamiya garage. After Chapter 1, eight more keepsake stories open: Digimon, Tamagotchi, GEMPAK, Mutiara Naga, Senario VCD, Telekom phonecards, Proton Wira miniature and Charizard. They use illustrated delivery parcels, ordered investigations, next-day visits and existing game challenges. Mutiara Naga requires earned Ujang; Charizard requires three earned keepsakes from the new set. There are now 14 active keepsakes, with 14 catalogue entries reserved for later chapters. See [quest requirements and photo credits](docs/NOSTALGIA.md).
+Daily work feeds permanent keepsakes. Chapter 1's Walkman, Too Phat, Digimon, Tamagotchi, Charizard and Lightning Magnum use the story and relationship requirements above. Ujang and Nokia retain their independent town quests. KLCC, Proton Wira and Telekom await Chapter 2; earned items remain owned. Other keepsakes retain their catalogue and quest requirements. See [quest requirements and photo credits](docs/NOSTALGIA.md).
 
 ## The town's people
 
@@ -63,7 +49,7 @@ Daily work now feeds six permanent collectibles: Too Phat Plan B, Ujang No.111, 
 | 11 | Nenek, congkak mentor | Rumah Tok | Floral baju kurung, glasses, white tudung |
 | 12 | Atuk, toy storyteller | Rumah Atuk, afternoons at the padang | Loose shirt, kain pelikat, cap, wooden toy box |
 | 13 | Faiz, your friend | Rumah Faiz, afternoons at the padang | Graphic tee, shorts, selipar, a mini 4WD in hand |
-| 14 | Mei Ling, your friend | Rumah Mei Ling, afternoons at the padang | Striped tee, bob, sling bag |
+| 14 | Mei Ling, your friend | Kedai Runcit 99 with Uncle Lim; tournament registration | Striped tee, bob, sling bag |
 
 Each of the 14 has their own afternoon loop around their post (v1.2): Kak Ita stirs her pot, walks over to wipe a table and fans herself; Pak Mat bends over his beds; Uncle Lim reads with his arms folded; Faiz waves and stretches. They stop and turn to you when you come close, and wait while you talk. You decide the loops in `src/routines.js`, a plain list per person of steps (`stand`, `do` an action, `walk` to a spot, `face` a way). There are 15 actions: wave, look, stir, wipe, write, read, fan, stretch, hips, fold, talk, bend, scratch, check and nod.
 
@@ -112,12 +98,12 @@ Ten extras fill the town at the right hours, from plain data in `src/crowds.js`.
 |---|---|---|
 | 7:00–9:30 | Warung Kak Ita | Pak Seman and Pak Daud at breakfast |
 | 8:30–10:30 | Kedai Runcit 99 | Siti on an errand, Mak Cik Gayah shopping |
-| 10:00–11:30, 15:00–16:20 | Kedai Sudut Mini | Aisyah and Ah Keong hanging about |
-| 14:00–16:10 | Five-foot way by Kedai Basikal | Adam and Hakim playing guli |
+| 10:00–11:30, 15:00–16:20 | Kedai Sudut Mini | Aisyah and Johnny hanging about |
+| 14:00–16:10 | Five-foot way by Kedai Basikal | Adam and Badrul playing guli |
 | about 16:15–18:40 | The padang | Six kids run over to play, then run home |
 | 16:30–18:30 | Warung Kak Ita | Pak Rashid's teh petang |
 | 18:55–19:50 | Masjid | Pak Seman and Pak Rashid at Maghrib |
-| Saturday 18:30–21:30 | Pasar malam | Pak Daud, Mak Cik Gayah, Siti and Ravi |
+| Saturday 18:30–21:30 | Pasar malam | Pak Daud, Mak Cik Gayah, Siti and Logeswaran |
 
 Kids run out of their front doors and back home along paths planned at load; adults appear and leave only while you are more than 25 m away. Everyone's position comes from the clock, so loads and sleeps put them straight in place.
 
@@ -232,7 +218,7 @@ Choose **Tunjuk jalan** to return to the town with a destination card, remaining
 
 ## Tamiya · Jom Dash! (v1.8)
 
-Talk to **Faiz or Mei Ling at the padang** and choose **Main Tamiya · Jom Dash!**. Choose **Oval Pekan**, **Selekoh Lapan** (raised figure-eight crossover), or **Litar Jaguh** (lane changer, ramps and tight bends); choose your car and **Laju / Seimbang / Stabil** setup. Enter the grid, start the meter, then tap **Lepas!** at the gold centre. After a three-second countdown, all three cars run automatically for three laps. Your car has a gold overhead marker, Faiz orange, Mei Ling pink. Positions, laps, recovery and finish times appear beside the track.
+Talk to **Faiz at the padang** and choose **Main Tamiya · Jom Dash!**. Choose **Oval Pekan**, **Selekoh Lapan** (raised figure-eight crossover), or **Litar Jaguh** (lane changer, ramps and tight bends); choose your car and **Laju / Seimbang / Stabil** setup. Enter the grid, start the meter, then tap **Lepas!** at the gold centre. After a three-second countdown, all five cars run automatically for three laps. Your car has a gold overhead marker. Faiz, Badrul, Johnny and Logeswaran race alongside you. Mei Ling handles registration and never races. Positions, laps, recovery and finish times appear beside the track.
 
 Uncle Lim has a dedicated **Katalog Tamiya · Dash racers** with original comic portraits, speed, grip, stability, overall power, prices and ownership. Buy each car once using Duit Poket; it remains in your collection. The original `tamiya` collectible becomes **Pekan Runner**, keeping its RM12 price and owned copies. Faiz lends the same starter for free if you do not own it; there is no race entry fee. Owned upgrades become available in the car selector.
 
@@ -247,7 +233,7 @@ Uncle Lim has a dedicated **Katalog Tamiya · Dash racers** with original comic 
 
 The Dash names reference classic [Dash! Yonkuro cars](https://www.tamiya.com/english/tag/taglist.html?genre_item=e_dash), including the original [Cannonball](https://www.tamiya.com/japan/products/18022/index.html) and [Dancing Doll](https://www.tamiya.com/japan/products/18023/index.html). Meshes and portraits are original stylized game art. Prices and ratings are **arcade tuning**, rather than retail prices, manufacturer specifications or canonical rankings. Higher-tier cars are faster with the same tuning, but an expensive aggressive setup can lose to a cheaper stable car.
 
-Speed sets straight pace; grip controls corner pace; stability controls ramp pace. Laju increases speed but lowers grip/stability. Stabil adds grip and braking control at a small speed cost. Too little control at a tight corner or ramp gives a visible exit and timed recovery. Start accuracy changes the launch delay. Outcomes are computed locally from the car, equipped parts, charge, setup, track, contact timing and every pit decision. Jaguh changes lanes once per lap with an elevated outside return; all cars cycle through the three lanes. The lanes use normalized lap progress for equal race distance; this is an arcade race, not a rigid-body Mini 4WD simulator. Both rivals run real parts and charge: Faiz starts aggressive and takes a two-second setup/battery pit, while Mei Ling favours a steady endurance build. Skip to finish preserves the exact result.
+Speed sets straight pace; grip controls corner pace; stability controls ramp pace. Laju increases speed but lowers grip/stability. Stabil adds grip and braking control at a small speed cost. Too little control at a tight corner or ramp gives a visible exit and timed recovery. Start accuracy changes the launch delay. Outcomes are computed locally from the car, equipped parts, charge, setup, track, contact timing and every pit decision. Jaguh changes lanes once per lap with an elevated outside return; all cars cycle through the five lanes. The lanes use normalized lap progress for equal race distance; this is an arcade race, not a rigid-body Mini 4WD simulator. Four rivals run real parts and charge: Faiz starts aggressive and takes a two-second setup/battery pit, while Badrul, Johnny and Logeswaran each use a distinct build. Skip to finish preserves the exact result.
 
 Closing saves the car, build, phase, contact timing, elapsed race time and pit history (including an open pit and its selected parts); return to either friend to resume. Portrait orientation, hidden tabs and lost track graphics pause the race. Ending an unfinished race requires confirmation and pays nothing. Space/Enter activate buttons and selects support keyboard navigation; focus remains inside the dialog. Reduced motion removes wheel/recovery animation. The 3D town renderer waits while a reused, small WebGL renderer shows the comic track.
 
@@ -274,7 +260,7 @@ The distance timeline is deterministic: changing a build preserves the already-r
 |---|---:|
 | Finish the first three-lap race | RM0.80 |
 | Finish ahead of Faiz | RM1.20 |
-| Finish ahead of Mei Ling | RM1.60 |
+| Finish ahead of Johnny | RM1.60 |
 | Win first place on all three tracks | RM3.00 + Jaguh Tamiya Pekan badge |
 
 The Beg shows owned cars and the badge; Buku lists milestones, wins and the saved race. Rewards and records settle once after reload. Old saves keep items, wallet, jobs, story, clock, Dam Haji and Gasing. RC steering and multiplayer are future work. In-progress v1.7 races finish under their original rules and timing; new races use parts and live pits.

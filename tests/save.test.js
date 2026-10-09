@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateSave, readSave, readSaves, writeSave, SAVE_KEY, slotKey } from '../src/save.js';
 import { newEconomy } from '../src/economy.js';
-import { DONE } from '../src/story.js';
-const valid = { version: 3, who: 'nur', name: 'Nur', story: 2, x: 12, z: 0, ...newEconomy(), wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
+import { DONE, STORY_REVISION } from '../src/story.js';
+const valid = { version: 4, who: 'nur', name: 'Nur', story: 1, x: 12, z: 0, ...newEconomy(), chapter:{...newEconomy().chapter,who:'nur',step:1,baseline:1,completed:['S01','D01']}, wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
   jobs: [{ id: 'J1', offer: 'S-first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], left: 1, item: 'gula', qty: 2, cost: 0, upah: 100, status: 'carrying', story: 'first-parcel' }], nextJob: 2,
   friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 }, bike: { x: 4, z: -6, heading: 1.2 } };
 const memory = () => { const data = new Map(); return { data, getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, v), removeItem: k => data.delete(k) }; };
@@ -12,14 +12,14 @@ test('valid saves roundtrip and invalid/out-of-bounds saves are rejected', () =>
   const storage = memory();
   assert.equal(writeSave(storage, valid), true);
   assert.deepEqual(withoutStamp(readSave(storage)), valid);
-  for (const bad of [{ x: 400 }, { version: 4 }, { name: 7 }, { who: 'faiz' }, { story: DONE + 1 }]) assert.equal(validateSave({ ...valid, ...bad }), null, JSON.stringify(bad));
+  for (const bad of [{ x: 400 }, { version: 5 }, { name: 7 }, { who: 'faiz' }, { story: DONE + 1 }]) assert.equal(validateSave({ ...valid, ...bad }), null, JSON.stringify(bad));
 });
 test('unavailable storage and malformed JSON never block gameplay', () => {
   assert.equal(readSave(null), null); assert.equal(writeSave(null, valid), false); assert.equal(readSave({ getItem: () => '{broken' }), null);
 });
 test('older saves keep the name and Duit Poket and start the rewritten chapter as Amir', () => {
   const v2 = validateSave({ version: 2, name: 'Ali', friend: 'Siti', quest: 3, completed: true, x: 1, z: 2, wallet: 420, bag: { gula: 2 }, jobs: [] });
-  assert.deepEqual([v2.version, v2.who, v2.name, v2.story, v2.wallet, v2.upgraded], [3, 'amir', 'Ali', 0, 420, true]);
+  assert.deepEqual([v2.version, v2.who, v2.name, v2.story, v2.wallet, v2.upgraded], [4, 'amir', 'Ali', 0, 420, true]);
   assert.deepEqual(v2.bag, {});
   const v1 = validateSave({ version: 1, name: 'Amir', friend: 'Nur', quest: 1, completed: false, x: 1, z: 2 });
   assert.equal(v1.wallet, newEconomy().wallet);
@@ -46,10 +46,10 @@ test('the bicycle is saved where it was left; a missing or broken spot parks it 
 });
 
 test('Amir and Nur keep separate journeys: saving one never touches the other', () => {
-  const storage = memory(), amir = { ...valid, who: 'amir', name: 'Ali', wallet: 900, story: 5 };
+  const storage = memory(), amir = { ...valid, who: 'amir', name: 'Ali', wallet: 900, story: 2, chapter:{...newEconomy().chapter,who:'amir',step:2,completed:['S01','D01','S02','D02']} };
   writeSave(storage, amir); writeSave(storage, valid);
   const both = readSaves(storage);
-  assert.equal(both.amir.name, 'Ali'); assert.equal(both.amir.wallet, 900); assert.equal(both.amir.story, 5);
+  assert.equal(both.amir.name, 'Ali'); assert.equal(both.amir.wallet, 900); assert.equal(both.amir.story, 2);
   assert.equal(both.nur.name, 'Nur'); assert.equal(both.nur.wallet, 350);
   writeSave(storage, { ...valid, wallet: 10 });
   assert.equal(readSave(storage, 'amir').wallet, 900, 'a new Nur save leaves Amir alone');

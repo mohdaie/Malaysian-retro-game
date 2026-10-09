@@ -60,18 +60,19 @@ test('a resident a story needs stays home: no keeper ever tells their part', asy
   const { NOSTALGIA_QUESTS, storyNeedsHome, newNostalgia } = await import('../src/nostalgia-quests.js');
   // Which stories put an errand runner's door on their path?
   const homes = new Map(ERRAND_KEYS.map(k => [residentPlace(k), k])), touched = [];
-  for (const [id, q] of Object.entries(NOSTALGIA_QUESTS).filter(([,q])=>q.set!==2)) {
+  for (const [id, q] of Object.entries(NOSTALGIA_QUESTS).filter(([,q])=>q.set!==2&&!q.chapter&&!q.deferred)) {
     if (!q.npc && homes.has(q.place)) touched.push([id, 'giver', homes.get(q.place)]);
     q.trail.forEach((t, i) => { if (homes.has(t.place)) touched.push([id, `clue ${i}`, homes.get(t.place)]); });
   }
-  assert.deepEqual(touched.map(t => t.join(' ')).sort(), ['nostalgia_G01 clue 0 abu', 'nostalgia_G04 giver kamal', 'nostalgia_I01 clue 0 abu']);
+  assert.deepEqual(touched.map(t => t.join(' ')).sort(), ['nostalgia_G01 clue 0 abu']);
   const eco = { nostalgia: newNostalgia() };
   assert.equal(storyNeedsHome(eco, 6), false, 'an untaken story does not keep anyone in');
   eco.nostalgia.quests.nostalgia_G04 = { stage: 'grind', trail: 0 };
   assert.equal(storyNeedsHome(eco, 6), false, 'nor do errands far from the giver');
-  eco.nostalgia.quests.nostalgia_G04.stage = 'ready';
-  assert.equal(storyNeedsHome(eco, 6), true, 'Abang Kamal waits at home to hand over the Walkman');
-  eco.nostalgia.quests.nostalgia_G01 = { stage: 'trail', trail: 0 };
+  const { STEPS, STORY_REVISION } = await import('../src/story.js');
+  eco.chapter = {revision:STORY_REVISION,step:0,completed:['S25'],evidence:[],baseline:0};
+  assert.equal(storyNeedsHome(eco, 6), true, 'Abang Kamal waits at home for his family story');
+  eco.chapter=null;eco.nostalgia.quests.nostalgia_G01 = { stage: 'trail', trail: 0 };
   assert.equal(storyNeedsHome(eco, 13), true, 'Pak Abu waits at home with the address');
   eco.nostalgia.quests.nostalgia_G01.trail = 1;
   assert.equal(storyNeedsHome(eco, 13), false, 'and goes out again once the clue is found');

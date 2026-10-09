@@ -14,4 +14,4 @@ export function unlockLater(eco,id) {
  assert.ok(claimNostalgia(eco,starter,context,0,'Aie',1).ok);
 }
 
-export const ORIGINAL_QUEST_IDS = Object.keys(NOSTALGIA_QUESTS).filter(id=>NOSTALGIA_QUESTS[id].set!==2);
+export const ORIGINAL_QUEST_IDS = Object.keys(NOSTALGIA_QUESTS).filter(id=>NOSTALGIA_QUESTS[id].set!==2&&!NOSTALGIA_QUESTS[id].chapter&&!NOSTALGIA_QUESTS[id].deferred);

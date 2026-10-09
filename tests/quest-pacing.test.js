@@ -28,14 +28,6 @@ test('wins from acceptance survive reloads during errands and clues, without ski
  assert.equal(e.nostalgia.quests[id].stage,'ready');
  assert.ok(claimNostalgia(e,id,context(id),0,'Aie',1).ok);
 });
-test('early championship wins retain all tracks through reload without granting the car early',()=>{
- const id='nostalgia_T01';let e=newEconomy();unlockLater(e,id);startNostalgia(e,id,context(id));
- for(const track of ['oval','eight','jaguh'])recordNostalgiaWin(e,{game:'tamiya',track});
- e=cleanEconomy(e);assert.deepEqual(e.nostalgia.quests[id].tracks,['oval','eight','jaguh']);
- assert.equal(e.collection[id],undefined);help(e,id);
- for(const clue of qs[id].trail)followNostalgiaClue(e,id,clue.place);
- assert.equal(e.nostalgia.quests[id].stage,'ready');
-});
 const legacy=(id,trail=0)=>({quests:{[id]:{stage:'trail',deliveries:24,destinations:[1,2,3,4,5,6,7,8,9,10],long:8,trail,wins:{},tracks:[]}},earned:{}});
 test('old clue indices migrate to retained stops once, and already accepted later stories remain accessible',()=>{
  const id='nostalgia_M01',v=legacy(id,4),m=cleanNostalgia(v);

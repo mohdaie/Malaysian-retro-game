@@ -1,6 +1,7 @@
+import { STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, hasChapterFlag, meets } from './chapter-data.js?v=2.13.0';
 // Long-term collectible quests. Progress only starts after accepting a story;
 // qualifying victories count from acceptance, without skipping the story trail.
-import { SET_TWO_QUESTS, SET_TWO_IDS } from './nostalgia-set-two.js?v=2.12.0';
+import { SET_TWO_QUESTS, SET_TWO_IDS } from './nostalgia-set-two.js?v=2.13.0';
 export const LONG_ROUTE = 60;
 const stop = (place, clue) => ({ place, clue });
 export const NOSTALGIA_QUESTS = {
@@ -39,6 +40,11 @@ export const NOSTALGIA_QUESTS = {
   ], challenges: [{ game: 'congkak', count: 1, label: 'Beat Nenek at congkak' }], choices: [{ label: 'A journey still ahead', memory: 'For the journey we still hope to take, from Nenek.' }, { label: 'A memory shared at home', memory: 'A little tower from the night we shared our family\'s story.' }] },
   ...SET_TWO_QUESTS
 };
+for (const id of CHAPTER_IDS) {
+  const r=REWARD_STORIES[id];
+  NOSTALGIA_QUESTS[id]={chapter:true,giver:r.giver,title:r.title,intro:r.story,place:32,npc:'salleh',grind:{deliveries:0,destinations:0,long:0},trail:[],challenges:[],choices:[{label:'Kenangan Chapter 1',memory:r.memory},{label:'Dedikasi lama',memory:r.memory}]};
+}
+for(const id of ['nostalgia_I01','nostalgia_I03','nostalgia_I05'])if(NOSTALGIA_QUESTS[id])NOSTALGIA_QUESTS[id].deferred=true;
 const validPlace = n => Number.isInteger(n) && n >= 1 && n <= 38;
 const count = n => Number.isInteger(n) && n >= 0 && n <= 1e6 ? n : 0;
 const matches = (q, context) => q.npc ? context?.npc === q.npc : context?.place === q.place && !context?.npc;
@@ -79,7 +85,7 @@ export function cleanNostalgia(v) {
     out.quests[id]=p;
     const e=v.earned?.[id];
     if(p.stage==='ready'&&e&&Number.isInteger(e.choice)&&q.choices[e.choice]&&Number.isInteger(e.day)&&e.day>0&&e.day<=1e6&&typeof e.player==='string'&&e.player.trim()) {
-      p.stage='earned';out.earned[id]={choice:e.choice,day:e.day,player:e.player.trim().slice(0,20),giver:q.giver,inscription:q.choices[e.choice].memory};
+      p.stage='earned';out.earned[id]={choice:e.choice,day:e.day,player:e.player.trim().slice(0,20),giver:q.giver,inscription:q.chapter&&typeof e.inscription==='string'?e.inscription.slice(0,400):q.choices[e.choice].memory,...(q.chapter?{chapter:STORY_REVISION}:{})};
     }
   }
   return out;
@@ -87,7 +93,7 @@ export function cleanNostalgia(v) {
 export function canStartNostalgia(eco,id,context={}) {
   const q=NOSTALGIA_QUESTS[id];
   const earned=eco.nostalgia.earned;
-  return !!q && (!q.afterChapter || context.chapter>=q.afterChapter) && (!q.later || Object.keys(earned).length>0)
+  return !!q && !q.chapter && !['nostalgia_I01','nostalgia_I03','nostalgia_I05'].includes(id) && (context.chapter===undefined || context.chapter>=DONE) && (!q.afterChapter || context.chapter>=q.afterChapter) && (!q.later || Object.keys(earned).length>0)
     && (!q.requires || q.requires.every(id=>earned[id])) && (!q.newKeepsakes || SET_TWO_IDS.filter(id=>earned[id]).length>=q.newKeepsakes);
 }
 export function startNostalgia(eco,id,context) {
@@ -144,7 +150,7 @@ export function recordNostalgiaWin(eco,event) {
 }
 export function claimNostalgia(eco,id,context,choice,player,day) {
   const q=NOSTALGIA_QUESTS[id],p=eco.nostalgia.quests[id];
-  if(!q||!matches(q,context)||p?.stage!=='ready'||!q.choices[choice]||!Number.isInteger(choice)||typeof player!=='string'||!player.trim()||!Number.isInteger(day)||day<1||day>1e6)return {ok:false};
+  if(!q||q.deferred||!matches(q,context)||p?.stage!=='ready'||!q.choices[choice]||!Number.isInteger(choice)||typeof player!=='string'||!player.trim()||!Number.isInteger(day)||day<1||day>1e6)return {ok:false};
   p.stage='earned';const entry={giver:q.giver,choice,player:player.trim().slice(0,20),day,inscription:q.choices[choice].memory};eco.nostalgia.earned[id]=entry;eco.collection[id]=1;return {ok:true,entry};
 }
 export function nostalgiaStatus(eco,id) {
@@ -161,8 +167,9 @@ export function nostalgiaStatus(eco,id) {
 // a keepsake ready to collect): that resident stays home instead of
 // running errands (errands.js), so the gold marker always finds them.
 export function storyNeedsHome(eco,place) {
+  if(eco.chapter&&STEPS.some(s=>s.lines&&s.place===place&&!hasChapterFlag(eco,s.id)&&meets(eco,s.requires)))return true;
   return Object.entries(NOSTALGIA_QUESTS).some(([id,q])=>{const p=eco.nostalgia.quests[id];return !q.npc&&q.place===place&&p?.stage==='ready'||p?.stage==='trail'&&q.trail[p.trail]?.place===place;});
 }
 export function nostalgiaAt(eco,context) {
-  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id,context))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place).map(([id])=>id);
+  return Object.entries(NOSTALGIA_QUESTS).filter(([id,q])=>!q.chapter&&!q.deferred&&(matches(q,context)&&(eco.nostalgia.quests[id]||canStartNostalgia(eco,id,context))||eco.nostalgia.quests[id]?.stage==='trail'&&q.trail[eco.nostalgia.quests[id].trail].place===context.place)).map(([id])=>id);
 }

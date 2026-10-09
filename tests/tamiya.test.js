@@ -13,7 +13,7 @@ test('six shop cars have ascending prices and power, including the original RM12
  for(let i=0;i<CAR_IDS.length;i++){const id=CAR_IDS[i],a=TAMIYA_CARS[id];assert.equal(ITEMS[id].price,a.price);assert.ok(STOCK[25].includes(id));assert.ok(ITEMS[id].memory.length>30);if(i){assert.ok(a.price>TAMIYA_CARS[CAR_IDS[i-1]].price);assert.ok(carRating(id)>carRating(CAR_IDS[i-1]));}}
 });
 test('car purchases are atomic, unique, sold only at Lim, and survive the collection save',()=>{
- const eco=newEconomy();eco.wallet=5000;assert.deepEqual(buy(eco,22,'tamiya_emperor'),{ok:false,reason:'not-sold'});assert.equal(eco.wallet,5000);
+ const eco=newEconomy();eco.chapter.completed=['S04'];eco.wallet=5000;assert.deepEqual(buy(eco,22,'tamiya_emperor'),{ok:false,reason:'not-sold'});assert.equal(eco.wallet,5000);
  assert.equal(buy(eco,25,'tamiya_emperor').ok,true);assert.equal(eco.wallet,0);assert.equal(eco.collection.tamiya_emperor,1);
  assert.equal(buy(eco,25,'tamiya_emperor').reason,'owned');assert.equal(buy(eco,25,'tamiya').reason,'funds');assert.equal(eco.wallet,0);assert.deepEqual(cleanEconomy(eco).collection,eco.collection);
 });
@@ -26,12 +26,12 @@ test('higher price gives a faster clean race on each track; stable tuning preven
  for(const track of Object.keys(TAMIYA_TRACKS)){let prev=Infinity;for(const id of CAR_IDS){const p=racerPlan(track,id,'balanced',.5);assert.ok(p.duration<prev);prev=p.duration;}}
  const fast=racerPlan('jaguh','tamiya_emperor','fast',.5),stable=racerPlan('jaguh','tamiya_star','stable',.5);assert.ok(fast.derails>0);assert.equal(stable.derails,0);assert.ok(stable.duration<fast.duration,'a cheaper, well-tuned car beats a risky expensive setup');
 });
-test('contact timing changes launch delay and all three racers use distinct real car/setup plans',()=>{
- const s=launched(),good=racePlans(s);assert.equal(good.length,3);assert.deepEqual(good.map(p=>p.key),['player','faiz','meiling']);assert.ok(Math.abs(good[1].quality-.78)<1e-9);assert.ok(Math.abs(good[2].quality-.95)<1e-9);const bad=racePlans({...s,contact:0});assert.ok(Math.abs(bad[0].duration-good[0].duration-1.8)<1e-9);assert.deepEqual(bad.slice(1),good.slice(1));
+test('contact timing changes launch delay and all five racers use distinct real car/setup plans',()=>{
+ const s=launched(),good=racePlans(s);assert.equal(good.length,5);assert.deepEqual(good.map(p=>p.key),['player','faiz','hakim','keong','ravi']);assert.ok(Math.abs(good[1].quality-.78)<1e-9);assert.ok(Math.abs(good[2].quality-.66)<1e-9);const bad=racePlans({...s,contact:0});assert.ok(Math.abs(bad[0].duration-good[0].duration-1.8)<1e-9);assert.deepEqual(bad.slice(1),good.slice(1));
 });
 test('three-lap phases gate input; countdown carries excess time and skip gives the same finish',()=>{
  const ready=newTamiyaRound('oval','tamiya','balanced',1);assert.throws(()=>launchTamiya(ready,.5));let s=prepareTamiya(ready);assert.throws(()=>prepareTamiya(s));assert.throws(()=>launchTamiya(s,2));s=launchTamiya(s,.5);assert.equal(advanceTamiya(s,2).phase,'countdown');assert.equal(advanceTamiya(s,4).elapsed,1);
- const skipped=advanceTamiya(s,180);let watched=s;for(let i=0;i<2000;i++)watched=advanceTamiya(watched,.1);assert.deepEqual(watched,skipped);assert.equal(skipped.elapsed,raceDuration(skipped));assert.equal(standings(skipped).length,3);for(const p of racePlans(skipped)){const r=racerAt(p,skipped.elapsed,'oval');assert.equal(r.progress,1);assert.equal(r.lap,3);assert.equal(r.finished,true);}
+ const skipped=advanceTamiya(s,180);let watched=s;for(let i=0;i<2000;i++)watched=advanceTamiya(watched,.1);assert.deepEqual(watched,skipped);assert.equal(skipped.elapsed,raceDuration(skipped));assert.equal(standings(skipped).length,5);for(const p of racePlans(skipped)){const r=racerAt(p,skipped.elapsed,'oval');assert.equal(r.progress,1);assert.equal(r.lap,3);assert.equal(r.finished,true);}
 });
 test('race progress is independent of frame rate and never moves during a recovery penalty',()=>{
  const s=launched('jaguh','tamiya','fast');let a=s,b=s;for(let i=0;i<720;i++)a=advanceTamiya(a,1/60);for(let i=0;i<120;i++)b=advanceTamiya(b,.1);assert.ok(Math.abs(a.elapsed-b.elapsed)<1e-9);
@@ -59,5 +59,5 @@ test('a losing finish receives completion only when it does not beat either riva
  const eco=newEconomy();eco.tamiya.round=finished('jaguh','tamiya','fast');recordTamiya(eco);assert.deepEqual(eco.tamiya.claimed,['first']);assert.equal(eco.tamiya.won,0);assert.deepEqual(eco.tamiya.wins,[]);
 });
 test('existing saves keep the original model, wallet, jobs, Dam, Gasing, clock and story',()=>{
- const eco=newEconomy();delete eco.tamiya;eco.wallet=2780;eco.collection={tamiya:2,gasing:1};const old={version:3,who:'nur',name:'Nur',story:2,x:12,z:0,...eco,clock:{day:3,minute:900}};const v=validateSave(old);assert.deepEqual(v.tamiya,newTamiyaProgress());for(const key of ['wallet','collection','jobs','dam','gasing','clock','story'])assert.deepEqual(v[key],old[key]);
+ const eco=newEconomy();delete eco.tamiya;eco.wallet=2780;eco.collection={tamiya:2,gasing:1};const old={version:3,who:'nur',name:'Nur',story:2,x:12,z:0,...eco,clock:{day:3,minute:900}};const v=validateSave(old);assert.deepEqual(v.tamiya,newTamiyaProgress());for(const key of ['wallet','collection','jobs','dam','gasing','clock'])assert.deepEqual(v[key],old[key]);assert.equal(v.story,0);
 });

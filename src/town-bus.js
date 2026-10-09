@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { outline } from './illustration.js?v=2.12.0';
+import { outline } from './illustration.js?v=2.13.0';
 
 export const TOWN_BUS_URL = new URL('../assets/models/town-bus.glb', import.meta.url).href;
 
