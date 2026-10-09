@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.11.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.12.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -11,6 +11,10 @@ Road junctions now use a single surface, removing coplanar overlaps between dirt
 Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chrome, then choose **Install app** from the browser menu or **Install Retro Malaysia** when the game offers it. The app has its own RM icon and opens fullscreen in landscape. iPhone users can use Safari → Share → Add to Home Screen.
 
 The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
+
+## Opening film (v2.12)
+
+Starting a new story (after choosing Amir or Nur) plays a 54-second intro: a 2026 night, a phone gallery of *Cuti Sekolah 2000*, and a notification asking *Nak balik zaman 2000?* The tap fades from black into the town. **Langkau ›** skips it, and Escape does too on desktop. Continue goes straight back to the saved journey. The film (`assets/video/intro.mp4`, 7.4 MB) streams on demand and is not part of the offline download; offline or if it cannot play, the game starts directly. It is built with HyperFrames in [`intro/`](intro/README.md).
 
 ## Chapter 01 · Cuti Sekolah
 

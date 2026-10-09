@@ -1,7 +1,7 @@
 import * as T from 'three';
-import { toon, comicEdges } from './illustration.js?v=2.11.1';
-import { BRIDGES } from './town-layout.js?v=2.11.1';
-import { riverSection, riverBounds, riverDetails, RIVER_GROUND_Y, RIVER_WATER_Y, RIVER_BED_Y, RIVER_END } from './river-profile.js?v=2.11.1';
+import { toon, comicEdges } from './illustration.js?v=2.12.0';
+import { BRIDGES } from './town-layout.js?v=2.12.0';
+import { riverSection, riverBounds, riverDetails, RIVER_GROUND_Y, RIVER_WATER_Y, RIVER_BED_Y, RIVER_END } from './river-profile.js?v=2.12.0';
 
 const geometry = (positions, colors, uvs) => {
   const g = new T.BufferGeometry();

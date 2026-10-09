@@ -18,7 +18,7 @@ CI (`.github/workflows/ci.yml`) runs `npm ci && npm test && npm run build` on ev
 ## Rules that break things if missed
 
 - **Versioned imports.** Every import and asset URL carries `?v=<version>`, for example
-  `import { ITEMS } from './economy.js?v=2.11.1'`. Use the current version in any new import.
+  `import { ITEMS } from './economy.js?v=2.12.0'`. Use the current version in any new import.
   To release a new version, replace the old string everywhere in one go (`src/`, `index.html`, `scripts/`,
   `README.md` line 3, the version label in `index.html`, `package.json`, `package-lock.json`).
   `tests/publishing.test.js` checks that they match.
@@ -55,9 +55,10 @@ CI (`.github/workflows/ci.yml`) runs `npm ci && npm test && npm run build` on ev
 
 ## Game intro video (`intro/`)
 
-A separate HyperFrames project, not part of the game build. Read `intro/README.md` first: it has the beat sheet.
+A separate HyperFrames project, not part of the game build. The game plays its 720p export, `assets/video/intro.mp4`,
+on a new story (`src/intro.js`, wired in `newStory()` in `src/main.js`). Read `intro/README.md` first: it has the beat sheet.
 Dialogue lines and all timings are in `intro/index.html` (search for `type("#l`).
-Check and render from inside `intro/`: `npm run check`, then `npm run render` (about 3 minutes).
+Check and render from inside `intro/`: `npm run check`, then `npm run render` (about 3 minutes), then `npm run export-game`.
 
 ## Workflow
 

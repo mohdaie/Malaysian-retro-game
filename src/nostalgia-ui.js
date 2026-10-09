@@ -1,8 +1,8 @@
-import { ITEMS } from './economy.js?v=2.11.1';
-import { NOSTALGIA_QUESTS, clueRequirement } from './nostalgia-quests.js?v=2.11.1';
-import { itemThumbnail } from './item-ui.js?v=2.11.1';
-import { memoryJournal, memoryNext } from './journal.js?v=2.11.1';
-import { DONE } from './story.js?v=2.11.1';
+import { ITEMS } from './economy.js?v=2.12.0';
+import { NOSTALGIA_QUESTS, clueRequirement } from './nostalgia-quests.js?v=2.12.0';
+import { itemThumbnail } from './item-ui.js?v=2.12.0';
+import { memoryJournal, memoryNext } from './journal.js?v=2.12.0';
+import { DONE } from './story.js?v=2.12.0';
 export const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 export function taskChecklist(tasks,placeName){
  const list=el('ul','task-checklist');
