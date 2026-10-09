@@ -3,6 +3,7 @@ import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.13.0';
 import * as T from 'three';
 import { makeWorld } from './world.js?v=2.13.0';
 import { createBicycle, stepBike } from './bicycle.js?v=2.13.0';
+import { createSkateboard, stepSkate, SKATE } from './skateboard.js?v=2.13.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.13.0';
 import { readSave, readSaves, writeSave } from './save.js?v=2.13.0';
 import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.13.0';
@@ -49,6 +50,9 @@ const { camera, renderer, scene } = world;
 // home, stays wherever it is left and saves with the game.
 const bicycle = createBicycle(scene), WALK_ONLY = 1.35, JUMP_SPEED = 4.3, GRAVITY = 13;
 let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false, bikeStuck = 0;
+// The starter skateboard (v2.14) waits beside the bicycle, saves where it is left, and is ridden with G.
+const skateboard = createSkateboard(scene);
+let skate = { x: 0, z: 0, heading: 0, speed: 0, lean: 0 }, onSkate = false;
 let jumpY = 0, jumpVy = 0, airborne = false, jumpQueued = -1, jumpedNow = false, landedNow = false;
 let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
@@ -189,7 +193,7 @@ function setMode(next) {
 }
 function persist() {
   refreshQuest();
-  const ok = writeSave(storage, { version: 4, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 4, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, skate: { x: skate.x, z: skate.z, heading: skate.heading }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saves[state.who] = readSave(storage, state.who); }
   return ok;
@@ -209,10 +213,12 @@ function begin(value = null) {
   player.group.position.set(x, world.groundHeight(x, z) - .065, z);
   if (!value) player.group.rotation.y = home.heading;
   yaw = player.group.rotation.y + Math.PI; cameraPitch = CAMERA_PITCH; cameraSettle = 0;
-  riding = crouching = walkOnly = airborne = false; jumpY = 0; jumpQueued = -1; player.group.rotation.z = 0;
+  riding = crouching = walkOnly = airborne = onSkate = false; jumpY = 0; jumpQueued = -1; player.group.rotation.z = 0;
   const parked = value?.bike && world.canWalk(value.bike.x, value.bike.z) ? value.bike : parkAtHome();
   bike = { x: parked.x, z: parked.z, heading: parked.heading, speed: 0, steer: 0, lean: 0 };
-  bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); bicycle.setSize(player.bikeScale ?? 1); parkBike(); updateMoveButtons();
+  bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); bicycle.setSize(player.bikeScale ?? 1); parkBike();
+  const board = value?.skate && world.canWalk(value.skate.x, value.skate.z) ? value.skate : parkSkate();
+  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0 }; placeSkate(); updateMoveButtons();
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
@@ -642,7 +648,7 @@ window.addEventListener('keydown',event=>{
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(key))event.preventDefault();
   keys.add(key);
   if(key==='e')interact();
-  if(mode==='explore'){if(key===' ')jump();if(key==='c')duck();if(key==='h')sayHi();if(key==='f')toggleBike();if(key==='z')toggleWalk();}
+  if(mode==='explore'){if(key===' ')jump();if(key==='c')duck();if(key==='h')sayHi();if(key==='f')toggleBike();if(key==='g')toggleSkate();if(key==='z')toggleWalk();}
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
@@ -695,12 +701,22 @@ function resetBike(){
   bike={x:spot.x,z:spot.z,heading:spot.heading,speed:0,steer:0,lean:0};parkBike();updateMoveButtons();persist();
 }
 function parkBike(){bicycle.place(bike,world.groundHeight(bike.x,bike.z),!riding);}
-function updateMoveButtons(){
-  $('duck-button').setAttribute('aria-pressed',String(crouching));$('walk-button').setAttribute('aria-pressed',String(walkOnly));$('bike-button').setAttribute('aria-pressed',String(riding));
-  $('jump-button').disabled=riding;$('duck-button').disabled=riding;$('wave-button').textContent=riding?'Loceng':'Hai';
+// The skateboard lies a metre beside the bicycle, on the first side with room for its deck, facing the same way.
+function parkSkate(){
+  const b=bike,h=b.heading,fx=Math.sin(h),fz=Math.cos(h);
+  for(const s of [1,-1]){
+    const x=b.x+Math.cos(h)*s,z=b.z-Math.sin(h)*s;
+    if([-.4,0,.4].every(t=>world.canWalk(x+fx*t,z+fz*t)))return {x,z,heading:h};
+  }
+  return parkNear(b.x,b.z,h,2.5);
 }
-function jump(){if(mode!=='explore'||riding||airborne||jumpQueued>=0)return;crouching=false;jumpQueued=.07;jumpedNow=true;updateMoveButtons();}
-function duck(){if(mode!=='explore'||riding)return;crouching=!crouching;updateMoveButtons();}
+function placeSkate(){skateboard.place(skate,world.groundHeight(skate.x,skate.z));}
+function updateMoveButtons(){
+  $('duck-button').setAttribute('aria-pressed',String(crouching));$('walk-button').setAttribute('aria-pressed',String(walkOnly));$('bike-button').setAttribute('aria-pressed',String(riding));$('skate-button').setAttribute('aria-pressed',String(onSkate));
+  $('jump-button').disabled=riding||onSkate;$('duck-button').disabled=riding||onSkate;$('wave-button').textContent=riding?'Loceng':'Hai';
+}
+function jump(){if(mode!=='explore'||riding||onSkate||airborne||jumpQueued>=0)return;crouching=false;jumpQueued=.07;jumpedNow=true;updateMoveButtons();}
+function duck(){if(mode!=='explore'||riding||onSkate)return;crouching=!crouching;updateMoveButtons();}
 function toggleWalk(){if(mode!=='explore')return;walkOnly=!walkOnly;updateMoveButtons();toast(walkOnly?'Jalan · walking pace. Tap Jalan again to jog.':'Jog · a full push jogs again.');}
 // Say hi: wave, and anyone close by on duty waves back. On the bike it rings the bell.
 function sayHi(){
@@ -712,6 +728,7 @@ function sayHi(){
 function toggleBike(){
   if(mode!=='explore')return;
   if(!player.actor){toast('The basikal needs the motion-capture characters, which did not load on this device.');return;}
+  if(onSkate){toast('Get off the skateboard first (G).');return;}
   if(riding){dismount();return;}
   const p=player.group.position,gap=Math.hypot(p.x-bike.x,p.z-bike.z);
   if(gap>2.8){toast(`Your basikal is ${Math.round(gap)} m away. Walk up to it and press Basikal (F).`);return;}
@@ -725,9 +742,26 @@ function dismount(){
   for(const s of [1,-1]){const x=bike.x+Math.cos(bike.heading)*.75*s,z=bike.z-Math.sin(bike.heading)*.75*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
   p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,bike.heading,0);parkBike();updateMoveButtons();persist();
 }
+// Papan (v2.14): step onto the skateboard when you are beside it, or step off.
+function toggleSkate(){
+  if(mode!=='explore')return;
+  if(onSkate){dismountSkate();return;}
+  if(riding){toast('Get off the bicycle first (F).');return;}
+  const p=player.group.position,gap=Math.hypot(p.x-skate.x,p.z-skate.z);
+  if(gap>2.8){toast(`Your skateboard is ${Math.round(gap)} m away. Walk up to it and press Papan (G).`);return;}
+  if(airborne||jumpQueued>=0)return;
+  onSkate=true;Object.assign(skate,{speed:0,lean:0});p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,0);
+  updateMoveButtons();
+}
+function dismountSkate(){
+  onSkate=false;Object.assign(skate,{speed:0,lean:0});
+  const p=player.group.position;
+  for(const s of [1,-1]){const x=skate.x+Math.cos(skate.heading)*.6*s,z=skate.z-Math.sin(skate.heading)*.6*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
+  p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,skate.heading,0);placeSkate();updateMoveButtons();persist();
+}
 // Act on touch-down, like Run, so the buttons work while the other thumb
 // holds the joystick (phones send no click during a second touch).
-for(const [id,action] of [['jump-button',jump],['duck-button',duck],['wave-button',sayHi],['bike-button',toggleBike],['walk-button',toggleWalk]]){
+for(const [id,action] of [['jump-button',jump],['duck-button',duck],['wave-button',sayHi],['bike-button',toggleBike],['skate-button',toggleSkate],['walk-button',toggleWalk]]){
   const button=$(id);let touched=false;
   button.addEventListener('pointerdown',event=>{event.preventDefault();touched=true;action();});
   button.addEventListener('click',()=>{if(touched){touched=false;return;}action();});
@@ -906,6 +940,7 @@ function drawMap(canvas){
   world.residents.filter(atPost).forEach(n=>{ctx.fillStyle='#7d9a86';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),1.8,0,Math.PI*2);ctx.fill();});
   world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),2.5,0,Math.PI*2);ctx.fill();});
   if(!riding){ctx.fillStyle='#c8322c';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(bike.x),pz(bike.z),3.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  if(!onSkate){ctx.fillStyle='#5c3d2e';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(skate.x),pz(skate.z),3,0,Math.PI*2);ctx.fill();ctx.stroke();}
   const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
   if(navigation?.route.length){ctx.beginPath();navigation.route.forEach((p,i)=>{i?ctx.lineTo(px(p.x),pz(p.z)):ctx.moveTo(px(p.x),pz(p.z));});ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#175fd0';ctx.lineWidth=3;ctx.stroke();}
@@ -939,6 +974,13 @@ function tick(){
       bikeStuck=length>.3&&went<.01*dt*60?bikeStuck+dt:0;
       if(bikeStuck>2.2){bikeStuck=0;const spot=parkNear(bike.x,bike.z,bike.heading,2.5);Object.assign(bike,{x:spot.x,z:spot.z,heading:spot.heading,speed:0});toast('Basikal tersangkut · lifted out to open ground.');}
       p.x=bike.x;p.z=bike.z;player.group.rotation.set(0,bike.heading,bike.lean);
+    }else if(onSkate){
+      // The board pushes toward the stick, rolls on by itself and carries the rider.
+      stepSkate(skate,{dx,dz,fast:isRunning},dt);
+      const moved={x:skate.x,z:skate.z};moveWithCollision(moved,Math.sin(skate.heading),Math.cos(skate.heading),skate.speed,dt,world.canWalk);
+      const went=Math.hypot(moved.x-skate.x,moved.z-skate.z),sign=Math.sign(skate.speed);if(dt>0&&went<Math.abs(skate.speed)*dt*.6)skate.speed=sign*went/dt;
+      skate.x=moved.x;skate.z=moved.z;skateboard.roll(went*(sign||1));
+      p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,skate.lean);
     }else{
       moveWithCollision(p,dx,dz,crouching?(player.native?.crouchWalk??1.2):walkOnly?WALK_ONLY:isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
       if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
@@ -947,9 +989,10 @@ function tick(){
     if(jumpQueued>=0){jumpQueued-=dt;if(jumpQueued<0){airborne=true;jumpVy=JUMP_SPEED;}}
     if(airborne){jumpVy-=GRAVITY*dt;jumpY+=jumpVy*dt;if(jumpY<=0){jumpY=0;airborne=false;landedNow=true;audio?.footsteps(1);}}
     const ground=world.groundHeight(p.x,p.z);
-    p.y=ground-.065+jumpY;
+    p.y=ground-.065+(onSkate?SKATE.top:0)+jumpY;
     if(riding)bicycle.place(bike,ground);
-    if(!riding&&!airborne)audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
+    if(onSkate)skateboard.place(skate,ground);
+    if(!riding&&!onSkate&&!airborne)audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
     const travel=Math.hypot(p.x-previousX,p.z-previousZ);
     // Chase camera: swing in behind the runner while they move, gently when
     // turning and not at all when they run back toward the lens.
@@ -958,7 +1001,8 @@ function tick(){
       const weight=(Math.cos(delta)*.5+.5)*Math.min(1,travel/Math.max(.0001,dt*WALK_SPEED));
       yaw+=delta*(1-Math.exp(-dt*2.6*weight));
     }
-    player.animate(dt,dt>0?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,travel,null,{crouch:crouching,air:airborne,jumped:jumpedNow,landed:landedNow,ride:riding?bicycle.targets():null});
+    // On the board the rider stands still: no walking legs, and the feet stay on the deck.
+    player.animate(dt,dt>0&&!onSkate?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,onSkate?0:travel,null,{crouch:crouching,air:airborne,jumped:jumpedNow,landed:landedNow,ride:riding?bicycle.targets():null});
     jumpedNow=landedNow=false;
     nearby=null;let best=2.6;
     for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
@@ -1059,4 +1103,4 @@ function tick(){
 camera.position.set(-10,32,58);camera.lookAt(-30,0,25);showTime();refreshQuest();syncOrientation();$('loading').hidden=true;tick();
 $('world').addEventListener('webglcontextlost',event=>{event.preventDefault();persist();$('error-text').textContent='The graphics session was interrupted. Reload to continue from your saved position.';$('error-panel').hidden=false;});
 // Read-only snapshot for automated smoke tests and future diagnostics.
-window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({audio:{music:music.snapshot(),ambience:audio?.context.state??'off'},riding,bike:{...bike},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),crowd:world.crowd.map(c=>({id:c.id,key:c.pose?.key??null,visible:c.character.group.visible,x:+c.x.toFixed(2),z:+c.z.toFixed(2),spots:c.stops.filter(q=>q.spot).length,stops:c.stops.length,at:c.stops.map(q=>q.spot&&[q.spot.place,+q.spot.x.toFixed(1),+q.spot.z.toFixed(1)]),legs:c.legs.map(l=>Object.keys(l).length)})),residents:world.residents.map(n=>({id:n.id,place:n.place,keeper:!!n.keeper,phase:n.errand?.state.phase??'home',at:n.errand?.state.at??null,routes:n.routes?Object.keys(n.routes).map(Number):null,errandSpots:n.routes?Object.values(n.routes).map(r=>[+r.spot.x.toFixed(1),+r.spot.z.toFixed(1)]):null,onDuty:atPost(n),visible:n.character.group.visible,x:+n.x.toFixed(2),z:+n.z.toFixed(2)})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};
+window.retroMalaysia={town:()=>({buildings:structuredClone(BUILDINGS),colliders:structuredClone(world.colliders)}),canWalk:(x,z)=>world.canWalk(x,z),snapshot:()=>({audio:{music:music.snapshot(),ambience:audio?.context.state??'off'},riding,bike:{...bike},onSkate,skate:{...skate},shops:world.shopStates(),map:townMap.snapshot(),navigation:navigation?structuredClone(navigation):null,eco:structuredClone(eco),clock:{...time},story:state.story,who:state.who,counter:counter?.place??null,nearbyPlace:nearby?.kind==='place'?nearby.id:null,nearbyNpc:nearby?.kind==='npc'?nearby.id:null,parcels:world.jobMarkers.filter(m=>m.visible).map(m=>m.position.toArray().map(v=>+v.toFixed(2))),npcs:world.npcs.map(n=>({id:n.id,onDuty:atPost(n),x:+n.x.toFixed(2),z:+n.z.toFixed(2),post:n.post})),crowd:world.crowd.map(c=>({id:c.id,key:c.pose?.key??null,visible:c.character.group.visible,x:+c.x.toFixed(2),z:+c.z.toFixed(2),spots:c.stops.filter(q=>q.spot).length,stops:c.stops.length,at:c.stops.map(q=>q.spot&&[q.spot.place,+q.spot.x.toFixed(1),+q.spot.z.toFixed(1)]),legs:c.legs.map(l=>Object.keys(l).length)})),residents:world.residents.map(n=>({id:n.id,place:n.place,keeper:!!n.keeper,phase:n.errand?.state.phase??'home',at:n.errand?.state.at??null,routes:n.routes?Object.keys(n.routes).map(Number):null,errandSpots:n.routes?Object.values(n.routes).map(r=>[+r.spot.x.toFixed(1),+r.spot.z.toFixed(1)]):null,onDuty:atPost(n),visible:n.character.group.visible,x:+n.x.toFixed(2),z:+n.z.toFixed(2)})),mode,orientationBlocked,cameraDistance:distance,cameraLens:lensDistance,cameraPitch,cameraYaw:yaw,...state,x:player.group.position.x,z:player.group.position.z,nearby:nearby?.id,board:board?structuredClone(board):null,graphics:{buses:world.busStates(),cars:world.carStates(),lamps:world.lamps.length,style:'low-poly-3d-comic',buildings:BUILDINGS.length,districts:DISTRICTS.length,collisionBodies:world.colliders.length,avatarHeight:player.height,occluded:world.occlusionCount(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}})};

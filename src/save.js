@@ -33,7 +33,7 @@ export function validateSave(value) {
 
     }
     eco.chapter.who=value.who;
-    return {version:4,who:value.who,name:name||PLAYERS[value.who].name,story:syncChapter(value.story,eco),x:value.x,z:value.z,...eco,clock:cleanClock(value.clock),bike:cleanBike(value.bike),...(upgraded?{upgraded:true}:{})};
+    return {version:4,who:value.who,name:name||PLAYERS[value.who].name,story:syncChapter(value.story,eco),x:value.x,z:value.z,...eco,clock:cleanClock(value.clock),bike:cleanBike(value.bike),skate:cleanSkate(value.skate),...(upgraded?{upgraded:true}:{})};
   }
   if (!Number.isInteger(value.quest) || value.quest < 0 || value.quest > 3) return null;
   const eco = newEconomy();
@@ -44,6 +44,11 @@ export function validateSave(value) {
 export function cleanBike(bike) {
   if (!bike || ![bike.x, bike.z, bike.heading].every(Number.isFinite) || Math.abs(bike.x) > 78 || Math.abs(bike.z) > 68) return null;
   return { x: bike.x, z: bike.z, heading: bike.heading };
+}
+// Where the skateboard was left (v2.14); missing or broken means beside the bicycle at home.
+export function cleanSkate(board) {
+  if (!board || ![board.x, board.z, board.heading].every(Number.isFinite) || Math.abs(board.x) > 78 || Math.abs(board.z) > 68) return null;
+  return { x: board.x, z: board.z, heading: board.heading };
 }
 const parse = (storage, key) => { try { return validateSave(JSON.parse(storage.getItem(key))); } catch { return null; } };
 const stamp = (storage, key) => { try { return JSON.parse(storage.getItem(key))?.savedAt || 0; } catch { return 0; } };

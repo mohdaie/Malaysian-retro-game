@@ -175,12 +175,18 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 | **Jalan** (walk) | Z | Jalan | Toggles a brisk walk (1.35 m/s) instead of a jog on a full push |
 | **Hai** (say hi) | H | Hai | The right arm waves over whatever the body is doing; townsfolk within 8 m stop, turn and wave back |
 | **Basikal** | F | Basikal | Get on or off your bicycle |
+| **Papan** | G | Papan | Get on or off your skateboard |
 
 **The basikal.** A 2001 kid's bicycle (red for Amir, mint for Nur) waits beside your house, facing open ground. Walk up to it and press Basikal.
 - **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes, and from a stop rolls the bike backwards with the rear wheel turning toward the stick, so it can back away from a wall (v2.1.1). A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
 - **The rider:** sits on the saddle and leans over the swept-back bar with hands on the grips. The feet follow the pedals as the cranks turn, and stay still when you coast (freewheel).
 - **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
 - **Stuck?** Pause (Ⅱ) → **Reset basikal** parks it beside you, facing open ground. If you push for two seconds without the bike moving, it lifts itself out to open ground (v2.1.2).
+
+**The papan.** Every player starts with a basic skateboard, parked a short way from the bicycle. It is a standard size: an 80 cm maple deck with a slight kick at each end, 20 cm wide, 36 cm between the trucks, and 55 mm wheels. Walk up to it and press Papan (G). Jump and crouch are off while you ride, and you must get off the bicycle first.
+- **Riding:** the stick steers the board and pushes it along. Push harder to go faster, and Run for a faster push. Let go and the board keeps rolling, slowing down slowly. It turns more gradually than the bike, and leans into corners. Pulling back brakes, and the board never rolls backwards.
+- **The rider:** stands still on the deck with the feet on the grip tape. Getting on or off is from beside the board.
+- **Saves:** the board stays where you left it and saves with your game. Older saves get a board parked beside the bicycle.
 
 ## Real movement for Amir and Nur (v2.0)
 
@@ -400,6 +406,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/actor.js`: Amir and Nur on the motion-capture skeleton: the smoothly weighted body and clothes, their heads, backpacks, and the speed-matched walk/jog/sprint blend.
 - `scripts/bake-model.mjs`, `assets/models/{amir,nur}.glb`, `assets/models/{amir,nur}.joints.json`: Amir's (v2.3) and Nur's (v2.4) TRELLIS.2 models, prepared for the skeleton.
 - `src/bicycle.js`: the basikal model, its pose and the rider's saddle, pedal and grip targets, and the riding step (speed, steering, lean).
+- `src/skateboard.js`: the starter papan model (standard 80 cm deck, 55 mm wheels) and its riding step (pushing, coasting, braking, turning, lean).
 - `assets/models/kids-mocap.glb`: the CC0 skeleton and 14 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
