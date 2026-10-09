@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { newClock, tickClock, canSleep, sleep, weekday, timeLabel, period, onDuty, isNight, skyAt, WAKE, LATEST, BEDTIME } from '../src/clock.js';
+import { newClock, tickClock, canSleep, sleep, weekday, dateLabel, WEEKDAYS, timeLabel, period, onDuty, isNight, skyAt, WAKE, LATEST, BEDTIME } from '../src/clock.js';
 
 test('a new game starts on the first Saturday afternoon and a real second is a game minute', () => {
   const clock = newClock();
@@ -40,4 +40,12 @@ test('the light runs from day to dusk to night, and windows glow only after dark
   assert.ok(dawn.sunOffset[0] > 0 && skyAt(18 * 60).sunOffset[0] < 0, 'sun rises in the east and sets in the west');
   assert.equal(isNight(22 * 60), true); assert.equal(isNight(12 * 60), false);
   for (let m = 0; m <= LATEST; m += 7) for (const v of Object.values(skyAt(m))) assert.ok(Array.isArray(v) ? v.every(Number.isFinite) : Number.isFinite(v), `minute ${m}`);
+});
+
+test('the calendar starts on Saturday 2 June 2001 and its weekday always matches the game day', () => {
+  assert.equal(dateLabel(1), '2 Jun 2001');
+  assert.equal(dateLabel(30), '1 Jul 2001');
+  assert.equal(dateLabel(213), '31 Dis 2001');
+  assert.equal(dateLabel(214), '1 Jan 2002');
+  for (let day = 1; day <= 800; day++) assert.equal(weekday(day), WEEKDAYS[(new Date(Date.UTC(2001, 5, day + 1)).getUTCDay() + 1) % 7], `day ${day}`);
 });

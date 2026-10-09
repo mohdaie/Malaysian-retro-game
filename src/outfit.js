@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=2.14.1';
+import { toon, outline } from './illustration.js?v=2.15.0';
 
 // Clothes for the modelled kids (v2.11). Their shirts are painted into one
 // image-to-3D texture, so a new shirt colour is a shader tint: points weighted

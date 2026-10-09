@@ -1,4 +1,4 @@
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.14.1';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.15.0';
 // Fictional arcade parts: stronger parts have a cost in speed, control or charge.
 export const PART_SLOTS={motor:'Motor',gear:'Gear',battery:'Bateri',tyres:'Tayar',rollers:'Roller',brake:'Brek'};
 export const STOCK_BUILD=Object.freeze(Object.fromEntries(Object.keys(PART_SLOTS).map(k=>[k,'stock'])));

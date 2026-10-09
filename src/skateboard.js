@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon } from './illustration.js?v=2.14.1';
-import { SKATE_PARTS } from './skate-parts.js?v=2.14.1';
+import { toon } from './illustration.js?v=2.15.0';
+import { SKATE_PARTS } from './skate-parts.js?v=2.15.0';
 
 // A standard skateboard (v2.14): an 80 cm deck, 20 cm wide, kicked up at nose
 // and tail, 36 cm between the trucks and 55 mm wheels. One unit is about a metre
@@ -246,13 +246,24 @@ export function createSkateboard(scene) {
       along: new T.Vector3(0, 0, 1).applyQuaternion(q), up: new T.Vector3(0, 1, 0).applyQuaternion(q), toes: new T.Vector3(-1, 0, 0).applyQuaternion(q)
     };
   }
+  // Strapped to the backpack (v2.15): nose up along the back, grip against the
+  // bag, wheels out, tipped a little across the back. `at` is the upper spine,
+  // `up` runs up it, `toward` points into the body, and `depth` is how far the
+  // bag's back face stands out behind the spine.
+  const basis = new T.Matrix4(), bx = new T.Vector3(), by = new T.Vector3(), bz = new T.Vector3(), tip = new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 1, 0), .22);
+  function carry(at, up, toward, depth = 0) {
+    bz.copy(up).normalize(); by.copy(toward).addScaledVector(bz, -toward.dot(bz)).normalize(); bx.crossVectors(by, bz);
+    group.quaternion.setFromRotationMatrix(basis.makeBasis(bx, by, bz)).multiply(tip);
+    group.position.copy(at).addScaledVector(by, -(depth + SKATE.top));
+    stance.rotation.set(0, 0, 0); spin.rotation.z = 0;
+  }
   // Each chosen part paints the surfaces it names; the deck colour also dyes the middle ply.
   const paint = { deck: [underside], wheel: [tyreSide, tyreFace], truck: [hangerPaint], grip: [grip] };
   function setLook(parts) {
     for (const id of Object.values(parts)) for (const [surface, hex] of Object.entries(SKATE_PARTS[id].colours)) for (const m of paint[surface]) m.color.setHex(hex);
     ply.redraw(SKATE_PARTS[parts.board].colours.deck);
   }
-  return { group, roll, place, targets, setLook };
+  return { group, roll, place, carry, targets, setLook };
 }
 
 // Merge parts that share one material, as the bicycle does.

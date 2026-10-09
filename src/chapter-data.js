@@ -1,6 +1,6 @@
-import { DIALOGUE } from './chapter-dialogue.js?v=2.14.1';
-import { CHAPTER_JOBS } from './chapter-jobs.js?v=2.14.1';
-import { EVIDENCE, DEDUCTIONS } from './chapter-evidence.js?v=2.14.1';
+import { DIALOGUE } from './chapter-dialogue.js?v=2.15.0';
+import { CHAPTER_JOBS } from './chapter-jobs.js?v=2.15.0';
+import { EVIDENCE, DEDUCTIONS } from './chapter-evidence.js?v=2.15.0';
 export { EVIDENCE, DEDUCTIONS, CHAPTER_JOBS };
 export const STORY_REVISION = 3;
 export const CHAPTER = 'CHAPTER 01 · KAWAN SEBELUM GARIS PENAMAT';
