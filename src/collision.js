@@ -1,5 +1,5 @@
-import { TOWN_BOUNDS, BRIDGES } from './town-layout.js?v=2.13.0';
-import { riverBounds } from './river-profile.js?v=2.13.0';
+import { TOWN_BOUNDS, BRIDGES } from './town-layout.js?v=2.14.0';
+import { riverBounds } from './river-profile.js?v=2.14.0';
 export const PLAYER_RADIUS = .32;
 export function hitsObstacle(x, z, obstacle, radius = PLAYER_RADIUS) {
   if (obstacle.r !== undefined) return Math.hypot(x-obstacle.x, z-obstacle.z) < radius + obstacle.r;

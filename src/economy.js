@@ -1,23 +1,23 @@
-import { newChapter, cleanChapter, tamiyaUnlocked, markChapterDelivery } from './chapter-data.js?v=2.13.0';
+import { newChapter, cleanChapter, tamiyaUnlocked, markChapterDelivery } from './chapter-data.js?v=2.14.0';
 // Duit Poket, the bag, the collection, delivery jobs and friendship, following
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.13.0';
-import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.13.0';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.13.0';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=2.13.0';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.13.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
-import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.13.0';
-import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.13.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.13.0';
-import { newNostalgia, cleanNostalgia, recordNostalgiaDelivery } from './nostalgia-quests.js?v=2.13.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.14.0';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.14.0';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.14.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=2.14.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.14.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.14.0';
+import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.14.0';
+import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.14.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.14.0';
+import { newNostalgia, cleanNostalgia, recordNostalgiaDelivery } from './nostalgia-quests.js?v=2.14.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
 // spot, 'collect' goes to the collection album.
-import { STORY_CARGO } from './chapter-jobs.js?v=2.13.0';
+import { STORY_CARGO } from './chapter-jobs.js?v=2.14.0';
 export const ITEMS = {
   kabelav: { name: 'Kabel AV malam tayangan', size: 1, kind: 'cargo' },
   kerusilipat: { name: 'Kerusi lipat malam tayangan', size: 3, kind: 'cargo' },

@@ -268,3 +268,14 @@
 
 .nostalgia-prologue{margin:auto;max-width:420px;padding:24px;color:#f7eedc}.nostalgia-phone{background:#181e28;border:6px solid #484d53;border-radius:30px;padding:22px;box-shadow:0 16px 60px #0008}.nostalgia-photo{margin:14px 0;padding:24px;background:linear-gradient(160deg,#b8d2a5,#7ba4b2);border:8px solid #f6e8c4;color:#294936;font-size:36px;letter-spacing:4px;text-align:center}.nostalgia-photo small{font-size:14px;letter-spacing:0}.nostalgia-phone p{min-height:65px;font-size:16px;line-height:1.5}.nostalgia-phone button{width:100%;margin-top:8px}@media(max-height:500px){.nostalgia-prologue{max-width:650px;padding:10px}.nostalgia-phone{padding:10px 20px}.nostalgia-photo{display:none}.nostalgia-phone p{min-height:35px;margin:8px 0}}
 .intro-film{position:absolute;inset:0;z-index:70;background:#000;transition:opacity .7s ease}.intro-film.done{opacity:0;pointer-events:none}.intro-film video{width:100%;height:100%;object-fit:contain;display:block;background:#000}.intro-skip{position:absolute;top:max(18px,env(safe-area-inset-top));right:max(20px,env(safe-area-inset-right));padding:10px 18px;border-radius:20px;background:#00000066;color:#f9f4e5;border:1px solid #f9f4e555;font-size:12px;font-weight:650;letter-spacing:.5px;backdrop-filter:blur(4px)}
+
+/* Papan customise (v2.14): one group per slot, one button per part, chips show its colours. */
+.skate-options{display:grid;gap:12px;margin-top:6px}
+.skate-slot{border:1px solid #536b4730;border-radius:12px;padding:4px 14px 12px;margin:0;display:grid;gap:8px}
+.skate-slot legend{font-size:10px;font-weight:800;letter-spacing:1.5px;padding:0 6px;color:var(--muted)}
+.skate-option{display:grid;grid-template-columns:auto 1fr;column-gap:12px;row-gap:2px;align-items:center;text-align:left;padding:11px 14px;margin:0}
+.skate-option[aria-pressed=true]{background:var(--green);color:var(--cream)}
+.skate-option .skate-chips{grid-row:span 2}
+.skate-option small{grid-column:2;font-size:10px;opacity:.8;line-height:1.4}
+.skate-chips{display:flex;gap:4px}
+.skate-chips i{display:block;width:16px;height:16px;border-radius:50%;border:1px solid #292832}

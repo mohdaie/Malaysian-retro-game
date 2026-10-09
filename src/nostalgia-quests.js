@@ -1,7 +1,7 @@
-import { STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, hasChapterFlag, meets } from './chapter-data.js?v=2.13.0';
+import { STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, hasChapterFlag, meets } from './chapter-data.js?v=2.14.0';
 // Long-term collectible quests. Progress only starts after accepting a story;
 // qualifying victories count from acceptance, without skipping the story trail.
-import { SET_TWO_QUESTS, SET_TWO_IDS } from './nostalgia-set-two.js?v=2.13.0';
+import { SET_TWO_QUESTS, SET_TWO_IDS } from './nostalgia-set-two.js?v=2.14.0';
 export const LONG_ROUTE = 60;
 const stop = (place, clue) => ({ place, clue });
 export const NOSTALGIA_QUESTS = {

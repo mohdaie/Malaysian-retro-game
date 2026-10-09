@@ -1,5 +1,5 @@
-import { newMatch, cleanMatch } from './dam-haji.js?v=2.13.0';
-import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.13.0';
+import { newMatch, cleanMatch } from './dam-haji.js?v=2.14.0';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.14.0';
 export const DAM_QUESTS = [
   { id: 'practice', title: 'Duduk belajar', text: 'Finish a Belajar match with Pak Din.', sen: 20 },
   { id: 'haji', title: 'Haji pertama', text: 'Promote your first red piece to Haji.', sen: 30 },

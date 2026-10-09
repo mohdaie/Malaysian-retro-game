@@ -1,5 +1,5 @@
-import { NPCS, RESIDENTS, KEEPERS } from './cast.js?v=2.13.0';
-import { CROWD } from './crowds.js?v=2.13.0';
+import { NPCS, RESIDENTS, KEEPERS } from './cast.js?v=2.14.0';
+import { CROWD } from './crowds.js?v=2.14.0';
 // Crop coordinates are presentation metadata: the approved source sheets remain
 // untouched. Add a confirmed character sheet here to enable that speaker.
 export const PORTRAITS = {
