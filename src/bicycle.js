@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.14.0';
+import { toon, outline } from './illustration.js?v=2.14.1';
 
 // A kid's bicycle of 2001 (v2.1): steel frame, 20-inch spoked wheels, a
 // chrome bar with rubber grips, a sprung saddle and a kickstand. It parks at

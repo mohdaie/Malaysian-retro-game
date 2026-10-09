@@ -1,0 +1,1175 @@
+{
+  "schemaVersion": 2,
+  "registeredAt": "2026-10-09",
+  "scope": "40 base characters: 2 players, 14 NPCs, 24 residents. Keeper/crowd extras excluded.",
+  "identityKey": "Existing src/cast.js character key. Printed sheet numbers are artwork identifiers, not NPC IDs or place numbers.",
+  "sourcePolicy": "39 full user-uploaded sheets and one Pak Karim sheet created with built-in image_gen. Uploaded files preserve source bytes. No screenshot-derived artwork.",
+  "summary": {
+    "expectedCharacters": 40,
+    "receivedSheets": 39,
+    "awaitingSource": [],
+    "generatedSheets": 1,
+    "availableSheets": 40
+  },
+  "characters": [
+    {
+      "key": "amir",
+      "name": "Amir",
+      "group": "player",
+      "castId": null,
+      "place": 1,
+      "tag": "character:amir",
+      "status": "source_received",
+      "sheetNumber": 1,
+      "file": "assets/characters/amir-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 339640,
+      "sha256": "5095a93e00543fcc55142fa646068df850ba93bdb0956dab0fc98718a2caffd5",
+      "source": {
+        "uploadedFilename": "1000401921.png",
+        "printedTitle": "AMIR",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:amir",
+        "sheet:01"
+      ]
+    },
+    {
+      "key": "nur",
+      "name": "Nur",
+      "group": "player",
+      "castId": null,
+      "place": 11,
+      "tag": "character:nur",
+      "status": "source_received",
+      "sheetNumber": 2,
+      "file": "assets/characters/nur-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 327300,
+      "sha256": "9f465d641b68d1b179db428162d69c022b1c6ecfeaf401996133950f347a6ef2",
+      "source": {
+        "uploadedFilename": "1000401910.png",
+        "printedTitle": "NUR",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:nur",
+        "sheet:02"
+      ]
+    },
+    {
+      "key": "faiz",
+      "name": "Faiz",
+      "group": "npc",
+      "castId": "NPC-13",
+      "place": 15,
+      "role": "Your friend, a Tamiya collector and gasing rival",
+      "tag": "character:faiz",
+      "status": "source_received",
+      "sheetNumber": 3,
+      "file": "assets/characters/faiz-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 296271,
+      "sha256": "aba45a65588996a4dc4b0a86a7cc6199c886b75d585a2d7ddc7b526ce0bbe4fe",
+      "source": {
+        "uploadedFilename": "1000401913.png",
+        "printedTitle": "FAIZ",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:faiz",
+        "sheet:03"
+      ]
+    },
+    {
+      "key": "meiling",
+      "name": "Mei Ling",
+      "group": "npc",
+      "castId": "NPC-14",
+      "place": 14,
+      "role": "Uncle Lim’s daughter, stock keeper and tournament registrar",
+      "tag": "character:meiling",
+      "status": "source_received",
+      "sheetNumber": 4,
+      "file": "assets/characters/meiling-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 333525,
+      "sha256": "c5f404d641ffcc2970c71a13be65dc6fd7b371c1023ffcb6fc219c7085da6170",
+      "source": {
+        "uploadedFilename": "1000401920.png",
+        "printedTitle": "MEI LING",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:meiling",
+        "sheet:04"
+      ]
+    },
+    {
+      "key": "rahman",
+      "name": "Pak Rahman",
+      "group": "npc",
+      "castId": "NPC-01",
+      "place": 22,
+      "role": "Grocer and your first delivery mentor",
+      "tag": "character:rahman",
+      "status": "source_received",
+      "sheetNumber": 5,
+      "file": "assets/characters/rahman-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 329928,
+      "sha256": "6dbb0e0d9160fb6d6827c43b8fd01c92ddfe9cc769f64c9f227a1feac23f7d39",
+      "source": {
+        "uploadedFilename": "1000401911.png",
+        "printedTitle": "PAK RAHMAN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:rahman",
+        "sheet:05"
+      ]
+    },
+    {
+      "key": "din",
+      "name": "Pak Din",
+      "group": "npc",
+      "castId": "NPC-02",
+      "place": 37,
+      "role": "Petrol kiosk operator and Dam Haji host",
+      "tag": "character:din",
+      "status": "source_received",
+      "sheetNumber": 6,
+      "file": "assets/characters/din-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 301399,
+      "sha256": "758213c429dd4cffdd7e682e1b2d840cf400fbf541b15a935881d57061cfa1a8",
+      "source": {
+        "uploadedFilename": "1000401912.png",
+        "printedTitle": "PAK DIN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:din",
+        "sheet:06"
+      ]
+    },
+    {
+      "key": "lim",
+      "name": "Uncle Lim",
+      "group": "npc",
+      "castId": "NPC-03",
+      "place": 25,
+      "role": "Stationery and toy shop owner",
+      "tag": "character:lim",
+      "status": "source_received",
+      "sheetNumber": 7,
+      "file": "assets/characters/lim-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 295353,
+      "sha256": "7c59bdfb25f92201eba0c34cb9f1f7b85640748db20cbae4781f4b3ab79bd075",
+      "source": {
+        "uploadedFilename": "1000401914.png",
+        "printedTitle": "UNCLE LIM",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:lim",
+        "sheet:07"
+      ]
+    },
+    {
+      "key": "ros",
+      "name": "Makcik Ros",
+      "group": "npc",
+      "castId": "NPC-04",
+      "place": 30,
+      "role": "School canteen operator",
+      "tag": "character:ros",
+      "status": "source_received",
+      "sheetNumber": 8,
+      "file": "assets/characters/ros-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 294258,
+      "sha256": "72a78dbb27de83f2d0d98867e5f29c658a6312608082339002d799d8a754024f",
+      "source": {
+        "uploadedFilename": "1000401915.png",
+        "printedTitle": "MAKCIK ROS",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:ros",
+        "sheet:08"
+      ]
+    },
+    {
+      "key": "farid",
+      "name": "Cikgu Farid",
+      "group": "npc",
+      "castId": "NPC-05",
+      "place": 29,
+      "role": "Teacher",
+      "tag": "character:farid",
+      "status": "source_received",
+      "sheetNumber": 9,
+      "file": "assets/characters/farid-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 275045,
+      "sha256": "0f662e520778182473974b90ee67adef706b34222ff841ab4241f6fed4f53f65",
+      "source": {
+        "uploadedFilename": "1000401917.png",
+        "printedTitle": "CIKGU FARID",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:farid",
+        "sheet:09"
+      ]
+    },
+    {
+      "key": "man",
+      "name": "Pak Man",
+      "group": "npc",
+      "castId": "NPC-06",
+      "place": 36,
+      "role": "Mechanic",
+      "tag": "character:man",
+      "status": "source_received",
+      "sheetNumber": 10,
+      "file": "assets/characters/man-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 333424,
+      "sha256": "6a29fabab41275ae35b72e92ef14b2b6942d1840d4a5cc212b437922f4facd8b",
+      "source": {
+        "uploadedFilename": "1000401909.png",
+        "printedTitle": "PAK MAN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:man",
+        "sheet:10"
+      ]
+    },
+    {
+      "key": "ita",
+      "name": "Kak Ita",
+      "group": "npc",
+      "castId": "NPC-07",
+      "place": 21,
+      "role": "Food stall and pasar malam seller",
+      "tag": "character:ita",
+      "status": "source_received",
+      "sheetNumber": 11,
+      "file": "assets/characters/ita-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 341880,
+      "sha256": "b30c7cbc5b144cfaf0fb93b6698b93e2121776ceb3e7d3fb5bbf6f98eb773866",
+      "source": {
+        "uploadedFilename": "1000401923.png",
+        "printedTitle": "KAK ITA",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:ita",
+        "sheet:11"
+      ]
+    },
+    {
+      "key": "salleh",
+      "name": "Pak Salleh",
+      "group": "npc",
+      "castId": "NPC-08",
+      "place": 32,
+      "role": "Community organiser",
+      "tag": "character:salleh",
+      "status": "source_received",
+      "sheetNumber": 12,
+      "file": "assets/characters/salleh-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 322837,
+      "sha256": "9382bd07d679ee574b278fcc9cdfd048ad61849fc637462557e41f81350fe4ca",
+      "source": {
+        "uploadedFilename": "1000401919.png",
+        "printedTitle": "PAK SALLEH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:salleh",
+        "sheet:12"
+      ]
+    },
+    {
+      "key": "hassan",
+      "name": "Ustaz Hassan",
+      "group": "npc",
+      "castId": "NPC-09",
+      "place": 31,
+      "role": "Mosque imam and caretaker",
+      "tag": "character:hassan",
+      "status": "source_received",
+      "sheetNumber": 13,
+      "file": "assets/characters/hassan-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 285515,
+      "sha256": "c0286e79c58680c0e620702dbe21bc63ccc8594817598b233ed83cecdaf6175a",
+      "source": {
+        "uploadedFilename": "1000401924.png",
+        "printedTitle": "USTAZ HASSAN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:hassan",
+        "sheet:13"
+      ]
+    },
+    {
+      "key": "pakmat",
+      "name": "Pak Mat",
+      "group": "npc",
+      "castId": "NPC-10",
+      "place": 9,
+      "role": "Gardener",
+      "tag": "character:pakmat",
+      "status": "source_received",
+      "sheetNumber": 14,
+      "file": "assets/characters/pakmat-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 334311,
+      "sha256": "645693dbaced4e82bb7da4f2e7e81ebd734cef50b67cb9234d834f761ae76aca",
+      "source": {
+        "uploadedFilename": "1000401916.png",
+        "printedTitle": "PAK MAT",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:pakmat",
+        "sheet:14"
+      ]
+    },
+    {
+      "key": "nenek",
+      "name": "Nenek",
+      "group": "npc",
+      "castId": "NPC-11",
+      "place": 2,
+      "role": "Family-like neighbour and congkak mentor",
+      "tag": "character:nenek",
+      "status": "source_received",
+      "sheetNumber": 15,
+      "file": "assets/characters/nenek-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 356602,
+      "sha256": "58ba127b073175496207818265d133cdb76b900d104c745d18d55b5fccfe1138",
+      "source": {
+        "uploadedFilename": "1000401922.png",
+        "printedTitle": "NENEK",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:nenek",
+        "sheet:15"
+      ]
+    },
+    {
+      "key": "atuk",
+      "name": "Atuk",
+      "group": "npc",
+      "castId": "NPC-12",
+      "place": 8,
+      "role": "Traditional-toy storyteller and gasing teacher",
+      "tag": "character:atuk",
+      "status": "source_received",
+      "sheetNumber": 16,
+      "file": "assets/characters/atuk-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 326720,
+      "sha256": "49268f464ce4898db4f2916df11b07421a81791b2b2780a975e971107a91813c",
+      "source": {
+        "uploadedFilename": "1000401918.png",
+        "printedTitle": "ATUK",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:atuk",
+        "sheet:16"
+      ]
+    },
+    {
+      "key": "zaitun",
+      "name": "Mak Cik Zaitun",
+      "group": "resident",
+      "castId": null,
+      "place": 1,
+      "role": "Amir’s mother",
+      "tag": "character:zaitun",
+      "status": "source_received",
+      "sheetNumber": 17,
+      "file": "assets/characters/zaitun-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 325339,
+      "sha256": "2188d372f0786f30b54f7d8f1cc10d9ad616ed1a3b5f5d81fd289f461f2a20b8",
+      "source": {
+        "uploadedFilename": "1000401905.png",
+        "printedTitle": "MAK CIK ZAITUN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:zaitun",
+        "sheet:17"
+      ]
+    },
+    {
+      "key": "mail",
+      "name": "Pak Mail",
+      "group": "resident",
+      "castId": null,
+      "place": 3,
+      "role": "Kampung farmer",
+      "tag": "character:mail",
+      "status": "source_received",
+      "sheetNumber": 18,
+      "file": "assets/characters/mail-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 347667,
+      "sha256": "848747a106ae374cbf0d7cb7e3f64fe9743f522dcd1939ffdb8eba558107b58f",
+      "source": {
+        "uploadedFilename": "1000401898.png",
+        "printedTitle": "PAK MAIL",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:mail",
+        "sheet:18"
+      ]
+    },
+    {
+      "key": "salmah",
+      "name": "Mak Cik Salmah",
+      "group": "resident",
+      "castId": null,
+      "place": 4,
+      "role": "Neighbour who sells kuih",
+      "tag": "character:salmah",
+      "status": "source_received",
+      "sheetNumber": 19,
+      "file": "assets/characters/salmah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 349132,
+      "sha256": "221adc6c3f78401387c5a9e81b415d03a208b925315f66aad2038d3d51cfdeba",
+      "source": {
+        "uploadedFilename": "1000401906.png",
+        "printedTitle": "MAK CIK SALMAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:salmah",
+        "sheet:19"
+      ]
+    },
+    {
+      "key": "rohani",
+      "name": "Kak Rohani",
+      "group": "resident",
+      "castId": null,
+      "place": 5,
+      "role": "Neighbour",
+      "tag": "character:rohani",
+      "status": "source_received",
+      "sheetNumber": 20,
+      "file": "assets/characters/rohani-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 320175,
+      "sha256": "b6053ac3e54a3096fa6394796853025c501cb04ed6cd75c55ecdc56733feacf2",
+      "source": {
+        "uploadedFilename": "1000401896.png",
+        "printedTitle": "KAK ROHANI",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:rohani",
+        "sheet:20"
+      ]
+    },
+    {
+      "key": "kamal",
+      "name": "Abang Kamal",
+      "group": "resident",
+      "castId": null,
+      "place": 6,
+      "role": "Lorry driver",
+      "tag": "character:kamal",
+      "status": "source_received",
+      "sheetNumber": 21,
+      "file": "assets/characters/kamal-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 284580,
+      "sha256": "93ecba2ba494a1eef077b7df7b7e7398cde7428596194d05629c838977ab49ef",
+      "source": {
+        "uploadedFilename": "1000401889.png",
+        "printedTitle": "ABANG KAMAL",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:kamal",
+        "sheet:21"
+      ]
+    },
+    {
+      "key": "timah",
+      "name": "Mak Long Timah",
+      "group": "resident",
+      "castId": null,
+      "place": 7,
+      "role": "Neighbour",
+      "tag": "character:timah",
+      "status": "source_received",
+      "sheetNumber": 22,
+      "file": "assets/characters/timah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 323402,
+      "sha256": "e27bfa783abde1b2489b0ca9256dbe8b8ce8fb19de2753ccf1232f9a2b35a9ce",
+      "source": {
+        "uploadedFilename": "1000401902.png",
+        "printedTitle": "MAK LONG TIMAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:timah",
+        "sheet:22"
+      ]
+    },
+    {
+      "key": "ismail",
+      "name": "Pak Long Ismail",
+      "group": "resident",
+      "castId": null,
+      "place": 10,
+      "role": "River fisherman",
+      "tag": "character:ismail",
+      "status": "source_received",
+      "sheetNumber": 23,
+      "file": "assets/characters/ismail-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 345398,
+      "sha256": "93ec361d63ec5c1398e452322c2cc7cb6967656975e0deee938253c80c518d7d",
+      "source": {
+        "uploadedFilename": "1000401903.png",
+        "printedTitle": "PAK LONG ISMAIL",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:ismail",
+        "sheet:23"
+      ]
+    },
+    {
+      "key": "aminah",
+      "name": "Cik Aminah",
+      "group": "resident",
+      "castId": null,
+      "place": 11,
+      "role": "Nur’s mother",
+      "tag": "character:aminah",
+      "status": "source_received",
+      "sheetNumber": 24,
+      "file": "assets/characters/aminah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 316351,
+      "sha256": "698dc624d81f3df4aa8e22687564f08a69239a5d00c676d908f77e25d8d4f8b0",
+      "source": {
+        "uploadedFilename": "1000401900.png",
+        "printedTitle": "CIK AMINAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:aminah",
+        "sheet:24"
+      ]
+    },
+    {
+      "key": "lina",
+      "name": "Kak Lina",
+      "group": "resident",
+      "castId": null,
+      "place": 12,
+      "role": "Neighbour",
+      "tag": "character:lina",
+      "status": "source_received",
+      "sheetNumber": 25,
+      "file": "assets/characters/lina-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 319836,
+      "sha256": "7fb53657e144e8067ade5f506096f21144a03c77c9d5b1a9c81796772a04a460",
+      "source": {
+        "uploadedFilename": "1000401894.png",
+        "printedTitle": "KAK LINA",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:lina",
+        "sheet:25"
+      ]
+    },
+    {
+      "key": "abu",
+      "name": "Pak Abu",
+      "group": "resident",
+      "castId": null,
+      "place": 13,
+      "role": "Retired postman",
+      "tag": "character:abu",
+      "status": "source_received",
+      "sheetNumber": 26,
+      "file": "assets/characters/abu-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 299990,
+      "sha256": "84b1cb697bdcdc7cd3c2de59abbaeb2a018b60c4e467da27c7f78bcbbeedc11b",
+      "source": {
+        "uploadedFilename": "1000401892.png",
+        "printedTitle": "PAK ABU",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:abu",
+        "sheet:26"
+      ]
+    },
+    {
+      "key": "yati",
+      "name": "Kak Yati",
+      "group": "resident",
+      "castId": null,
+      "place": 16,
+      "role": "Neighbour",
+      "tag": "character:yati",
+      "status": "source_received",
+      "sheetNumber": 27,
+      "file": "assets/characters/yati-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 323253,
+      "sha256": "954a5cc7c9a7b45f2e57e27e4c7a07025748edaa78d9e7006932d0bacecb9504",
+      "source": {
+        "uploadedFilename": "1000401901.png",
+        "printedTitle": "KAK YATI",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:yati",
+        "sheet:27"
+      ]
+    },
+    {
+      "key": "faizal",
+      "name": "Encik Faizal",
+      "group": "resident",
+      "castId": null,
+      "place": 17,
+      "role": "Office clerk",
+      "tag": "character:faizal",
+      "status": "source_received",
+      "sheetNumber": 28,
+      "file": "assets/characters/faizal-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 280557,
+      "sha256": "63df6654311722d3a18e10d21136d9af0824f30286b858b96cf8a9eb6d0a6443",
+      "source": {
+        "uploadedFilename": "1000401888.png",
+        "printedTitle": "ENCIK FAIZAL",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:faizal",
+        "sheet:28"
+      ]
+    },
+    {
+      "key": "kiah",
+      "name": "Mak Cik Kiah",
+      "group": "resident",
+      "castId": null,
+      "place": 18,
+      "role": "Neighbour",
+      "tag": "character:kiah",
+      "status": "source_received",
+      "sheetNumber": 29,
+      "file": "assets/characters/kiah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 341319,
+      "sha256": "3a671289089737e0c7bdd0cdb4aa31c1f38bb380f9d900da4f950218f1bc53df",
+      "source": {
+        "uploadedFilename": "1000401891.png",
+        "printedTitle": "MAK CIK KIAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:kiah",
+        "sheet:29"
+      ]
+    },
+    {
+      "key": "ani",
+      "name": "Kak Ani",
+      "group": "resident",
+      "castId": null,
+      "place": 19,
+      "role": "Runs the corner shop",
+      "tag": "character:ani",
+      "status": "source_received",
+      "sheetNumber": 30,
+      "file": "assets/characters/ani-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 309473,
+      "sha256": "f56b880afe01face7ccc80f708da1c63e771e390e66e666366f6e62caef72813",
+      "source": {
+        "uploadedFilename": "1000401908.png",
+        "printedTitle": "KAK ANI",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:ani",
+        "sheet:30"
+      ]
+    },
+    {
+      "key": "hani",
+      "name": "Cikgu Hani",
+      "group": "resident",
+      "castId": null,
+      "place": 20,
+      "role": "Tadika teacher",
+      "tag": "character:hani",
+      "status": "source_received",
+      "sheetNumber": 31,
+      "file": "assets/characters/hani-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 280426,
+      "sha256": "d873ba1c5f9e73021561acac1645dd8fa2ba758274e66fc3dc2ba26a353632e9",
+      "source": {
+        "uploadedFilename": "1000401893.png",
+        "printedTitle": "CIKGU HANI",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:hani",
+        "sheet:31"
+      ]
+    },
+    {
+      "key": "muthu",
+      "name": "Abang Muthu",
+      "group": "resident",
+      "castId": null,
+      "place": 23,
+      "role": "Barber",
+      "tag": "character:muthu",
+      "status": "source_received",
+      "sheetNumber": 32,
+      "file": "assets/characters/muthu-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 280486,
+      "sha256": "8e7b82044c0a9cd2d0ab221d65da2bb776d6dde0810ef46f06f3f8ac62fecca4",
+      "source": {
+        "uploadedFilename": "1000401887.png",
+        "printedTitle": "ABANG MUTHU",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:muthu",
+        "sheet:32"
+      ]
+    },
+    {
+      "key": "hussin",
+      "name": "Pak Hussin",
+      "group": "resident",
+      "castId": null,
+      "place": 24,
+      "role": "Bicycle repairer",
+      "tag": "character:hussin",
+      "status": "source_received",
+      "sheetNumber": 33,
+      "file": "assets/characters/hussin-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 335315,
+      "sha256": "fa00be72010f309e862f61c52f778741216d9ef2dc68b5b65acebca9ad824954",
+      "source": {
+        "uploadedFilename": "1000401907.png",
+        "printedTitle": "PAK HUSSIN",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:hussin",
+        "sheet:33"
+      ]
+    },
+    {
+      "key": "normah",
+      "name": "Mak Cik Normah",
+      "group": "resident",
+      "castId": null,
+      "place": 26,
+      "role": "Tailor",
+      "tag": "character:normah",
+      "status": "source_received",
+      "sheetNumber": 34,
+      "file": "assets/characters/normah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 363425,
+      "sha256": "3362a2b84099df1976796793cac3342affda56daf7a7180de6203245f260b6cb",
+      "source": {
+        "uploadedFilename": "1000401904.png",
+        "printedTitle": "MAK CIK NORMAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:normah",
+        "sheet:34"
+      ]
+    },
+    {
+      "key": "kumar",
+      "name": "Dr. Kumar",
+      "group": "resident",
+      "castId": null,
+      "place": 27,
+      "role": "Town doctor",
+      "tag": "character:kumar",
+      "status": "source_received",
+      "sheetNumber": 35,
+      "file": "assets/characters/kumar-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 279445,
+      "sha256": "7291c5ce5f9fa88405ced0f1c37401fc8915348be2e594f95a1d56e47d839521",
+      "source": {
+        "uploadedFilename": "1000401886.png",
+        "printedTitle": "DR. KUMAR",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:kumar",
+        "sheet:35"
+      ]
+    },
+    {
+      "key": "jah",
+      "name": "Mak Jah",
+      "group": "resident",
+      "castId": null,
+      "place": 28,
+      "role": "Baker",
+      "tag": "character:jah",
+      "status": "source_received",
+      "sheetNumber": 36,
+      "file": "assets/characters/jah-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 333264,
+      "sha256": "ecb2ea622e0739edb60c9cbed993b32bc324dfbb2b5235974623246b287ad7ba",
+      "source": {
+        "uploadedFilename": "1000401899.png",
+        "printedTitle": "MAK JAH",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:jah",
+        "sheet:36"
+      ]
+    },
+    {
+      "key": "azura",
+      "name": "Cik Azura",
+      "group": "resident",
+      "castId": null,
+      "place": 33,
+      "role": "Librarian",
+      "tag": "character:azura",
+      "status": "source_received",
+      "sheetNumber": 37,
+      "file": "assets/characters/azura-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 313480,
+      "sha256": "43c7a86fd414e73ff4974f5cd52e5f154e2b2fa00c87bc56ee192aa72ee834ed",
+      "source": {
+        "uploadedFilename": "1000401895.png",
+        "printedTitle": "CIK AZURA",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:azura",
+        "sheet:37"
+      ]
+    },
+    {
+      "key": "hafiz",
+      "name": "Abang Hafiz",
+      "group": "resident",
+      "castId": null,
+      "place": 34,
+      "role": "Looks after the padang",
+      "tag": "character:hafiz",
+      "status": "source_received",
+      "sheetNumber": 38,
+      "file": "assets/characters/hafiz-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 297994,
+      "sha256": "465c79274449edce198ee0e8afc9eb4887f39240c18e15e958094dccfb014704",
+      "source": {
+        "uploadedFilename": "1000401897.png",
+        "printedTitle": "ABANG HAFIZ",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:hafiz",
+        "sheet:38"
+      ]
+    },
+    {
+      "key": "karim",
+      "name": "Pak Karim",
+      "group": "resident",
+      "castId": null,
+      "place": 35,
+      "role": "Bus driver",
+      "tag": "character:karim",
+      "status": "source_generated",
+      "sheetNumber": 39,
+      "file": "assets/characters/karim-sheet.png",
+      "source": {
+        "printedTitle": "PAK KARIM",
+        "identityBasis": "generated_for_existing_src/characters.js_karim_design",
+        "kind": "image_gen",
+        "generator": "built-in image_gen",
+        "generatedAt": "2026-10-09"
+      },
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/png",
+      "sizeBytes": 2251185,
+      "sha256": "5608381c9a468a2d9cc7a8daea8ead6016d92016b5ecfb8da97b7853770df201",
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:karim",
+        "sheet:39"
+      ]
+    },
+    {
+      "key": "usop",
+      "name": "Pak Usop",
+      "group": "resident",
+      "castId": null,
+      "place": 38,
+      "role": "Night market organiser",
+      "tag": "character:usop",
+      "status": "source_received",
+      "sheetNumber": 40,
+      "file": "assets/characters/usop-sheet.jpg",
+      "width": 1536,
+      "height": 1024,
+      "mimeType": "image/jpeg",
+      "sizeBytes": 289741,
+      "sha256": "cd4157d91df2feea4cfb4eb60b0c870aa9689b0be032f1a1ec16634a347c6be2",
+      "source": {
+        "uploadedFilename": "1000401890.png",
+        "printedTitle": "PAK USOP",
+        "identityBasis": "printed_name_on_full_sheet",
+        "kind": "user_uploaded_sheet"
+      },
+      "tags": [
+        "character-sheet",
+        "turnaround",
+        "character:usop",
+        "sheet:40"
+      ]
+    }
+  ]
+}

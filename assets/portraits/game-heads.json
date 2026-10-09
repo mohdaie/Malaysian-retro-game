@@ -1,0 +1,130 @@
+{
+  "senah": {
+    "name": "Mak Cik Senah",
+    "file": "assets/portraits/senah-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "jalil": {
+    "name": "Pak Jalil",
+    "file": "assets/portraits/jalil-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "midah": {
+    "name": "Kak Midah",
+    "file": "assets/portraits/midah-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "esah": {
+    "name": "Mak Cik Esah",
+    "file": "assets/portraits/esah-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "rozita": {
+    "name": "Puan Rozita",
+    "file": "assets/portraits/rozita-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "som": {
+    "name": "Wan Som",
+    "file": "assets/portraits/som-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "adam": {
+    "name": "Adam",
+    "file": "assets/portraits/adam-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "hakim": {
+    "name": "Badrul",
+    "file": "assets/portraits/hakim-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "aisyah": {
+    "name": "Aisyah",
+    "file": "assets/portraits/aisyah-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "keong": {
+    "name": "Johnny",
+    "file": "assets/portraits/keong-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "siti": {
+    "name": "Siti",
+    "file": "assets/portraits/siti-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "ravi": {
+    "name": "Logeswaran",
+    "file": "assets/portraits/ravi-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "seman": {
+    "name": "Pak Seman",
+    "file": "assets/portraits/seman-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "daud": {
+    "name": "Pak Daud",
+    "file": "assets/portraits/daud-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "rashid": {
+    "name": "Pak Rashid",
+    "file": "assets/portraits/rashid-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  },
+  "gayah": {
+    "name": "Mak Cik Gayah",
+    "file": "assets/portraits/gayah-head.png",
+    "width": 256,
+    "height": 256,
+    "source": "src/characters.js createCharacter({portrait:true})",
+    "kind": "rendered_game_avatar"
+  }
+}
