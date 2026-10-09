@@ -4,7 +4,7 @@
 // surfaces each part paints: deck, wheel, truck or grip.
 export const SKATE_SLOTS = { board: 'Papan', tyre: 'Tayar', components: 'Komponen lain' };
 export const SKATE_PARTS = {
-  board_tangerine: { slot: 'board', name: 'Papan Oren', note: 'Oren terang, warna papan pertama Amir.', colours: { deck: 0xd9542b } },
+  board_tangerine: { slot: 'board', name: 'Papan Oren', note: 'Oren terang, warna papan pertama Amir.', colours: { deck: 0xf06a2a } },
   board_jade: { slot: 'board', name: 'Papan Pandan', note: 'Hijau pandan dari pagar rumah Tok.', colours: { deck: 0x3f8f6b } },
   board_midnight: { slot: 'board', name: 'Papan Malam', note: 'Biru gelap untuk jalan selepas Maghrib.', colours: { deck: 0x2b2d52 } },
   board_bubblegum: { slot: 'board', name: 'Papan Gula-gula', note: 'Merah jambu, gaya kartun petang.', colours: { deck: 0xe783ac } },

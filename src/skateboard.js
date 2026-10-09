@@ -9,7 +9,7 @@ import { SKATE_PARTS } from './skate-parts.js?v=2.13.0';
 // a child's height. `top` is the deck's height above the ground, where the
 // rider's feet stand. The origin sits on the ground under the deck's middle.
 export const SKATE = {
-  length: .8, width: .2, wheel: .0275, wheelbase: .36, top: .0885, kick: .03,
+  length: .8, width: .2, wheel: .0275, wheelbase: .36, top: .0905, kick: .03,
   cruise: 5.5, fast: 7.5, push: 2.2, coast: .35, brake: 4, turn: 2.6, lean: .06
 };
 
@@ -83,8 +83,8 @@ function canvasTexture(draw, w, h) {
 // Deck print: darker rails down both edges and striped noses, so the board reads as a board from any side.
 function deckPrint(ctx, w, h) {
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#8c8c8c'; ctx.fillRect(0, 0, w * .09, h); ctx.fillRect(w * .91, 0, w * .09, h);
-  ctx.fillStyle = '#c4c4c4';
+  ctx.fillStyle = '#5c5c5c'; ctx.fillRect(0, 0, w * .12, h); ctx.fillRect(w * .88, 0, w * .12, h);
+  ctx.fillStyle = '#b0b0b0';
   for (const [y0, y1] of [[0, h * .2], [h * .8, h]]) {
     ctx.save(); ctx.beginPath(); ctx.rect(0, y0, w, y1 - y0); ctx.clip();
     for (let x = -h; x < w + h; x += w * .2) { ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x + w * .08, y0); ctx.lineTo(x + w * .08 + (y1 - y0), y1); ctx.lineTo(x + (y1 - y0), y1); ctx.closePath(); ctx.fill(); }
@@ -106,16 +106,16 @@ export function createSkateboard(scene) {
   const gripMaterial = toon(0x2a2a30, { map: canvasTexture(gripSpeckle, 128, 128) });
   const metal = toon(0xc9ccd1), wheelMaterial = toon(0xf4d03f);
   const { wheel: r, wheelbase, kick } = SKATE;
-  const deckBottom = .075, deckTop = .087;
+  const deckBottom = .073, deckTop = .089;
   const deck = new T.Mesh(slab({ top: deckTop, bottom: deckBottom, kick }), deckMaterial);
-  deck.castShadow = deck.receiveShadow = true; group.add(deck);
+  deck.castShadow = deck.receiveShadow = true; group.add(deck); outline(deck, .35);
   // Grip tape: a narrower pad on the middle of the deck, stopping short of the noses.
   const grip = new T.Mesh(slab({ scale: .8, reach: .26, top: SKATE.top, bottom: deckTop }), gripMaterial);
   grip.receiveShadow = true; group.add(grip);
 
   // Each truck: a baseplate under the deck, a hanger down to the axle and the axle itself, with two wheels.
-  const tyreGeometry = new T.CylinderGeometry(r, r, .03, 20); tyreGeometry.rotateZ(Math.PI / 2);
-  const hubGeometry = new T.CylinderGeometry(r * .42, r * .42, .036, 12); hubGeometry.rotateZ(Math.PI / 2);
+  const tyreGeometry = new T.CylinderGeometry(r, r, .034, 20); tyreGeometry.rotateZ(Math.PI / 2);
+  const hubGeometry = new T.CylinderGeometry(r * .46, r * .46, .04, 12); hubGeometry.rotateZ(Math.PI / 2);
   const wheels = [];
   for (const z of [-wheelbase / 2, wheelbase / 2]) {
     const baseplate = new T.BoxGeometry(.09, .006, .034); baseplate.translate(0, deckBottom - .003, z);
@@ -128,8 +128,6 @@ export function createSkateboard(scene) {
       tyre.castShadow = hub.castShadow = true; wheel.add(tyre, hub); group.add(wheel); wheels.push(wheel);
     }
   }
-  const shadow = new T.Mesh(new T.PlaneGeometry(SKATE.width + .06, SKATE.length), new T.MeshBasicMaterial({ color: 0x2d2a38, transparent: true, opacity: .22, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2; shadow.position.set(0, .012, 0); group.add(shadow);
 
   let angle = 0;
   // Roll the wheels by the distance travelled along the board.
