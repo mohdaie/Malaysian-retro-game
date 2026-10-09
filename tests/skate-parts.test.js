@@ -23,7 +23,8 @@ test('choosing parts paints the board: the deck, the wheels and the trucks and g
   const board = createSkateboard({ add() {} });
   const chosen = { board: 'board_bubblegum', tyre: 'tyre_sky', components: 'components_red' };
   board.setLook(chosen);
-  const colours = new Set(board.group.children.filter(c => c.isMesh && c.material.color).map(c => c.material.color.getHex()));
+  const colours = new Set();
+  board.group.traverse(o => { if (o.isMesh && o.material.color) colours.add(o.material.color.getHex()); });
   for (const id of Object.values(chosen)) for (const hex of Object.values(SKATE_PARTS[id].colours)) assert.ok(colours.has(hex), `${id} is on the board`);
   assert.equal(colours.has(SKATE_PARTS[STOCK_SKATE_PARTS.board].colours.deck), false, 'the stock deck colour is gone');
 });
