@@ -1,7 +1,7 @@
-import { NPCS, RESIDENTS } from './cast.js?v=2.14.0';
-import { CROWD } from './crowds.js?v=2.14.0';
-import { CHAPTER, STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, tamiyaUnlocked, EVIDENCE, DEDUCTIONS, CHAPTER_JOBS, CROWD_HOMES, meets, hasChapterFlag } from './chapter-data.js?v=2.14.0';
-import { DIALOGUE } from './chapter-dialogue.js?v=2.14.0';
+import { NPCS, RESIDENTS } from './cast.js?v=2.14.1';
+import { CROWD } from './crowds.js?v=2.14.1';
+import { CHAPTER, STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, tamiyaUnlocked, EVIDENCE, DEDUCTIONS, CHAPTER_JOBS, CROWD_HOMES, meets, hasChapterFlag } from './chapter-data.js?v=2.14.1';
+import { DIALOGUE } from './chapter-dialogue.js?v=2.14.1';
 export { CHAPTER, STEPS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, tamiyaUnlocked };
 export const PLAYERS={amir:{name:'Amir',home:1,parent:'Mak',parentPlace:1},nur:{name:'Nur',home:11,parent:'Ibu',parentPlace:11}};
 export const MILESTONES=Object.fromEntries(STEPS.filter(s=>s.lines&&NPCS[s.target]).map(s=>[s.on,[s.target]]));

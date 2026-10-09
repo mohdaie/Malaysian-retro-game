@@ -203,32 +203,34 @@
 /* Exact instructions stay visible on phones; long place names wrap. */
 .task-instruction{display:block;font-size:11px;line-height:1.5;color:#61705a;margin-top:4px;font-weight:400}.task-label{min-width:0;overflow-wrap:anywhere}.task-checklist li{align-items:flex-start}.task-count{margin-top:4px}.journal-rule{font-size:11px;line-height:1.5;color:#596b51;background:#eef0de;padding:9px 11px;border-radius:8px}.journal-chapter .task-checklist{margin-top:10px}.journal-next{overflow-wrap:anywhere}.journal-delivery>button,.journal-game>button{margin-top:10px;min-height:44px;font-size:11px}.journal-memory .journal-progress{margin-bottom:4px}
 
-/* Chapter guidance: one large action, a destination, and optional detail. */
-#quest-card{width:310px;padding:16px;top:92px;border:2px solid #d5c49c;border-radius:16px;background:#fff9edfa}
-#quest-card .quest-heading{display:flex;align-items:center;gap:10px;margin:8px 0}
-#quest-icon{width:42px;height:42px;object-fit:contain;flex:none}
-#quest-card h2{font:750 22px/1.15 system-ui;margin:0}
-#quest-card #quest-description{display:block;font-size:19px;line-height:1.3;font-weight:800;color:#244e43}
+/* Compact chapter guidance and conversations keep the town in view. */
+#quest-card{width:260px;padding:13px 15px;top:92px;border:2px solid #d5c49c;border-radius:14px;background:#fff9edfa}
+#quest-card .quest-heading{display:flex;align-items:center;gap:8px;margin:7px 0}
+#quest-icon{width:30px;height:30px;object-fit:contain;flex:none}
+#quest-card h2{font:750 18px/1.2 system-ui;margin:0}
+#quest-card #quest-description{display:block;font-size:13px;line-height:1.4;font-weight:750;color:#244e43}
 #quest-card:has(#job-line:not([hidden])) #quest-description{display:block}
-#quest-card #quest-place{font-size:15px;line-height:1.35;font-weight:650;margin-top:7px}
-#quest-card #quest-note{font-size:14px;line-height:1.35;margin-top:8px;color:#5c6558}
-#quest-card .eyebrow,#quest-card .quest-footer,#quest-card .quest-phase{font-size:12px;letter-spacing:.3px;line-height:1.3}
-#quest-card .quest-phase{display:block;margin-top:10px}
-#quest-card .quest-footer{margin-top:8px;font-weight:750}
-#quest-card .quest-track{height:6px;border-radius:6px;overflow:hidden}
-#quest-card .quest-actions{display:flex;gap:6px;margin-top:10px}
-#quest-card .quest-actions button{pointer-events:auto;min-height:38px;border-radius:8px;font-size:14px;font-weight:750;padding:8px 10px;background:#244e43;color:#fff9ed}
+#quest-card #quest-place{font-size:12px;line-height:1.35;font-weight:650;margin-top:5px}
+#quest-card #quest-note{font-size:11px;line-height:1.35;margin-top:6px;color:#5c6558}
+#quest-card .eyebrow,#quest-card .quest-footer,#quest-card .quest-phase{font-size:9px;letter-spacing:.3px;line-height:1.3}
+#quest-card .quest-phase{display:block;margin-top:7px}
+#quest-card .quest-footer{margin-top:7px;font-weight:750}
+#quest-card .quest-track{height:4px;border-radius:4px;overflow:hidden}
+#quest-card .quest-actions{display:flex;gap:5px;margin-top:8px}
+#quest-card .quest-actions button{pointer-events:auto;min-height:36px;border-radius:8px;font-size:11px;line-height:1.2;font-weight:750;padding:7px 6px;background:#244e43;color:#fff9ed}
 #quest-card .quest-actions button:last-child{background:#e9ddbf;color:#243f37}
-#quest-card .job-line{margin-top:10px;padding-top:10px;border-top:1px solid #d5c49c}
-#quest-card .job-line p{font-size:15px;line-height:1.3}
-#quest-card .job-head{font-size:13px;font-weight:700}
+#quest-card .job-line{margin-top:8px;padding-top:8px;border-top:1px solid #d5c49c}
+#quest-card .job-line p{font-size:11px;line-height:1.4}
+#quest-card .job-head{font-size:10px;font-weight:700}
 #quest-card.chapter-finished{border-color:#699d79}
-.speaker-portrait{display:block;flex:0 0 84px;width:84px;height:84px;aspect-ratio:1;border-radius:50%;background-color:#fff8e8;background-repeat:no-repeat;border:3px solid #c99c4e;box-shadow:0 2px 6px #243f3720}
-.dialogue-row,.counter-dialogue{display:flex;align-items:flex-start;gap:18px}
+#hud.conversing #quest-card,#hud.conversing .minimap-wrap,#hud.conversing .location,#hud.conversing #desktop-hint{visibility:hidden}
+.speaker-portrait{display:block;flex:0 0 64px;width:64px;height:64px;aspect-ratio:1;border-radius:50%;background-color:#fff8e8;background-repeat:no-repeat;border:3px solid #c99c4e;box-shadow:0 2px 6px #243f3720}
+.dialogue-row,.counter-dialogue{display:flex;align-items:flex-start;gap:12px}
 .dialogue-copy{flex:1;min-width:0}
-#dialogue-panel #speaker{font-size:16px;letter-spacing:.4px;font-weight:800}
-#dialogue-panel #dialogue-text{font-size:19px;line-height:1.5;margin:10px 0 16px}
-#dialogue-panel .primary{font-size:16px;min-height:44px}
+#dialogue-panel{width:min(620px,calc(100% - 32px))}
+#dialogue-panel #speaker{font-size:11px;letter-spacing:.4px;font-weight:800}
+#dialogue-panel #dialogue-text{font-size:16px;line-height:1.5;margin:7px 0 12px;max-height:24dvh;overflow:auto}
+#dialogue-panel .primary{font-size:13px;min-height:40px;padding:9px 16px}
 .counter-dialogue #counter-text{flex:1;margin-top:0;font-size:17px;line-height:1.45}
 .journal-modal .journal-next{font-size:18px;line-height:1.4;font-weight:700}
 .journal-modal h3{font:750 21px/1.2 system-ui}
@@ -240,28 +242,28 @@
 .journal-modal .journal-clues{font-size:16px;line-height:1.5;padding-left:22px}
 .journal-modal .journal-clues li{margin:10px 0}
 @media(orientation:landscape) and (max-height:650px){
- #quest-card{top:62px;left:max(12px,env(safe-area-inset-left));width:260px;padding:12px;max-height:calc(100dvh - 215px);overflow:auto;pointer-events:auto;scrollbar-width:thin}
- #quest-card h2{font-size:20px}
- #quest-card #quest-description{font-size:18px}
- #quest-card #quest-place{font-size:15px}
- #quest-card #quest-note{font-size:14px}
- #quest-card .quest-heading{margin:6px 0}
- #quest-card .quest-phase{display:none}
- #quest-card .job-line{display:none}
- #quest-card .quest-actions button{min-height:34px;font-size:14px;padding:7px 8px}
- #quest-card .quest-footer{margin-top:7px}
- #dialogue-panel{padding:16px;width:min(700px,calc(100% - 32px))}
- #dialogue-panel #dialogue-text{font-size:18px;line-height:1.4}
- .speaker-portrait{flex-basis:72px;width:72px;height:72px}
+ #quest-card{top:62px;left:max(18px,env(safe-area-inset-left));width:218px;padding:10px 12px;max-height:calc(100dvh - 225px);overflow:auto;pointer-events:auto;scrollbar-width:thin}
+ #quest-card h2{font-size:16px}
+ #quest-card #quest-description{font-size:12px}
+ #quest-card #quest-place{font-size:11px}
+ #quest-card #quest-note{font-size:10px}
+ #quest-card .quest-heading{margin:5px 0}
+ #quest-card .quest-phase,#quest-card .job-line{display:none}
+ #quest-card .quest-actions button{min-height:34px;font-size:10px;padding:7px 4px}
+ #quest-card .quest-footer{margin-top:6px}
+ #dialogue-panel{padding:12px 18px;width:min(610px,calc(100% - 32px))}
+ #dialogue-panel #dialogue-text{font-size:14px;line-height:1.5;margin:5px 0 9px;max-height:20dvh}
+ #dialogue-panel .primary{min-height:36px;font-size:12px;padding:8px 14px}
+ #dialogue-panel .speaker-portrait{flex-basis:48px;width:48px;height:48px}
 }
 @media(min-width:1000px){#quest-card{max-height:calc(100dvh - 250px);overflow:auto;pointer-events:auto}}
 @media(orientation:landscape) and (max-height:450px){
- #quest-card{width:280px;padding:10px;max-height:calc(100dvh - 200px)}
+ #quest-card{width:210px;padding:9px 12px;max-height:calc(100dvh - 220px)}
  #quest-card #quest-chapter,#quest-icon,#quest-card #quest-note,#quest-card .quest-footer,#quest-card .quest-track{display:none}
- #quest-card .quest-heading{margin:0 0 6px}
- #quest-card h2{font-size:20px}
- #quest-card #quest-place{margin-top:5px}
- #quest-card .quest-actions{margin-top:7px}
+ #quest-card .quest-heading{margin:0 0 5px}
+ #quest-card h2{font-size:15px}
+ #quest-card #quest-place{margin-top:4px}
+ #quest-card .quest-actions{margin-top:6px;flex-wrap:nowrap}
 }
 
 .evidence-picker {display:grid;gap:8px;border:1px solid #b8b4a5;border-radius:8px;padding:12px;margin:12px 0}.evidence-picker label{display:flex;align-items:center;gap:8px;font-size:13px}.evidence-picker input{width:18px;height:18px;flex:none}.deduction-card{padding:14px;border-top:1px solid #c9c3b3}.deduction-card button{display:block;width:100%;margin:8px 0;text-align:left}.deduction-feedback{color:#9c3c29}.tournament-box{padding:12px;background:#f0e8d5;border-radius:8px;margin-top:12px}.tournament-box h3{margin:0 0 8px}.tournament-box ol{font-size:13px;padding-left:22px}.tamiya-legend{flex-wrap:wrap}.quest-actions{flex-wrap:wrap}.quest-actions button{flex:1;min-width:60px}

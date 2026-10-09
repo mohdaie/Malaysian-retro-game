@@ -1,8 +1,8 @@
-import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.14.0';
-import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.14.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.14.0';
-import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.14.0';
-import { newTournament, cleanTournament, nextTournamentTrack, settleTournamentRace } from './tamiya-tournament.js?v=2.14.0';
+import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.14.1';
+import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.14.1';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.14.1';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.14.1';
+import { newTournament, cleanTournament, nextTournamentTrack, settleTournamentRace } from './tamiya-tournament.js?v=2.14.1';
 export const TAMIYA_QUESTS=[
   {id:'first',title:'Bateri masuk, jom race!',text:'Finish your first three-lap race.',sen:80},
   {id:'faiz',title:'Potong Faiz',text:'Finish ahead of Faiz.',sen:120},

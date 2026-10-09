@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.14.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.14.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -11,6 +11,14 @@ Road junctions now use a single surface, removing coplanar overlaps between dirt
 Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chrome, then choose **Install app** from the browser menu or **Install Retro Malaysia** when the game offers it. The app has its own RM icon and opens fullscreen in landscape. iPhone users can use Safari → Share → Add to Home Screen.
 
 The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
+
+## Character faces in dialogue (v2.14.1)
+
+Every named speaker shows their own face in story dialogue and shop/house conversations. The 40 character sheets supply circular face windows; the additional neighbours and children use portraits rendered from their own game avatars. Faces switch with the speaker, including the chosen player and the correct mother. Notifications have no character portrait.
+
+## Compact guidance and conversations (v2.13.1)
+
+The landscape-phone task card returns to its earlier 210–218 px width, with smaller text and buttons. Dialogue uses the earlier 14 px phone text and a compact portrait; task guidance hides during a conversation. Every speaking townsfolk or crowd member gathers within 4 m of the player, clear of walls and one another. The camera frames the group and listeners face whoever is speaking. Their original places, visibility and daily routines resume after the conversation.
 
 ## Chapter 01 · Kawan Sebelum Garis Penamat
 
@@ -433,6 +441,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `src/dam-ui.js`, `src/dam-worker.js`: board presentation, match lifecycle and background opponent.
 - `src/congkak.js`: pure board rules and opponent, independent of rendering.
 - `src/cast.js`: the 14 NPCs (ids, homes, posts, menus, lines), every household contact and where each person stands.
+- `assets/characters/`, `docs/CHARACTER-ASSETS.md`: character source sheets (39 uploaded, Pak Karim generated) named and tagged with existing character keys; provenance and checksums are in `assets/characters/manifest.json`.
 - `src/story.js`: Chapter 01 for both playable characters: steps, events and the chapter's own jobs.
 - `src/economy.js`: items, shops, requests, parcels, upah, jobs, bag space, purchases and friendship, as pure functions in sen.
 - `src/save.js`: versioned local save validation (v3, with the optional clock) and upgrades from older saves.

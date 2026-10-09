@@ -1,7 +1,7 @@
 import * as T from 'three';
-import { toon, outline } from './illustration.js?v=2.14.0';
-import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.14.0';
-import { ACTIONS } from './actions.js?v=2.14.0';
+import { toon, outline } from './illustration.js?v=2.14.1';
+import { gaitPose, gaitShape, solveLeg } from './locomotion.js?v=2.14.1';
+import { ACTIONS } from './actions.js?v=2.14.1';
 
 const TAU = Math.PI * 2;
 const palette = new Map(), decals = new Map(), fabrics = new Map();
@@ -641,7 +641,7 @@ export function createCharacter(scene, x, z, kind = 'amir', options = {}) {
     }
   }
 
-  if (options.parts) return { head, look, plan, headY, neckTop, radii: [rx, ry, rz] };
+  if (options.parts && !options.portrait) return { head, look, plan, headY, neckTop, radii: [rx, ry, rz] };
   // Arms: loose sleeves, bare or covered forearms, mitten hands with thumbs.
   const hand = adult ? 1.15 : 1, sleeve = adult ? look.top.sleeve : look.sleeve ?? 'short';
   for (const side of [-1, 1]) {
@@ -722,6 +722,8 @@ export function createCharacter(scene, x, z, kind = 'amir', options = {}) {
     lathe([[.27, -.035], [.2, -.012], [.13, 0], [.125, .07], [.11, .1], [0, .105]], rz / rx * 1.05, straw, 0, y0, -.006, head, 22);
     const band = part(new T.TorusGeometry(.127, .012, 4, 22), material(0x6b4a2f), 0, y0 + .018, -.006, head); band.rotation.x = Math.PI / 2; band.scale.y = rz / rx * 1.05;
   }
+  // Portrait baking needs the character's complete head, including their hat.
+  if (options.portrait) return { head, look, plan, headY, neckTop, radii: [rx, ry, rz] };
   for (const prop of look.props ?? []) {
     if (prop === 'pencil') {
       // A pencil tucked behind the right ear.
