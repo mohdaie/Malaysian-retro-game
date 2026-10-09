@@ -24,7 +24,7 @@ test('every place has a contact and an interaction point; the 14 NPCs follow the
   }
   const posts = npcPosts(BUILDINGS);
   assert.deepEqual(Object.keys(posts).sort(), [...NPC_KEYS].sort());
-  for (const key of ['atuk', 'faiz', 'meiling']) assert.equal(posts[key].place, 34);
+  for (const key of ['atuk', 'faiz']) assert.equal(posts[key].place, 34);
 });
 test('the upah formula follows the guide: one-unit base plus 2 or 4 coins per extra unit', () => {
   // Nenek: rice x3 at 20 coins, base upah 12, two extra bulky units add 8.
@@ -88,7 +88,7 @@ test('shopping: snacks are eaten, collectibles go to the album, nothing is reimb
   assert.equal(buy(eco, 22, 'aiskrim').kind, 'snack'); assert.deepEqual(eco.bag, {});
   assert.equal(buy(eco, 25, 'guli').kind, 'collect'); assert.equal(eco.collection.guli, 1);
   assert.equal(eco.wallet, START_WALLET - 20 - 50);
-  assert.equal(buy(eco, 25, 'tamiya').reason, 'funds', 'the Tamiya is a saving goal');
+  assert.equal(buy(eco, 25, 'tamiya').reason, 'meet-faiz', 'the Tamiya is a saving goal');
   assert.equal(buy(eco, 3, 'guli').reason, 'not-sold');
   assert.ok(STOCK[25].filter(i => ITEMS[i].kind === 'collect').length >= 7);
   assert.equal(rm(1234), 'RM 12.34');
@@ -101,19 +101,11 @@ test('friendship: a daily chat, errands and story milestones, with levels', () =
   assert.equal(eco.friends.nenek, 12); assert.equal(level(12), 'Baru kenal'); assert.equal(level(20), 'Kenal'); assert.equal(level(50), 'Kawan'); assert.equal(level(80), 'Dipercayai');
   assert.equal(befriend(eco, 'nobody', 'talk', 'x'), 0);
 });
-test('chapter 1 moves on only with the right event and offers its own jobs', () => {
-  assert.equal(STEPS.length - 1, DONE);
-  assert.equal(advance(0, 'bought-collectible'), 0); assert.equal(advance(0, 'met-friends'), 1);
-  let step = 0;
-  for (const event of ['met-friends', 'accepted-first-parcel', 'delivered-first-parcel', 'delivered-tea', 'played-congkak-nenek', 'bought-collectible']) step = advance(step, event);
-  assert.equal(step, 6); assert.ok(step < DONE, "the opening errands are not the chapter ending"); assert.equal(advance(DONE, 'met-friends'), DONE);
-  const eco = newEconomy(), [parcel] = storyOffers(1, eco);
-  assert.deepEqual([parcel.from, parcel.to, parcel.item, parcel.qty, parcel.upah, parcel.kind], [22, 2, 'gula', 2, 100, 'parcel']);
-  const [tea] = storyOffers(3, eco);
-  assert.deepEqual([tea.requester, tea.from, tea.item, tea.kind, tea.cost], [2, 22, 'teh', 'purchase', 70]);
-  assert.ok(offersAt(eco, 22, gap, storyOffers(1, eco)).some(o => o.story === 'first-parcel'));
-  accept(eco, parcel); assert.deepEqual(storyOffers(1, eco), [], 'not offered twice');
-  assert.equal(STORY_EVENTS['first-parcel'], 'delivered-first-parcel'); assert.deepEqual(MILESTONES['met-friends'], ['faiz', 'meiling']);
+test('chapter deliveries are tagged, prepaid and offered only at the current step',()=>{
+ const e=newEconomy();e.chapter.completed=['S01','D01','S02'];const [job]=storyOffers(1,e,gap);
+ assert.equal(job.from,22);assert.equal(job.to,2);assert.equal(job.cost,0);assert.ok(job.upah>0);
+ assert.equal(STORY_EVENTS[job.story],'D02');assert.equal(advance(1,'wrong-event'),1);
+ accept(e,job);assert.deepEqual(storyOffers(1,e),[]);assert.equal(advance(DONE,'wrong-event'),DONE);
 });
 test('every request and parcel template names known items and real places', () => {
   for (const [who, list] of Object.entries(REQUESTS)) for (const r of list) { assert.ok(ITEMS[r.item]?.price > 0, `${who} ${r.item}`); assert.ok(STOCK[r.from]?.includes(r.item), `${r.item} sold at ${r.from}`); }

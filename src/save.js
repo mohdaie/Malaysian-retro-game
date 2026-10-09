@@ -1,29 +1,44 @@
-import { cleanEconomy, newEconomy } from './economy.js?v=2.12.0';
-import { PLAYERS, DONE, cleanExhibition, syncChapter } from './story.js?v=2.12.0';
-import { cleanClock, newClock } from './clock.js?v=2.12.0';
+import { cleanEconomy, newEconomy } from './economy.js?v=2.13.0';
+import { PLAYERS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, syncChapter } from './story.js?v=2.13.0';
+import { newChapter } from './chapter-data.js?v=2.13.0';
+import { cleanClock, newClock } from './clock.js?v=2.13.0';
 // One save per character (v2.5): Amir and Nur each keep their own journey.
 // The single save from earlier versions moves into its character's slot the
 // first time that character saves.
 export const SAVE_KEY = 'retro-malaysia-save-v1';
 export const slotKey = who => `retro-malaysia-save-${who}`;
-// Version 3 (v1.0): who you play (Amir or Nur), your name, the chapter step
-// and the whole economy. Saves from earlier prototypes keep the name and the
-// Duit Poket; the rewritten chapter starts fresh for them. The town clock
-// (v1.4) is optional: saves without it wake on day 1 at 14:00.
+// Version 4 adds the authored chapter revision and game-session baseline.
+// Older saves keep their ordinary economy while starting the new story.
+// Saves without a town clock wake on day 1 at 14:00.
 export function validateSave(value) {
-  if (!value || ![1, 2, 3].includes(value.version)) return null;
+  if (!value || ![1, 2, 3, 4].includes(value.version)) return null;
   if (![value.x, value.z].every(Number.isFinite) || Math.abs(value.x) > 78 || Math.abs(value.z) > 68) return null;
   if (typeof value.name !== 'string') return null;
   const name = value.name.trim().slice(0, 20);
-  if (value.version === 3) {
-    if (!PLAYERS[value.who] || !Number.isInteger(value.story) || value.story < 0 || value.story > DONE) return null;
-    const eco=cleanEconomy(value),exhibition=value.story>=12?cleanExhibition(value.exhibition,eco):null;
-    return { version: 3, who: value.who, name: name || PLAYERS[value.who].name, story: syncChapter(value.story,eco,exhibition), ...(exhibition?{exhibition}:{}), x: value.x, z: value.z, ...eco, clock: cleanClock(value.clock), bike: cleanBike(value.bike) };
+  if (value.version >= 3) {
+    if (!PLAYERS[value.who] || !Number.isInteger(value.story) || value.story < 0 || value.story > 200 || value.chapter?.revision===STORY_REVISION&&value.story>DONE) return null;
+    const eco=cleanEconomy(value), upgraded=value.version===3 || value.chapter?.revision!==STORY_REVISION;
+    if(upgraded) {
+      // Restart the authored storyline, retaining the player's ordinary economy.
+      eco.chapter=newChapter();
+      const obsolete=j=>j.story==='first-parcel'||j.story==='tea'||j.story?.startsWith('c1-');
+      for(const j of eco.jobs.filter(obsolete)) {
+        if(j.status==='carrying') {
+          eco.bag[j.item]=Math.max(0,(eco.bag[j.item]||0)-j.qty);
+          if(!eco.bag[j.item])delete eco.bag[j.item];
+          if(j.kind==='purchase')eco.wallet+=j.cost;
+        }
+      }
+      eco.jobs=eco.jobs.filter(j=>!obsolete(j));
+
+    }
+    eco.chapter.who=value.who;
+    return {version:4,who:value.who,name:name||PLAYERS[value.who].name,story:syncChapter(value.story,eco),x:value.x,z:value.z,...eco,clock:cleanClock(value.clock),bike:cleanBike(value.bike),...(upgraded?{upgraded:true}:{})};
   }
   if (!Number.isInteger(value.quest) || value.quest < 0 || value.quest > 3) return null;
   const eco = newEconomy();
   if (value.version === 2 && Number.isInteger(value.wallet) && value.wallet >= 0 && value.wallet <= 1e7) eco.wallet = value.wallet;
-  return { version: 3, who: 'amir', name: name || 'Amir', story: 0, x: value.x, z: value.z, ...eco, clock: newClock(), upgraded: true };
+  return { version: 4, who: 'amir', name: name || 'Amir', story: 0, x: value.x, z: value.z, ...eco, clock: newClock(), upgraded: true };
 }
 // Where the bicycle was left (v2.1); missing or broken means parked at home.
 export function cleanBike(bike) {

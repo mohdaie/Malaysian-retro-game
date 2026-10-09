@@ -1,41 +1,42 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.12.0';
+import { showPortrait, speakerName, normalizeLine } from './dialogue-portraits.js?v=2.13.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.13.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.12.0';
-import { createBicycle, stepBike } from './bicycle.js?v=2.12.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.12.0';
-import { readSave, readSaves, writeSave } from './save.js?v=2.12.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.12.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.12.0';
-import { createSoundscape } from './soundscape.js?v=2.12.0';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.12.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.12.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.12.0';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.12.0';
-import { tripAt } from './errands.js?v=2.12.0';
-import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.12.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.12.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.12.0';
-import { ITEM_KINDS } from './item-art.js?v=2.12.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.12.0';
-import { createGasingUI } from './gasing-ui.js?v=2.12.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.12.0';
-import { createDamUI } from './dam-ui.js?v=2.12.0';
-import { DAM_QUESTS } from './dam-progress.js?v=2.12.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.12.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.12.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.12.0';
-import { createTownMap } from './town-map-ui.js?v=2.12.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.12.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.12.0';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.12.0';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.12.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.12.0';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.12.0';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.12.0';
-import { renderQuestJournal } from './journal-ui.js?v=2.12.0';
-import { chapterBrief } from './journal.js?v=2.12.0';
-import { playIntro } from './intro.js?v=2.12.0';
+import { makeWorld } from './world.js?v=2.13.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.13.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.13.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.13.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.13.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.13.0';
+import { createSoundscape } from './soundscape.js?v=2.13.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.13.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.13.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.13.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.13.0';
+import { tripAt } from './errands.js?v=2.13.0';
+import { CROWD, crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.13.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, completeChapterStep, storyAt, CHAPTER_IDS, EXHIBITION_STORIES, investigationChoices, canInvestigate, tamiyaUnlocked, discoveredEvidence, availableScenes, storiesAt, sceneLines, jobDefinition, chapterHint, claimRelationship } from './story.js?v=2.13.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.13.0';
+import { ITEM_KINDS } from './item-art.js?v=2.13.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.13.0';
+import { createGasingUI } from './gasing-ui.js?v=2.13.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.13.0';
+import { createDamUI } from './dam-ui.js?v=2.13.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.13.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.13.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.13.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.13.0';
+import { createTownMap } from './town-map-ui.js?v=2.13.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.13.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.13.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.13.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.13.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.13.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.13.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.13.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.13.0';
+import { chapterBrief } from './journal.js?v=2.13.0';
+import { playIntro } from './intro.js?v=2.13.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -77,9 +78,9 @@ const damUI = createDamUI({ getEco: () => eco, getName: () => state.name, isPaus
 const gasingUI = createGasingUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
   onOpen: () => { $('hud').inert=true; setMode('gasing'); }, onClose: () => { $('hud').inert=false; setMode('explore'); },
   onChange: () => { refreshEconomy(); persist(); } });
-const tamiyaUI = createTamiyaUI({ getEco: () => eco, getName: () => state.name, isPaused: () => orientationBlocked || document.hidden,
+const tamiyaUI = createTamiyaUI({ getEco: () => eco, getName: () => state.name, getDay:()=>time.day, isPaused: () => orientationBlocked || document.hidden,
   onOpen: () => { $('hud').inert=true; setMode('tamiya'); }, onClose: () => { $('hud').inert=false; setMode('explore'); $('interact-button').focus(); },
-  onChange: () => { refreshEconomy(); persist(); } });
+  onChange: () => { refreshQuest(); refreshEconomy(); persist(); } });
 // Play as Amir or Nur. The name field follows the choice until it is edited.
 let chosen = 'amir';
 function choose(who) {
@@ -93,6 +94,8 @@ function choose(who) {
 for (const b of document.querySelectorAll('[data-who]')) b.onclick = () => choose(b.dataset.who);
 $('player-name').addEventListener('input', () => { $('player-name').dataset.edited = '1'; });
 choose(readSave(storage)?.who ?? 'amir');
+
+
 
 const today = () => dayKey(time);
 const placeOf = id => BUILDINGS.find(b => b.id === id);
@@ -134,28 +137,39 @@ function storyTarget() {
   if (target === 'job') { const job = eco.jobs.find(j => j.story); if (!job) return null; const p = placeOf(job.status === 'accepted' ? job.from : nextStop(job)); return { x: p.door.x, z: p.door.z, job: true }; }
   const n = npcBody(target);
   if(atPost(n))return { x:n.x,z:n.z,height:n.character.height };
-  if(guide.step===11&&n?.post!==NPCS[target].place){const p=placeOf(NPCS[target].place);return {x:p.door.x,z:p.door.z};}
+  if(n && !atPost(n)){const p=placeOf(NPCS[target].place);return {x:p.door.x,z:p.door.z};}
   return null;
 }
 function refreshQuest() {
   const guide = chapterGuide(state.story, eco, state.exhibition);state.story=guide.step;
-  const gone = typeof guide.target==='string' && NPCS[guide.target] && !atPost(npcBody(guide.target)) && !storyTarget();
-  $('quest-chapter').textContent = CHAPTER; $('quest-title').textContent = guide.title;
-  const brief=chapterBrief(guide,eco,placeName);
-  $('quest-description').textContent = gone ? `${brief} ${NPCS[guide.target].name} ${time.minute>=(HOURS[guide.target]||HOURS.default)[1]?'has gone home for the night; sleep, and find them tomorrow.':`comes out at ${timeLabel((HOURS[guide.target]||HOURS.default)[0])}.`}` : brief;
+  const key=typeof guide.target==='string'?guide.target:null,n=key&&NPCS[key];
+  const away=n && !atPost(npcBody(key));
+  $('quest-chapter').textContent = state.story===DONE?'CHAPTER 1 SELESAI':CHAPTER;
+  $('quest-title').textContent = guide.title;
+  $('quest-description').textContent = STEPS[state.story].game&&away?'Datang semula waktu siang':guide.action;
+  const place=guide.target&&typeof guide.target==='object'?guide.target.place:n?.post||n?.place;
+  $('quest-place').textContent=place?`${n?n.name+' · ':''}${placeName(away?n.place:place)}`:'';
+  $('quest-note').textContent=STEPS[state.story].tournament?'Juara keseluruhan diperlukan · Ulang percuma':STEPS[state.story].game?(away?'Datang semula waktu siang untuk bermain.':'Tak wajib menang · Peralatan boleh dipinjam'):state.story===DONE?'Chapter 2 belum dibuka. Delivery dan cabaran masih tersedia.':STEPS[state.story].investigation?'Buka Tanya tentang petunjuk · Salah pilih boleh cuba lagi':STEPS[state.story].delivery?'Barang dah dibayar · Upah selepas penghantaran':'Habiskan perbualan untuk langkah seterusnya';
   $('quest-phase').textContent=guide.phase;
-  $('quest-step').textContent = state.story >= DONE ? 'CHAPTER COMPLETE' : `${String(state.story + 1).padStart(2,'0')} / ${String(DONE).padStart(2,'0')}`;
-  $('quest-progress').style.width = `${Math.min(1, state.story / DONE) * 100}%`;
+  $('quest-step').textContent = state.story===DONE?'TERUSKAN BERMAIN':`${eco.chapter.completed.filter(id=>id[0]==='D').length} / 20 DELIVERY`;
+  $('quest-progress').style.width=`${guide.progress*100}%`;
+  const d=STEPS[state.story].delivery,job=d&&eco.jobs.find(j=>j.story===d.story);
+  $('quest-icon').src=ITEMS[d?.item]?.image||'./assets/items/bukuskrap.svg';
+  $('quest-icon').alt='';
+  $('quest-card').classList.toggle('chapter-finished',state.story===DONE);
+  $('quest-guide').disabled=!guide.route;$('quest-guide').onclick=()=>guide.route&&navigateMemory(guide.route);
+  $('quest-hint').onclick=()=>{const hint=chapterHint(eco);$('quest-description').textContent=`Bantuan ${hint.level}/3 · ${hint.text}`;persist();if(hint.route){$('quest-guide').disabled=false;$('quest-guide').onclick=()=>navigateMemory(hint.route);}};
   storySpot = storyTarget(); world.setStoryMarker(storySpot && !storySpot.job ? storySpot : null);
   const home = document.querySelector('[data-building="1"]'), other = document.querySelector('[data-building="11"]');
   if (home) home.textContent = placeName(1);
   if (other) other.textContent = placeName(11);
 }
-function storyEvent(event) {
-  const next = advance(state.story, event); if (next === state.story) return false;
+function storyEvent(event,proof) {
+  if (!completeChapterStep(eco,event,state.name,time.day,proof)) return false;
+  const next=eco.chapter.step;
   for (const key of MILESTONES[event] || []) befriend(eco, key, 'story', today());
   state.story = next; refreshQuest(); refreshEconomy(); persist();
-  toast(state.story === DONE ? 'Chapter 1 complete · Your story is part of Pameran Kenangan.' : `New step · ${STEPS[state.story].title}`);
+  toast(state.story === DONE ? 'Chapter 1 selesai · Kamu juara kejohanan sekolah. Delivery dan kisah hubungan masih dibuka.' : `Langkah seterusnya · ${STEPS[state.story].title}`);
   return true;
 }
 
@@ -175,7 +189,7 @@ function setMode(next) {
 }
 function persist() {
   refreshQuest();
-  const ok = writeSave(storage, { version: 3, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 4, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saves[state.who] = readSave(storage, state.who); }
   return ok;
@@ -185,7 +199,7 @@ function begin(value = null) {
   if (value) Object.assign(state, { who: value.who, name: value.name, story: value.story });
   else Object.assign(state, { who: chosen, name: $('player-name').value.trim().slice(0, 20) || PLAYERS[chosen].name, story: 0 });
   state.exhibition=value?.exhibition||null;
-  eco = value ? cleanEconomy(value) : newEconomy();
+  eco = value ? cleanEconomy(value) : newEconomy();eco.chapter.who=state.who;
   time = cleanClock(value?.clock); shownMinute = -1; lateNudge = 0; showTime();
   player = world.choosePlayer(state.who);
   // A save from an older layout may stand inside a moved building.
@@ -202,7 +216,7 @@ function begin(value = null) {
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
-  toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value?.upgraded ? `Selamat kembali, ${state.name}. The story has been rewritten: chapter 1 starts fresh, and your Duit Poket is kept.` : value ? `Selamat kembali, ${state.name}.` : `Cuti sekolah! Faiz and Mei Ling are at the padang.`);
+  toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value?.upgraded ? `Selamat kembali, ${state.name}. The story has been rewritten: chapter 1 starts fresh, and your Duit Poket is kept.` : value ? `Selamat kembali, ${state.name}.` : `Jumpa ibu di rumah. Bungkusan pertama menunggu untuk dihantar.`);
   if(PREVIEW)$('day-label').textContent='Map preview';
 }
 // ---- Town clock: the light follows the time; from Maghrib you can sleep at
@@ -235,12 +249,16 @@ function newStory() {
 }
 $('continue-button').onclick = () => { if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); begin(saved); };
 function toast(text) { $('toast').textContent=text; $('toast').hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4200); }
+let defaultSpeaker=null;
 function showDialogue(speaker, lines, done) {
-  setMode('dialogue');dialogue=[...lines];dialogueDone=done;$('speaker').textContent=speaker;$('dialogue-panel').hidden=false;advanceDialogue();
+  setMode('dialogue');defaultSpeaker=speaker;dialogue=[...lines];dialogueDone=done;$('dialogue-panel').hidden=false;advanceDialogue();
 }
 function advanceDialogue() {
-  if(dialogue.length) { $('dialogue-text').textContent=dialogue.shift();$('dialogue-next').textContent=dialogue.length?'Continue →':'Jom →'; }
-  else { $('dialogue-panel').hidden=true;$('cancel-new')?.remove();setMode('explore');const done=dialogueDone;dialogueDone=null;done?.(); }
+  if(dialogue.length) {
+    const entry=normalizeLine(dialogue.shift(),defaultSpeaker,state);
+    $('speaker').textContent=entry.name;showPortrait($('dialogue-portrait'),entry.speaker,entry.name);
+    $('dialogue-text').textContent=entry.text;$('dialogue-next').textContent=dialogue.length?'Seterusnya →':'Jom →';
+  } else { $('dialogue-panel').hidden=true;$('cancel-new')?.remove();setMode('explore');const done=dialogueDone;dialogueDone=null;done?.(); }
 }
 $('dialogue-next').onclick=advanceDialogue;
 function interact() {
@@ -249,6 +267,7 @@ function interact() {
   if(mode!=='explore'||!nearby)return;
   if(riding)dismount();
   if(nearby.kind==='place'){openCounter(nearby.id);return;}
+  if(nearby.kind==='crowd'){openCrowd(nearby.id);return;}
   // Face each other; the camera swings to an over-the-shoulder two-shot.
   const p=player.group.position;
   player.group.rotation.y=Math.atan2(nearby.x-p.x,nearby.z-p.z);
@@ -261,16 +280,6 @@ function interact() {
   }
   talkingTo=nearby;
   const key=nearby.id;
-  // Chapter 1 opens with the two friends at the padang.
-  if(state.story===0&&(key==='faiz'||key==='meiling')){
-    showDialogue(`${NPCS.faiz.name} & ${NPCS.meiling.name}`,[
-      `${state.name}! Cuti sekolah dah mula! Two whole weeks, no homework.`,
-      'Mei Ling: We are saving up. Faiz wants the new Tamiya in Uncle Lim’s window, and I want the full card set.',
-      'Faiz: Pak Rahman at Kedai Runcit 99 needs someone to hand-deliver orders. He pays upah. Duit poket, bro!',
-      'Mei Ling: Pak Salleh is planning Pameran Kenangan for the holidays. Maybe we can bring a story worth sharing. Start with Pak Rahman; we will be here till Maghrib.'
-    ],()=>storyEvent('met-friends'));
-    return;
-  }
   openCounter(NPCS[key].place,key);
 }
 $('interact-button').onclick=interact;
@@ -287,7 +296,7 @@ function refreshEconomy(){
   $('wallet-amount').textContent=rm(eco.wallet);
   const count=Object.values(eco.bag).reduce((a,b)=>a+b,0);$('bag-count').textContent=count?String(count):'';
   world.setJobMarkers(jobStops());
-  const job=eco.jobs[0];$('job-line').hidden=!job;
+  const job=eco.jobs.find(j=>j.story?.startsWith('c1-'))||eco.jobs[0];$('job-line').hidden=!job;
   if(job){$('job-eyebrow').textContent=`UPAH ${rm(job.upah)} · ${eco.jobs.length}/${MAX_JOBS} JOBS`;$('job-text').textContent=jobText(job);}
   storySpot=storyTarget();
 }
@@ -315,6 +324,8 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   $('counter-panel').querySelector('.modal').classList.toggle('tamiya-shop-modal',view==='tamiya');
   $('counter-panel').querySelector('.modal').classList.toggle('prayer-modal',view==='prayer');
   $('counter-name').textContent=person?.name||placeName(place);
+  const speakerId=npcKey||person?.key||(doorContact(place)?.standIn?keeperAt(place):counter.who||RESIDENTS[place]?.key);
+  showPortrait($('counter-portrait'),speakerId,person?.name||'');
   const closedShop=isShop(place)&&!isShopOpen(place,time.minute),reception=!person||closedShop;
   const hours=shopHours(place);
   $('counter-text').textContent=note||(closedShop?`${placeName(place)} tutup. Waktu operasi ${timeLabel(hours[0])}–${timeLabel(hours[1])}. Bungkusan masih boleh dihantar di pintu.`:place===31&&!person?'Masjid tetap dibuka untuk solat. Ustaz Hassan sedang berehat.':reception?(atPost(npcBody(npcAt(place)))?`${NPCS[npcAt(place)].name} is at the padang this afternoon. Parcels can be left at the door.`:`${NPCS[npcAt(place)].name} ${NPCS[npcAt(place)].menu==='house'?'has gone to bed':'has closed up for the night'}. Come back in the morning; parcels can be left at the door.`):npc?sayLine(npc.hello):place===myHome()?`Dah balik, ${state.name}? Jangan main jauh-jauh.`:sayLine(doorContact(place).hello));
@@ -325,43 +336,47 @@ function openCounter(place,npcKey=null,view='menu',note=''){
   const memories=npcKey||!doorContact(place)?.standIn?nostalgiaAt(eco,memoryContext):[];
   // A closed shop takes parcels at the door but hands nothing out.
   const shut=closedShop||!away&&npcAt(place)&&!atPost(npcBody(npcAt(place)))&&npcBody(npcAt(place)).post===place;
-  const here=away?{collect:[],deliver:[]}:jobsAt(eco,place);if(shut)here.collect=[];
+  const here=jobsAt(eco,place);if(shut)here.collect=[];
   const merchant=!away&&(npc?.menu==='merchant'||(!npc&&STOCK[place]));
   if(view==='menu'){
     for(const job of here.deliver)add(`Deliver parcel · ${itemLabel(job.item,job.stops.length>1?1:job.qty)}`,()=>handOver(job));
     for(const job of here.collect)add(job.kind==='purchase'?`Buy for ${placeName(job.requester)} · ${itemLabel(job.item,job.qty)} · ${rm(job.cost)}`:`Collect ${itemLabel(job.item,job.qty)}`,()=>pickUp(job));
     for(const job of eco.jobs.filter(j=>j.status==='carrying'&&j.from===place&&j.left===j.stops.length))add(`Return ${itemLabel(job.item,job.qty)}${job.kind==='purchase'?` · refund ${rm(job.cost)}`:''}`,()=>giveBack(job),'secondary');
     if(!reception){
-      if(person.key==='salleh'){
-        if(state.story===6)add('Chapter 1 · Prepare Pameran Kenangan',inviteExhibition);
-        if(state.story>=7&&state.story<DONE)add('Chapter 1 · Find a story for the exhibition',()=>{closeCounter();openBook();});
-        if(state.story===12)for(const id of Object.keys(eco.nostalgia.earned))add(`Share at Pameran Kenangan · ${ITEMS[id].title}`,()=>finishExhibition(id));
-        if(state.exhibition)add('Visit my Pameran Kenangan display',()=>openCounter(place,npcKey,'exhibition'));
-      }
+      for(const scene of storiesAt(eco,place,person.key))add(`${scene.investigation?'Rumusan bukti':'Sambung cerita'} · ${scene.title}`,()=>playStoryScene(scene));
+      for(const delivery of storyOffers(state.story,eco,doorGap).filter(o=>o.from===place))add(`Delivery cerita · ${ITEMS[delivery.item].name}`,()=>takeStoryJob(delivery,place,npcKey));
+      relationshipButtons(add,place,person.key);
       if(memories.length)add('Ada kisah untuk dicerita',()=>openCounter(place,npcKey,'memories'));
       if(merchant&&STOCK[place])add('Buy',()=>openCounter(place,npcKey,'buy',`Duit Poket: ${rm(eco.wallet)}.`));
-      if(merchant&&place===25)add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Parts, gear & bateri pun ada. Harga & rating untuk game ini.`));
+      if(merchant&&place===25&&tamiyaUnlocked(eco))add('Katalog Tamiya · Dash racers',()=>openCounter(place,npcKey,'tamiya',`Duit Poket: ${rm(eco.wallet)}. Lagi tinggi power, lagi mahal. Parts, gear & bateri pun ada. Harga & rating untuk game ini.`));
       if(asker)add(merchant?'Delivery work':'Requests',()=>openCounter(place,npcKey,'work'));
       if(npc)add('Talk',()=>talk(person.key,place,npcKey));
       if(['atuk','faiz'].includes(person.key))add(atPost(npcBody(person.key))?'Main gasing':`Main gasing · find ${person.name} at the padang tomorrow`,()=>{closeCounter();gasingUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
-      if(['faiz','meiling'].includes(person.key))add(atPost(npcBody(person.key))?'Main Tamiya · Jom Dash!':`Main Tamiya · find ${person.name} at the padang tomorrow`,()=>{closeCounter();tamiyaUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
+      if(person.key==='faiz'&&tamiyaUnlocked(eco))add(atPost(npcBody(person.key))?'Main Tamiya · Jom Dash!':`Main Tamiya · find ${person.name} at the padang tomorrow`,()=>{closeCounter();tamiyaUI.open(person.key);},'primary',!atPost(npcBody(person.key)));
       if(person.key==='din'&&!away)add('Main Dam Haji',()=>{closeCounter();damUI.open();});
-      if(person.key==='nenek'&&!away&&state.story>=4)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
+      if(person.key==='nenek'&&!away&&state.story>=2)add('Main congkak',()=>{closeCounter();openBoard('Nenek',2);});
     }
+    for(const [key,home]of Object.entries({hakim:17,keong:18,ravi:5}))if(home===place)add(`Panggil ${CROWD[key].name}`,()=>openCrowd(key),'secondary');
+    for(const scene of storiesAt(eco,place,null))if(reception||!storiesAt(eco,place,person?.key).includes(scene))add(`Sambung cerita · ${scene.title}`,()=>playStoryScene(scene));
     if(place===myHome())add(canSleep(time.minute)?'Tidur · sleep until Subuh':`Tidur · from Maghrib (now ${timeLabel(time.minute)})`,goToSleep,'primary',!canSleep(time.minute));
     if(place===31)add('Solat · 5 waktu (+20 minit)',()=>openCounter(31,npcKey,'prayer'),'primary');
     add('Leave',closeCounter,'secondary');
+  }else if(view==='investigate'){
+    const scene=storyAt(eco,place,person?.key);
+    if(reception||!scene?.investigation)return openCounter(place,npcKey);
+    $('counter-text').textContent=note||scene.investigation.prompt;
+    const cards=document.createElement('fieldset');cards.className='evidence-picker';const caption=document.createElement('legend');caption.textContent='Pilih kad sokongan dahulu';cards.append(caption);for(const e of discoveredEvidence(eco)){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=e.id;label.append(input,document.createTextNode(e.title));cards.append(label);}body.append(cards);
+    for(const clue of investigationChoices(eco,scene)){
+      const button=add(`Tunjuk petunjuk · ${clue.title}`,()=>{
+        const proof={answer:clue.id,cards:[...cards.querySelectorAll('input:checked')].map(n=>n.value)};if(canInvestigate(eco,scene,proof))playStoryScene(scene,proof);
+        else openCounter(place,npcKey,'investigate','Petunjuk ini belum menjawab soalan tadi. Semak resit atau nota yang berkaitan; boleh cuba lagi tanpa kehilangan duit.');
+      });
+      button.dataset.evidence=clue.id;
+    }
+    add('Kembali',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='memories'&&!reception){
     if(!note)$('counter-text').textContent='Setiap kisah ada perjalanan sendiri. Ikut petunjuk, bantu penduduk dan siapkan tugas dalam Buku. Progress disimpan; setiap keepsake diperoleh sekali.';
     for(const id of memories)body.append(memoryQuestCard(id,eco,memoryActions(memoryContext)));
-    add('Back',()=>openCounter(place,npcKey),'secondary');
-  }else if(view==='exhibition'&&!reception&&person.key==='salleh'&&state.exhibition){
-    const {id,day}=state.exhibition,e=eco.nostalgia.earned[id];
-    $('counter-name').textContent='Pameran Kenangan';
-    $('counter-text').textContent=`Pak Salleh: This is ${state.name}’s contribution, shared on game day ${day}. The keepsake stays with its owner; the story belongs to our afternoon together.`;
-    const display=document.createElement('article');display.className='exhibition-display';
-    display.append(itemIdentity(id,inspectItem,EXHIBITION_STORIES[id]));
-    const dedication=document.createElement('p');dedication.textContent=`“${e.inscription}” — ${e.giver}, for ${e.player}`;display.append(dedication);body.append(display);
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='prayer'&&place===31){
     $('counter-name').textContent='Solat di masjid';
@@ -375,7 +390,7 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     }
     counterButton(times,'Kembali',()=>openCounter(31,npcKey),'secondary');body.append(times);
   }else if(view==='buy'){
-    for(const item of STOCK[place]){
+    for(const item of STOCK[place].filter(id=>tamiyaUnlocked(eco) || !(TAMIYA_CARS[id]||TAMIYA_PARTS[id]))){
       const it=ITEMS[item],row=document.createElement('div');row.className='shop-row';
       const name=itemIdentity(item,inspectItem,eco.collection[item]?`Dalam koleksi · × ${eco.collection[item]}`:ITEM_KINDS[it.kind]);const price=document.createElement('span');price.textContent=rm(it.price);
       row.append(name,price);counterButton(row,(TAMIYA_CARS[item]||TAMIYA_PARTS[item])&&eco.collection[item]?'Dalam koleksi':'Beli',()=>shop(place,npcKey,item),'',eco.wallet<it.price||!!((TAMIYA_CARS[item]||TAMIYA_PARTS[item])&&eco.collection[item]));
@@ -383,11 +398,11 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     }
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='tamiya'){
-    if(place!==25||!merchant)return openCounter(place,npcKey);
+    if(place!==25||!merchant||!tamiyaUnlocked(eco))return openCounter(place,npcKey);
     body.append(tamiyaCatalogue(eco,inspectItem,id=>shop(place,npcKey,id,'tamiya')));
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }else if(view==='work'){
-    const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,[...storyOffers(state.story,eco),...nostalgiaOffers(eco,doorGap)]);
+    const offers=offersAt(eco,away?npcBody(npcKey).place:place,doorGap,[...storyOffers(state.story,eco,doorGap),...nostalgiaOffers(eco,doorGap)]);
     if(offers.length){
       $('counter-text').textContent=offers[0].note||(eco.jobs.length>=MAX_JOBS?`You are carrying ${MAX_JOBS} jobs already. Finish one first.`:'Here is what needs doing. The upah is fixed once you accept.');
       for(const offer of offers){
@@ -399,11 +414,12 @@ function openCounter(place,npcKey=null,view='menu',note=''){
     add('Back',()=>openCounter(place,npcKey),'secondary');
   }
 }
+function takeStoryJob(offer,place,npcKey){const d=jobDefinition(eco,offer.story);closeCounter();showDialogue('player',(d?.lines||[]).slice(0,2).map(l=>({...l,speaker:l.speaker==='mother'?state.who==='nur'?'aminah':'zaitun':l.speaker})),()=>takeJob(offer,place,npcKey));}
 function takeJob(offer,place,npcKey){
   const result=accept(eco,offer);
   if(!result.ok)return openCounter(place,npcKey,'menu',result.reason==='full'?`You already have ${MAX_JOBS} jobs. Finish one first.`:result.reason==='space'?'Your bag is too full for this one. Deliver something first.':'Someone has already taken that.');
-  persist();refreshEconomy();
-  if(offer.story==='first-parcel')storyEvent('accepted-first-parcel');
+  persist();refreshQuest();refreshEconomy();
+
   const pickupHere=offer.from===place&&npcBody(npcKey||'')?.post!==undefined?true:offer.from===place;
   openCounter(place,npcKey,'menu',offer.kind==='purchase'?`Buy the goods at ${placeName(offer.from)}. I will pay you back with your upah.`:pickupHere?`Okay, ${state.name}. It is packed and ready for you.`:`The parcel is waiting at ${placeName(offer.from)}.`);
 }
@@ -411,20 +427,20 @@ function pickUp(job){
   const place=counter.place,result=collect(eco,job.id,place);
   if(!result.ok)return openCounter(place,counter.npc,'menu',result.reason==='funds'?`Not enough Duit Poket. You need ${rm(job.cost)}.`:'That is not ready here.');
   persist();refreshEconomy();
-  openCounter(place,counter.npc,'menu',`${itemLabel(job.item,job.qty)} ${job.kind==='purchase'?'bought and ':''}in your bag. ${jobText(job)}.`);
+  const pickupLine=jobDefinition(eco,job.story)?.lines?.[2]?.text||'';
+  openCounter(place,counter.npc,'menu',pickupLine+' '+`${itemLabel(job.item,job.qty)} ${job.kind==='purchase'?'bought and ':''}in your bag. ${jobText(job)}.`);
 }
 function handOver(job){
   const place=counter.place,result=deliver(eco,job.id,place);
   if(!result.ok)return openCounter(place,counter.npc,'menu','Hmm, that does not seem right.');
-  if(result.more){persist();refreshEconomy();return openCounter(place,counter.npc,'menu',`Terima kasih! ${result.more} more stop${result.more>1?'s':''} to go.`);}
+  if(result.more){persist();refreshQuest();refreshEconomy();return openCounter(place,counter.npc,'menu',`Terima kasih! Catatan hentian disimpan. ${result.more} more stop${result.more>1?'s':''} to go.`);}
   const requester=npcAt(job.requester);if(requester)befriend(eco,requester,'errand',today());
   audio?.shell();toast(`Delivered · +${rm(result.paid)}`);
   persist();refreshEconomy();
   let note=`Terima kasih, ${state.name}! ${job.kind==='purchase'?`Here is ${rm(job.cost)} back and your upah, ${rm(job.upah)}.`:`Here is your upah, ${rm(job.upah)}.`}`;
-  if(job.story==='first-parcel')note=`Gula from Pak Rahman? Terima kasih, ${state.name}. Here is your upah, RM 1.00. Alamak, Nenek’s tea tin is empty too. Could you buy a packet for Nenek? Look under Requests.`;
-  if(job.story==='tea')note='Ah, teh! Now we can sit properly. Here is the money back and your upah. Duduklah dulu. Main congkak satu pusingan?';
   if(job.story)storyEvent(STORY_EVENTS[job.story]);
-  openCounter(place,counter.npc,'menu',note);
+  refreshQuest();persist();
+  const d=jobDefinition(eco,job.story);if(d&&result.more===0&&d.lines.length){const key=counter.npc;closeCounter();showDialogue('player',d.id[0]==='R'?d.lines:d.lines.slice(-1),()=>openCounter(place,key,'menu',note));}else openCounter(place,counter.npc,'menu',note);
 }
 function giveBack(job){
   const place=counter.place,result=cancel(eco,job.id,place);
@@ -436,13 +452,14 @@ function shop(place,npcKey,item,view='buy'){
   if(!result.ok)return openCounter(place,npcKey,view,result.reason==='owned'?'Kereta ini sudah ada dalam koleksi.':result.reason==='space'?'Your bag is full.':'Not enough Duit Poket for that.');
   persist();refreshEconomy();audio?.shell();
   const it=ITEMS[item],note=result.kind==='snack'?`${it.name}. Sedap! Duit Poket: ${rm(eco.wallet)}.`:result.kind==='collect'?`${it.name} added to your collection. Duit Poket: ${rm(eco.wallet)}.`:`${it.name} is in your bag. Duit Poket: ${rm(eco.wallet)}.`;
-  if(result.kind==='collect'&&place===25)storyEvent('bought-collectible');
+
   openCounter(place,npcKey,view,note);
 }
 function talk(key,place,npcKey){
-  const npc=NPCS[key],gained=befriend(eco,key,'talk',today()),lines=npc.talk,points=eco.friends[key]||0;
-  persist();
-  openCounter(place,npcKey,'menu',`${sayLine(lines[(points+new Date().getDate())%lines.length])}${gained?`  (+${gained} friendship · ${level(points)})`:''}`);
+  const scene=storyAt(eco,place,key);if(scene)return playStoryScene(scene);
+  const npc=NPCS[key],gained=befriend(eco,key,'talk',today()),points=eco.friends[key]||0;
+  const text=sayLine(npc.talk[points%npc.talk.length]);persist();closeCounter();
+  showDialogue(key,[text],()=>openCounter(place,npcKey,'menu',gained?`Persahabatan +${gained}`:''));
 }
 function goToSleep(){
   if(sleeping||!canSleep(time.minute))return;
@@ -456,27 +473,37 @@ function goToSleep(){
     setTimeout(()=>{fade.classList.remove('shown');setTimeout(()=>{fade.hidden=true;sleeping=false;setMode('explore');toast(`Selamat pagi, ${state.name}! ${weekday(time.day)}, ${timeLabel(time.minute)}. The azan from the masjid; the town wakes up at seven.`);},700);},1600);
   },900);
 }
+
+function relationshipButtons(add,place,key){
+ const c=eco.chapter.completed;
+ const gifts=[['nostalgia_G04','R01','faiz',15],['nostalgia_M02','R02','faiz',15],['nostalgia_G02','R03','faiz',15],['nostalgia_P05','R04','keong',18],['nostalgia_G03','R05','hani',20]];
+ if(place===20&&c.includes('R05')&&!eco.chapter.haniDay)add('Belajar menjaga Tamagotchi · lawatan pertama',()=>{eco.chapter.haniDay=time.day;persist();closeCounter();showDialogue('hani',[{speaker:'hani',text:'Yang kecil pun kena tengok waktunya. Bukan bagi makan semua sekali, kemudian lupa. Singgah lagi pada hari game berikutnya.'}]);});
+ for(const [id,job,npc,home]of gifts)if(c.includes(job)&&(key===npc||place===home)&&!eco.nostalgia.earned[id]&&!eco.collection[id]){
+  const waiting=id==='nostalgia_G02'&&eco.chapter.trainingTracks.length<3||id==='nostalgia_G03'&&(!eco.chapter.haniDay||time.day<=eco.chapter.haniDay)||id==='nostalgia_P05'&&(eco.collection.kad||0)<3;
+  const label=id==='nostalgia_G02'&&waiting?`Latihan untuk Digimon · ${eco.chapter.trainingTracks.length}/3 trek`:id==='nostalgia_G03'&&waiting?'Tamagotchi · kembali esok selepas lawatan pertama':id==='nostalgia_P05'&&waiting?'Charizard · sediakan dua kad pendua biasa (3 pek dalam koleksi)':`Terima ${ITEMS[id].name}${id==='nostalgia_P05'?' · setuju tukar dua kad pendua':''}`;
+  add(label,()=>{const result=claimRelationship(eco,id,state.name,time.day,{cards:['kad','kad'],confirm:true});if(!result.ok){toast('Syarat belum selesai. Semak Buku; tawaran ini tidak luput.');return;}persist();refreshEconomy();closeCounter();showDialogue(npc,[{speaker:npc,text:'Ini simpanan yang berasingan. Kamu boleh simpan hadiah ini; barang pinjaman sudah dipulangkan.'}]);},'primary',waiting);
+ }
+}
+function openCrowd(key){
+ const home={hakim:17,keong:18,ravi:5}[key];counter={place:home,npc:null,crowd:key};setMode('counter');$('counter-panel').hidden=false;$('counter-place').textContent=placeName(home);$('counter-name').textContent=CROWD[key].name;showPortrait($('counter-portrait'),key,CROWD[key].name);
+ $('counter-text').textContent='Nak sambung perbualan atau serahkan barang?';const body=$('counter-body');body.replaceChildren();const add=(label,fn,cls,disabled)=>counterButton(body,label,fn,cls,disabled);
+ for(const scene of storiesAt(eco,home,key))add(`Sambung cerita · ${scene.title}`,()=>playStoryScene(scene));
+ for(const d of storyOffers(state.story,eco,doorGap).filter(d=>d.from===home))add(`Delivery cerita · ${ITEMS[d.item].name}`,()=>takeStoryJob(d,home,null));
+ for(const j of jobsAt(eco,home).collect)add('Collect · '+ITEMS[j.item].name,()=>pickUp(j));for(const j of jobsAt(eco,home).deliver)add('Deliver parcel · '+ITEMS[j.item].name,()=>handOver(j));
+ relationshipButtons(add,home,key);add('Bercakap',()=>{closeCounter();showDialogue(key,[eco.chapter.completed.includes('S22')?'Kita berlumba dengan barang sendiri. Yang dijanjikan masih perlu dibuat.':'Kalau ada perkara belum pasti, semak dulu sebelum ulang cerita.']);},'secondary');add('Kembali',closeCounter,'secondary');
+}
+
 function closeCounter(){$('counter-panel').hidden=true;counter=null;setMode('explore');}
 // Who the player walked up to at a resident's door (a keeper or the resident).
 let doorWho=null;
-function inviteExhibition(){
-  if(state.story!==6||counter?.place!==32)return;
+function playStoryScene(scene,proof) {
+  if(!availableScenes(eco).includes(scene)&&scene.id!=='S26')return;
+  if(scene.investigation&&!canInvestigate(eco,scene,proof)){
+    if(counter)openCounter(counter.place,counter.npc,'investigate');
+    return;
+  }
   closeCounter();
-  showDialogue('Pak Salleh · Pameran Kenangan',[
-    `${state.name}, buying your first toy is only the beginning. This cuti sekolah, we are filling the balai raya with things that have a story.`,
-    'Cuba singgah kedai, berbual di beranda, dan dengar cerita orang pekan. Kadang-kadang benda kecil menyimpan kenangan yang besar.',
-    'Kalau seseorang minta bantuan, cubalah dengar. Bila kau jumpa satu kenangan yang bermakna, bawa ceritanya ke sini. Aku simpan satu ruang untuk kau.'
-  ],()=>{storyEvent('invited-exhibition');openCounter(32,'salleh','menu','Teroka pekan dan dengar cerita penduduk. Tugas yang kau terima akan dicatat dalam Buku.');});
-}
-function finishExhibition(id){
-  if(counter?.place!==32||state.story!==12)return;
-  const result=shareKeepsake(eco,state.story,id,time.day);if(!result.ok)return;
-  closeCounter();
-  showDialogue('Pak Salleh · Your place in the exhibition',[
-    `${ITEMS[id].title}. Tell us about the people you met and the challenge you finished, ${state.name}.`,
-    EXHIBITION_STORIES[id],
-    `“${eco.nostalgia.earned[id].inscription}” — a keepsake from ${eco.nostalgia.earned[id].giver}. We will share its story here; the item stays with you. This is the afternoon our cuti sekolah became something we could remember together.`
-  ],()=>{state.exhibition=result.exhibition;storyEvent('shared-keepsake');openCounter(32,'salleh','exhibition');});
+  showDialogue(scene.target,sceneLines(eco,scene),()=>{storyEvent(scene.on,proof);});
 }
 function navigateMemory(entryId){
   const entry=mapEntries().find(e=>e.id===entryId);if(!entry)return;
@@ -518,8 +545,8 @@ function openBag(){
   $('gasing-badge').hidden=!eco.gasing.claimed.includes('atuk');
   $('gasing-owned').hidden=!eco.collection.gasing;
   $('tamiya-badge').hidden=!eco.tamiya.claimed.includes('jaguh');
-  $('tamiya-owned').textContent=Object.keys(eco.collection).some(id=>TAMIYA_CARS[id])?'Your Mini 4WD cars are ready. Race Faiz and Mei Ling at the padang.':'Faiz lends a beginner car. Uncle Lim sells the Dash-inspired collection.';
-  $('catalogue-button').textContent=`Katalog Kenangan · Lihat semua ${Object.keys(ITEMS).length} item →`;
+  $('tamiya-owned').textContent=Object.keys(eco.collection).some(id=>TAMIYA_CARS[id])?'Your Mini 4WD cars are ready. Race Faiz, Badrul, Johnny and Logeswaran at the padang.':'Faiz lends a beginner car. Uncle Lim sells the Dash-inspired collection.';
+  $('catalogue-button').textContent='Katalog Kenangan →';
   const owned=Object.entries(eco.collection);
   if(!owned.length)listItem(album,'Nothing yet. Uncle Lim sells cards, comics, gasing, wau, guli and Tamiya.','');
   album.classList.toggle('catalogue-grid',owned.length>0);
@@ -530,10 +557,12 @@ function openBook(){
   if(mode!=='explore')return;setMode('book');$('book-panel').hidden=false;
   refreshQuest();const guide=chapterGuide(state.story,eco,state.exhibition);
   selectBookTab=renderQuestJournal($('book-content'),{eco,state,guide,placeName,inspect:inspectItem,actions:memoryActions(),navigate:navigateMemory,
-    cancel:id=>{cancel(eco,id);persist();refreshEconomy();closePanel('book-panel');openBook();}});
+    cancel:id=>{cancel(eco,id);persist();refreshQuest();refreshEconomy();closePanel('book-panel');openBook();},
+    deduce:(scene,proof)=>{if(!canInvestigate(eco,scene,proof))return false;storyEvent(scene.on,proof);closePanel('book-panel');openBook();return true;}});
   $('book-tab-tasks').focus();
 }
 function closePanel(id){$(id).hidden=true;setMode('explore');}
+$('quest-book').onclick=openBook;
 $('bag-button').onclick=openBag;$('book-button').onclick=openBook;$('wallet-button').onclick=openBook;
 $('bag-close').onclick=()=>closePanel('bag-panel');$('book-close').onclick=()=>closePanel('book-panel');
 let inspectReturn=null, catalogueFilter='all';
@@ -542,8 +571,8 @@ function inspectItem(id,trigger){
   inspectReturn={mode,trigger,surfaces};for(const el of surfaces)el.inert=true;const detail=detailContents(id);
   const keepsake=NOSTALGIA_ITEMS[id],earned=eco.nostalgia.earned[id];
   if(keepsake){
-    const story=NOSTALGIA_QUESTS[id]?.set===2?EXHIBITION_STORIES[id]:keepsake.story;
-    const status=nostalgiaStatus(eco,id);detail.memory=earned?`${story}\n\n“${earned.inscription}”\nGiven by ${earned.giver}, for ${earned.player}, game day ${earned.day}.`:status.place?`Next story clue: ${placeName(status.place)}. ${status.text}`:status.text;
+    const story=EXHIBITION_STORIES[id]||keepsake.story;
+    const status=nostalgiaStatus(eco,id);detail.memory=earned?`${EXHIBITION_STORIES[id]||story}\n\n“${earned.inscription}”\nGiven by ${earned.giver}, for ${earned.player}, game day ${earned.day}.`:status.place?`Next story clue: ${placeName(status.place)}. ${status.text}`:status.text;
     if(!earned){detail.image='./assets/nostalgia-locked.svg';detail.title='Kenangan rahsia';detail.caption='Belum diperoleh';detail.memory=eco.nostalgia.quests[id]?'Teruskan kisah yang kau terima. Ganjarannya menunggu di penghujung perjalanan.':'Teroka pekan dan dengar cerita penduduk untuk menemui kenangan ini.';}
     if(earned)detail.caption+=` · ${keepsake.referenceType}`;
   }
@@ -561,7 +590,7 @@ function closeItem(){
 $('item-close').onclick=closeItem;
 function renderCatalogue(){
   const list=$('catalogue-list');list.replaceChildren();
-  const entries=Object.entries(ITEMS).filter(([,it])=>catalogueFilter==='all'||catalogueFilter==='keepsakes'&&it.rewardOnly||it.kind===catalogueFilter);
+  const entries=Object.entries(ITEMS).filter(([id])=>tamiyaUnlocked(eco)||!(TAMIYA_CARS[id]||TAMIYA_PARTS[id])).filter(([,it])=>catalogueFilter==='all'||catalogueFilter==='keepsakes'&&it.rewardOnly||it.kind===catalogueFilter);
   for(const [id] of entries){const card=catalogueCard(id,inspectItem,eco.collection[id]||0);if(eco.nostalgia.earned[id]){const status=document.createElement('small');status.className='memory-catalogue-status';status.textContent=nostalgiaStatus(eco,id).text;card.append(status);}list.append(card);}
   $('catalogue-count').textContent=`${entries.length} / ${Object.keys(ITEMS).length} item · Pekan Seri Kenangan, circa 2001`;
   for(const button of $('catalogue-filters').children)button.setAttribute('aria-pressed',String(button.dataset.kind===catalogueFilter));
@@ -812,7 +841,7 @@ async function runMove(index){
   if(board.over){
     $('board-return').hidden=false;
     eco.congkak.played+=1;if(board.winner===0){eco.congkak.won+=1;recordNostalgiaWin(eco,{game:'congkak'});}persist();
-    if(opponent==='Nenek')storyEvent('played-congkak-nenek');
+
   }else if(board.turn===1){boardBusy=true;renderBoard();await delay(700);while(orientationBlocked&&token===boardToken)await delay(150);if(token!==boardToken)return;boardBusy=false;await runMove(opponentMove(board));}
 }
 function zoneAt(x,z){return districtAt(x,z).name;}
@@ -828,7 +857,7 @@ function mapEntries(){
     const n=npcBody(key),info=NPCS[key],active=atPost(n),b=placeOf(active?n.post:info.place),p=active?n:b.door;
     return {id:`npc:${key}`,type:'npc',place:b.id,name:info.name,subtitle:`${placeName(b.id)}${active?'':' · Di rumah'}`,search:info.role+(['faiz','meiling','lim'].includes(key)?' Tamiya mini 4wd race':''),badge:info.name.charAt(0),color:'#30634d',mapX:p.x,mapZ:p.z,x:p.x,z:p.z,tags:['npc',...(['nenek','atuk','faiz','meiling','din','lim'].includes(key)?['games']:[]),...(jobs.has(b.id)?['jobs']:[])]};
   });
-  return [...places,...npcs];
+  const kids=Object.entries({hakim:17,keong:18,ravi:5}).map(([key,home])=>{const c=world.crowd.find(c=>c.id===key),p=c?.pose?c:placeOf(home).door;return {id:'npc:'+key,type:'npc',place:c?.pose?34:home,name:CROWD[key].name,subtitle:c?.pose?'Di pekan':'Panggil di pintu rumah',badge:CROWD[key].name[0],color:'#30634d',mapX:p.x,mapZ:p.z,x:p.x,z:p.z,tags:['npc']};});return [...places,...npcs,...kids];
 }
 const mapPlayer=()=>({x:player.group.position.x,z:player.group.position.z,heading:player.group.rotation.y});
 const planMapRoute=entry=>findWalkRoute(mapPlayer(),entry,world.canWalk,TOWN_BOUNDS);
@@ -934,10 +963,11 @@ function tick(){
     nearby=null;let best=2.6;
     for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
     // Residents answer for their own place, at the door or out front.
+    if(!nearby)for(const c of world.crowd){if(!c.pose||!['hakim','keong','ravi'].includes(c.id))continue;const gap=Math.hypot(p.x-c.x,p.z-c.z);if(gap<best){best=gap;nearby={kind:'crowd',...c};}}
     if(!nearby)for(const n of world.residents){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'resident',...n};}}
     if(!nearby){best=2.4;for(const b of BUILDINGS){if(atPost(npcBody(npcAt(b.id)))&&npcBody(npcAt(b.id)).post===b.id&&Math.hypot(p.x-npcBody(npcAt(b.id)).x,p.z-npcBody(npcAt(b.id)).z)<4)continue;const gap=Math.hypot(p.x-b.door.x,p.z-b.door.z);if(gap<best){best=gap;nearby={kind:'place',id:b.id,x:b.door.x,z:b.door.z};}}}
     $('interaction').hidden=!nearby;
-    if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:nearby.kind==='resident'?`Talk to ${bodyName(nearby)}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
+    if(nearby)$('interact-label').textContent=nearby.kind==='npc'?`Talk to ${NPCS[nearby.id].name}`:nearby.kind==='crowd'?`Bercakap dengan ${CROWD[nearby.id].name}`:nearby.kind==='resident'?`Talk to ${bodyName(nearby)}`:personAt(nearby.id)?`Talk to ${personAt(nearby.id).name}`:`Visit ${placeName(nearby.id)}`;
     const firstStop=jobStops()[0];$('job-distance').textContent=firstStop?`${Math.round(Math.hypot(p.x-firstStop.x,p.z-firstStop.z))} m away`:'';
     $('location-name').textContent=zoneAt(p.x,p.z);
     $('quest-distance').textContent=storySpot?`${Math.round(Math.hypot(p.x-storySpot.x,p.z-storySpot.z))} m away`:'';

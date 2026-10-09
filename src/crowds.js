@@ -24,18 +24,18 @@ export const LOOPS = {
 export const CROWD = {
   adam: { name: 'Adam', kid: true, outings: [
     { out: 16, from: h(14), stops: [{ at: 24, spot: [2.2, 1.4], until: h(16, 10), loop: 'guli' }, { at: 34, spot: [-4, 6], until: h(18, 40), loop: 'play' }], home: 16 }] },
-  hakim: { name: 'Hakim', kid: true, outings: [
+  hakim: { name: 'Badrul', kid: true, outings: [
     { out: 17, from: h(14), stops: [{ at: 24, spot: [3.2, 1.6], until: h(16, 10), loop: 'guli' }, { at: 34, spot: [-2.5, 7.5], until: h(18, 40), loop: 'play' }], home: 17 }] },
   aisyah: { name: 'Aisyah', kid: true, outings: [
     { out: 12, from: h(10), stops: [{ at: 19, spot: [1.8, 1.6], until: h(11, 30), loop: 'hang' }], home: 12 },
     { out: 12, from: h(15), stops: [{ at: 19, spot: [1.8, 1.6], until: h(16, 20), loop: 'hang' }, { at: 34, spot: [-4.5, 8], until: h(18, 40), loop: 'play' }], home: 12 }] },
-  keong: { name: 'Ah Keong', kid: true, outings: [
+  keong: { name: 'Johnny', kid: true, outings: [
     { out: 18, from: h(15), stops: [{ at: 19, spot: [2.8, 1.8], until: h(16, 20), loop: 'hang' }, { at: 34, spot: [-3, 9], until: h(18, 40), loop: 'play' }], home: 18 }] },
   siti: { name: 'Siti', kid: true, outings: [
     { out: 7, from: h(8, 30), stops: [{ at: 22, spot: [2.5, 2.2], until: h(9, 30), loop: 'hang' }], home: 7 },
     { out: 7, from: h(16), stops: [{ at: 34, spot: [-5.5, 6.5], until: h(18, 40), loop: 'play' }], home: 7 },
     { days: [0], out: 4, from: h(19, 30), stops: [{ at: 38, spot: [1.5, 3], until: h(21), loop: 'shop' }], home: 4 }] },
-  ravi: { name: 'Ravi', kid: true, outings: [
+  ravi: { name: 'Logeswaran', kid: true, outings: [
     { out: 5, from: h(15, 45), stops: [{ at: 34, spot: [-1.5, 8.5], until: h(18, 40), loop: 'play' }], home: 5 },
     { days: [0], out: 6, from: h(19, 30), stops: [{ at: 38, spot: [2.6, 3.6], until: h(21), loop: 'shop' }], home: 6 }] },
   seman: { name: 'Pak Seman', outings: [

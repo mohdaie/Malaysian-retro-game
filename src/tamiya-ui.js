@@ -1,14 +1,16 @@
-import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.12.0';
-import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.12.0';
-import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.12.0';
-import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.12.0';
-import { createTamiyaView } from './tamiya-view.js?v=2.12.0';
+import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.13.0';
+import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.13.0';
+import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.13.0';
+import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.13.0';
+import { createTamiyaView } from './tamiya-view.js?v=2.13.0';
 
-export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}){
+import { startTournament, nextTournamentTrack, tournamentTable, RACER_NAMES } from './tamiya-tournament.js?v=2.13.0';
+import { DIALOGUE } from './chapter-dialogue.js?v=2.13.0';
+export function createTamiyaUI({getEco,getName,getDay=()=>1,isPaused,onOpen,onClose,onChange}){
   const $=id=>document.getElementById(id),panel=$('tamiya-panel');let view=null,visible=false,playing=false,raf=0,last=0,savedAt=0,phase='',sample=null,notice='',shownTime=-1,bench=null;
   const round=()=>getEco().tamiya.round;
-  const label=key=>key==='player'?getName():key==='faiz'?'Faiz':'Mei Ling';
-  function commit(){const awards=recordTamiya(getEco());if(awards.length)notice=`Hadiah +RM ${(awards.reduce((n,q)=>n+q.sen,0)/100).toFixed(2)} · ${awards.length} milestone`;onChange();}
+  const label=key=>key==='player'?getName():RACER_NAMES[key]||key;
+  function commit(){const awards=recordTamiya(getEco(),getDay());if(awards.length)notice=`Hadiah +RM ${(awards.reduce((n,q)=>n+q.sen,0)/100).toFixed(2)} · ${awards.length} milestone`;onChange();}
   function clearInput(){sample=null;}
   function clearConfirm(){$('tamiya-confirm').hidden=true;$('tamiya-controls').inert=false;}
   function close(){clearInput();visible=playing=false;cancelAnimationFrame(raf);clearConfirm();panel.hidden=true;commit();onClose();}
@@ -18,17 +20,27 @@ export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}
     $('tamiya-preview-name').textContent=`${car.series} · ${car.name}`;
     $('tamiya-preview-stats').textContent=`Build · Speed ${stats.speed} · Grip ${stats.grip} · Stability ${stats.stability}`;
     $('tamiya-preview-note').textContent=`${s.car==='tamiya'&&!getEco().collection.tamiya?'Pinjam Faiz · ':''}${TAMIYA_SETUPS[s.setup].note}`;
-    $('tamiya-track-note').textContent=track.note;$('tamiya-rivals').textContent=`Faiz: ${TAMIYA_CARS[track.faiz].name} · Mei Ling: ${TAMIYA_CARS[track.meiling].name}`;
+    $('tamiya-track-note').textContent=track.note;$('tamiya-rivals').textContent='Faiz · Badrul · Johnny · Logeswaran';
     if(view)view.draw(s,matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
   function lobby(){$('tamiya-title').textContent='Jom Dash!';bench=null;panel.dataset.bench='';panel.dataset.phase='lobby';$('tamiya-workbench').hidden=true;playing=false;cancelAnimationFrame(raf);clearInput();clearConfirm();notice='';phase='';
-    const p=getEco().tamiya,s=round(),unfinished=s&&s.phase!=='result';
+    const p=getEco().tamiya,s=round(),run=p.tournament.run,unfinished=s&&s.phase!=='result';
     $('tamiya-config').hidden=!!unfinished;$('tamiya-resume').hidden=!unfinished;$('tamiya-play').hidden=true;
     $('tamiya-record').textContent=`${p.won} wins · ${p.played} races · Track menang ${p.wins.length}/3`;
     $('tamiya-quests').replaceChildren(...TAMIYA_QUESTS.map(q=>{const li=document.createElement('li');li.textContent=`${p.claimed.includes(q.id)?'✓':'○'} ${q.title} · ${p.claimed.includes(q.id)?'Collected':`RM ${(q.sen/100).toFixed(2)}`}`;return li;}));
     $('tamiya-car').replaceChildren();
     for(const id of ['tamiya',...ownedCars(getEco().collection).filter(id=>id!=='tamiya')]){const o=document.createElement('option');o.value=id;o.textContent=`${TAMIYA_CARS[id].name}${id==='tamiya'&&!getEco().collection.tamiya?' · pinjam Faiz':''}`;$('tamiya-car').append(o);}
     $('tamiya-track').value=s?.track||'oval';$('tamiya-car').value=s?.car||ownedCars(getEco().collection).at(-1)||'tamiya';$('tamiya-setup').value=s?.pits?.at(-1)?.setup||s?.setup||'balanced';
+    let box=$('tournament-box');if(!box){box=document.createElement('section');box.id='tournament-box';box.className='tournament-box';$('tamiya-config').append(box);}box.replaceChildren();
+    if(getEco().chapter.completed.includes('S23')){
+      const h=document.createElement('h3');h.textContent='Kejohanan sekolah · lima peserta';box.append(h);
+      const info=document.createElement('p');info.textContent=run?(run.phase==='result'?`Juara: ${label(run.winner)}. ${run.winner==='player'?'Sijil menunggu di sekolah.':'Boleh ulang percuma; semua bukti kekal.'}`:`Sambung ${run.phase==='tiebreak'?'penentuan':`pusingan ${run.rounds.length+1}/3`}. Garage boleh diubah sebelum launch.`):'Oval → Selekoh Lapan → Jaguh · Mata 5 / 3 / 2 / 1 / 0. Seri mata dibandingkan jumlah masa.';box.append(info);
+      if(run){const stage=run.phase==='tiebreak'?'T4':run.phase==='result'?run.winner==='player'?'T6':'T3':'T'+Math.min(2,run.rounds.length);const transcript=document.createElement('details'),summary=document.createElement('summary');summary.textContent=run.phase==='result'?'Dialog keputusan':'Dialog sebelum pusingan';transcript.append(summary);for(const l of DIALOGUE[stage]||[]){const line=document.createElement('p');line.textContent=`${l.speaker==='player'?getName():({farid:'Cikgu Farid',meiling:'Mei Ling',...RACER_NAMES})[l.speaker]||l.speaker}: ${l.text.replaceAll('{name}',getName()).replaceAll('{bahagian}',TAMIYA_TRACKS[run.rounds.at(-1)?.track||'oval'].name)}`;transcript.append(line);}box.append(transcript);}
+
+      if(run){const table=document.createElement('ol');for(const row of tournamentTable(run)){const li=document.createElement('li');li.textContent=`${label(row.key)} · ${row.points} mata · ${row.time.toFixed(2)} s`;table.append(li);}box.append(table);}
+      const b=document.createElement('button');b.className='primary';b.textContent=run&&run.phase!=='result'?'Sambung kejohanan →':'Daftar kejohanan · percuma →';b.onclick=()=>{startTournament(getEco());commit();lobby();$('tamiya-track').value=nextTournamentTrack(getEco());preview();};box.append(b);
+    }
+    const tournamentActive=run&&run.phase!=='result';$('tamiya-track').disabled=!!tournamentActive;$('tamiya-enter').textContent=tournamentActive?'Mula pusingan kejohanan →':'Latihan · mula race →';if(tournamentActive){$('tamiya-track').value=nextTournamentTrack(getEco());preview();}
     if(unfinished){$('tamiya-saved').textContent=`${TAMIYA_TRACKS[s.track].name} · ${TAMIYA_CARS[s.car].name} · ${s.phase==='race'?'Race sedang berjalan':s.phase==='countdown'?'Countdown':'Di grid'}${s.rules!==2?' · Race v1.7, pit tersedia untuk race baru':''}`;view?.draw(s);}else preview();
   }
   function selectedBuild(){return Object.fromEntries(Object.keys(PART_SLOTS).map(slot=>[slot,$('tamiya-part-'+slot).value]));}
@@ -54,7 +66,7 @@ export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}
     else if(bench==='garage'){equipTamiya(getEco(),$('tamiya-car').value,selectedBuild());$('tamiya-setup').value=$('tamiya-pit-setup').value;bench=null;panel.dataset.bench='';$('tamiya-title').textContent='Jom Dash!';$('tamiya-workbench').hidden=true;$('tamiya-config').hidden=false;commit();preview();$('tamiya-garage-open').focus();}
   };
   $('tamiya-pit-open').onclick=()=>{change(beginPit);if(bench==='pit')$('tamiya-pit-setup').focus();};
-  function open(host){visible=true;panel.hidden=false;onOpen();$('tamiya-host').textContent=host==='meiling'?'Mei Ling: “Grip kuat, jangan keluar track!”':'Faiz: “Jom Dash! Kereta beginner aku pinjam.”';
+  function open(host){visible=true;panel.hidden=false;onOpen();$('tamiya-host').textContent='Faiz: “Jom Dash! Kereta asas aku pinjam. Mei Ling urus pendaftaran.”';
     if(!view)try{view=createTamiyaView($('tamiya-arena'));}catch{ $('tamiya-view-error').hidden=false; }
     lobby();$('tamiya-close').focus();
   }
@@ -66,7 +78,7 @@ export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}
     $('tamiya-positions').hidden=['ready','launch'].includes(s.phase);
     const steps={ready:'1 · Di grid',launch:'2 · Timing pelancaran',countdown:'3 · Bersedia…',race:'4 · Jom Dash!',result:'Race selesai'};
     $('tamiya-stage').textContent=`${TAMIYA_TRACKS[s.track].name} · ${steps[s.phase]}`;
-    const status={ready:'Faiz: “Tekan Mula meter. Lepas tepat di tengah untuk start yang kemas.”',launch:'Tap Lepas! apabila marker di tengah emas. Kereta bergerak sendiri; setup kamu mengawal kelajuan dan kestabilan.',countdown:`${Math.max(1,Math.ceil(3-s.elapsed))}…`,race:`3 lap · Race ${s.elapsed.toFixed(1)} s`,result:standings(s)[0].key==='player'?'Faiz: “Kau menang! Jom rematch.”':'Mei Ling: “Cuba tukar setup atau upgrade kereta di Uncle Lim.”'};
+    const status={ready:'Faiz: “Tekan Mula meter. Lepas tepat di tengah untuk start yang kemas.”',launch:'Tap Lepas! apabila marker di tengah emas. Kereta bergerak sendiri; setup kamu mengawal kelajuan dan kestabilan.',countdown:`${Math.max(1,Math.ceil(3-s.elapsed))}…`,race:`3 lap · Race ${s.elapsed.toFixed(1)} s`,result:standings(s)[0].key==='player'?'Faiz: “Kau menang! Jom rematch.”':'Johnny: “Cuba tukar setup atau upgrade kereta di Uncle Lim.”'};
     if(changed||s.phase==='countdown'||s.phase==='race')$('tamiya-status').textContent=status[s.phase];
     const action=$('tamiya-action');action.textContent={ready:'Mula meter →',launch:'Lepas! · tepat di tengah',countdown:'Bersedia…',race:'Sedang berlumba…',result:'Pilih track / race lagi →'}[s.phase];action.disabled=['countdown','race'].includes(s.phase);
     $('tamiya-launch-wrap').hidden=s.phase!=='launch';$('tamiya-marker').style.left=`${launchMeter(s.elapsed)*100}%`;
@@ -99,7 +111,7 @@ export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}
   $('tamiya-action').addEventListener('pointerdown',e=>{if(e.isPrimary&&e.button===0&&round()?.phase==='launch'&&!isPaused())sample=launchMeter(round().elapsed);});
   $('tamiya-action').addEventListener('pointercancel',clearInput);
   $('tamiya-action').onclick=e=>{const value=e.detail>0&&sample!==null?sample:launchMeter(round()?.elapsed||0);clearInput();if(!playing)return;if(round().phase==='ready')change(prepareTamiya);else if(round().phase==='launch')change(s=>launchTamiya(s,value));else if(round().phase==='result')lobby();};
-  $('tamiya-enter').onclick=()=>{if(isPaused())return;startTamiya(getEco(),$('tamiya-track').value,$('tamiya-car').value,$('tamiya-setup').value);commit();play();};
+  $('tamiya-enter').onclick=()=>{if(isPaused())return;startTamiya(getEco(),$('tamiya-track').value,$('tamiya-car').value,$('tamiya-setup').value,!!getEco().tamiya.tournament.run&&getEco().tamiya.tournament.run.phase!=='result');commit();play();};
   $('tamiya-sambung').onclick=play;$('tamiya-skip').onclick=()=>{if(round()?.phase==='race'&&!activePit(round()))change(s=>advanceTamiya(s,raceDuration(s)));};
   $('tamiya-close').onclick=$('tamiya-town').onclick=close;
   $('tamiya-end-open').onclick=()=>{clearInput();$('tamiya-confirm').hidden=false;$('tamiya-controls').inert=true;$('tamiya-keep').focus();};

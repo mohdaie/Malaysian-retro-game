@@ -44,10 +44,10 @@ export const NPCS = {
     hello: 'Gasing lama ni banyak cerita. Nak belajar, berlatih, atau cuba kalahkan Atuk?',
     talk: ['In my day the gasing pangkah could split another in two!', 'This padang was all paddy once. Then came the school.', 'Wind the string tight, {name}. Tight, then let go.'] },
   faiz: { id: 'NPC-13', name: 'Faiz', age: 16, place: 15, post: 34, role: 'Your friend, a Tamiya collector and gasing rival', menu: 'house',
-    hello: 'Jom Dash! Pilih track, lawan aku dan Mei Ling. Tak ada kereta? Aku pinjamkan. Gasing pun boleh!',
+    hello: 'Jom Dash! Pilih track, lawan aku, Badrul, Johnny dan Logeswaran. Tak ada kereta? Aku pinjamkan. Gasing pun boleh!',
     talk: ['Uncle Lim has the new Tamiya in the window. Mine one day. Soon.', 'Race you to the warung! Kidding. It is too hot.', 'Deliveries pay, {name}. Slowly, but they pay.'] },
-  meiling: { id: 'NPC-14', name: 'Mei Ling', age: 16, place: 14, post: 34, role: 'Your friend, a card collector and Mini 4WD racer', menu: 'house',
-    hello: 'Kad boleh tukar, Tamiya boleh race! Aku suka setup stabil. Faiz asyik nak laju saja.',
+  meiling: { id: 'NPC-14', name: 'Mei Ling', age: 16, place: 14, post: 25, role: 'Uncle Lim’s daughter, stock keeper and tournament registrar', menu: 'house',
+    hello: 'Aku bantu ayah jaga stok. Borang kejohanan dan markah lima peserta pun aku urus.',
     talk: ['I keep my cards in a biscuit tin. Don’t laugh.', 'I found a lost card near the balai raya once. Still looking for its owner.', 'A full sticker set, {name}. Imagine it.'] }
 };
 export const NPC_KEYS = Object.keys(NPCS);

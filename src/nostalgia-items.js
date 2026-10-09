@@ -1,3 +1,4 @@
+import { REWARD_STORIES } from './chapter-data.js?v=2.13.0';
 // Researched era references; personal stories are fictional game quests.
 // Reward-only items are never ordinary shop stock.
 export const NOSTALGIA_ITEMS = {
@@ -562,3 +563,5 @@ export const NOSTALGIA_ITEMS = {
     "rewardOnly": true
   }
 };
+
+for(const [id,r] of Object.entries(REWARD_STORIES))Object.assign(NOSTALGIA_ITEMS[id],{storyTitle:r.title,story:r.story,inscription:r.memory});

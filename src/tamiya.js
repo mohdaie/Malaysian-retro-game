@@ -1,6 +1,6 @@
-import { STOCK_BUILD, validBuild } from './tamiya-parts.js?v=2.12.0';
-import { dynamicPlan, rivalPlan } from './tamiya-dynamics.js?v=2.12.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
+import { STOCK_BUILD, validBuild } from './tamiya-parts.js?v=2.13.0';
+import { dynamicPlan, rivalPlan } from './tamiya-dynamics.js?v=2.13.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
 export const TAMIYA_TRACKS = {
   oval: { name: 'Oval Pekan', note: 'Beginner · lurus panjang, selekoh lebar', length: 78, segments: [[.25,'straight'],[.25,'bend'],[.25,'straight'],[.25,'bend']], faiz: 'tamiya_burning', meiling: 'tamiya', recommended: 'balanced' },
   eight: { name: 'Selekoh Lapan', note: 'Technical · selekoh rapat, jambatan silang', length: 98, segments: [[.15,'straight'],[.2,'tight'],[.15,'bridge'],[.15,'straight'],[.2,'tight'],[.15,'bend']], faiz: 'tamiya_cannon', faizSetup: 'stable', meiling: 'tamiya_star', recommended: 'stable' },
@@ -54,21 +54,23 @@ export function racerPlan(track, car, setup, contact, key='player') {
 }
 // Jaguh rotates lanes once per lap. The outside return crosses above the
 // other two lanes, so all cars traverse all three lanes after three laps.
-export function raceTrackPoint(track,u,lane,lap=0,side=0){
+export function raceTrackPoint(track,u,lane,lap=0,side=0,lanes=3){
   if(track!=='jaguh')return trackPoint(track,u,lane+side);
-  const from=(lane+lap)%3,to=(from+1)%3,t=clamp((u-.03)/.11),ease=t*t*(3-2*t);
+  const from=(lane+lap)%lanes,to=(from+1)%lanes,t=clamp((u-.03)/.11),ease=t*t*(3-2*t);
   const p=trackPoint(track,u,from+(to-from)*ease+side);
-  if(from===2&&t>0&&t<1)p.y+=1.6*Math.sin(Math.PI*t)**2;
+  if(from===lanes-1&&t>0&&t<1)p.y+=1.6*Math.sin(Math.PI*t)**2;
   return p;
 }
 const planCache=new Map();
 export function racePlans(s){
   const t=TAMIYA_TRACKS[s.track];
   if(s.rules!==2)return [racerPlan(s.track,s.car,s.setup,s.contact),racerPlan(s.track,t.faiz,t.faizSetup||(s.track==='oval'?'fast':'balanced'),.61,'faiz'),racerPlan(s.track,t.meiling,'stable',.525,'meiling')];
-  const key=JSON.stringify([s.track,s.car,s.setup,s.contact,s.loadout,s.pits]);if(planCache.has(key))return planCache.get(key);
-  const plans=[dynamicPlan(t,s.car,s.setup,s.contact,'player',s.loadout,s.pits,TAMIYA_SETUPS),rivalPlan(t,t.faiz,'faiz',TAMIYA_SETUPS,s.track),rivalPlan(t,t.meiling,'meiling',TAMIYA_SETUPS,s.track)];
+  const key=JSON.stringify([s.track,s.car,s.setup,s.contact,s.loadout,s.pits,s.tournamentRun]);if(planCache.has(key))return planCache.get(key);
+  const opponents=[['faiz','tamiya_burning',s.track==='oval'?'fast':'balanced',.61],['hakim','tamiya','balanced',.67],['keong','tamiya',s.track==='oval'?'balanced':'stable',.75],['ravi','tamiya','stable',.56]];
+  const plans=[dynamicPlan(t,s.car,s.setup,s.contact,'player',s.loadout,s.pits,TAMIYA_SETUPS),...opponents.map(([key,car,setup,contact])=>dynamicPlan(t,car,setup,contact,key,{...STOCK_BUILD,rollers:key==='keong'?'mini_rollers_alloy':'stock'},[],TAMIYA_SETUPS))];
   if(planCache.size>=16)planCache.delete(planCache.keys().next().value);planCache.set(key,plans);return plans;
 }
+
 export function racerAt(plan,seconds,track){
   const total=TAMIYA_TRACKS[track].length*LAPS,t=Math.max(0,seconds),stage=plan.stages.find(v=>t<v.end),last=plan.stages.at(-1);
   const f=stage?clamp((t-stage.start)/(stage.end-stage.start)):1;
@@ -122,6 +124,7 @@ export function cleanTamiyaRound(v,collection={}){
     }
     Object.assign(s,{phase:v.phase,elapsed:v.elapsed,settled:v.settled});if(s.pits.length&&!['race','result'].includes(s.phase)||activePit(s)&&s.phase!=='race')return null;
   }else return null;
+  if(Number.isInteger(v.tournamentRun)&&v.tournamentRun>0&&v.tournamentRun<=1e9)s.tournamentRun=v.tournamentRun;
   if(s.phase==='ready'&&s.elapsed!==0||s.phase==='launch'&&s.elapsed>=2||s.phase==='countdown'&&s.elapsed>=3||s.phase==='race'&&s.elapsed>=raceDuration(s)||s.phase==='result'&&s.elapsed!==raceDuration(s)||s.phase!=='result'&&s.settled)return null;
   return s;
 }

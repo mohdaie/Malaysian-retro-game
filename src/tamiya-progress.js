@@ -1,14 +1,15 @@
-import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.12.0';
-import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.12.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
-import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.12.0';
+import { TAMIYA_TRACKS, newTamiyaRound, cleanTamiyaRound, racePlans } from './tamiya.js?v=2.13.0';
+import { cleanBuild, validBuild } from './tamiya-parts.js?v=2.13.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
+import { recordNostalgiaWin } from './nostalgia-quests.js?v=2.13.0';
+import { newTournament, cleanTournament, nextTournamentTrack, settleTournamentRace } from './tamiya-tournament.js?v=2.13.0';
 export const TAMIYA_QUESTS=[
   {id:'first',title:'Bateri masuk, jom race!',text:'Finish your first three-lap race.',sen:80},
   {id:'faiz',title:'Potong Faiz',text:'Finish ahead of Faiz.',sen:120},
-  {id:'meiling',title:'Kalahkan Mei Ling',text:'Finish ahead of Mei Ling.',sen:160},
+  {id:'meiling',title:'Potong Johnny',text:'Finish ahead of Johnny.',sen:160},
   {id:'jaguh',title:'Jaguh Tamiya Pekan',text:'Win first place on all three tracks.',sen:300}
 ];
-export function newTamiyaProgress(){return {played:0,won:0,nextRound:1,claimed:[],wins:[],best:{},garage:{},round:null};}
+export function newTamiyaProgress(){return {played:0,won:0,nextRound:1,claimed:[],wins:[],best:{},garage:{},round:null,tournament:newTournament()};}
 export function cleanTamiyaProgress(v,collection={}){
   const p=newTamiyaProgress();if(!v||typeof v!=='object')return p;
   if(Number.isInteger(v.played)&&v.played>=0&&v.played<=1e6&&Number.isInteger(v.won)&&v.won>=0&&v.won<=v.played){p.played=v.played;p.won=v.won;}
@@ -17,17 +18,21 @@ export function cleanTamiyaProgress(v,collection={}){
   if(Array.isArray(v.wins))p.wins=[...new Set(v.wins.filter(id=>Object.hasOwn(TAMIYA_TRACKS,id)))];
   for(const [track,time] of Object.entries(v.best||{}))if(Object.hasOwn(TAMIYA_TRACKS,track)&&Number.isFinite(time)&&time>0&&time<=3600)p.best[track]=time;
   for(const [car,build] of Object.entries(v.garage||{}))if(Object.hasOwn(TAMIYA_CARS,car)&&(car==='tamiya'||collection[car]>0))p.garage[car]=cleanBuild(build,collection);
+  p.tournament=cleanTournament(v.tournament);
   p.round=cleanTamiyaRound(v.round,collection);if(p.round)p.nextRound=Math.max(p.nextRound,p.round.id+1);return p;
 }
-export function startTamiya(eco,track,car,setup){
+export function startTamiya(eco,track,car,setup,tournament=false){
   const p=eco.tamiya;if(p.round&&p.round.phase!=='result')throw new Error('Resume or end the saved race first');
   if(!TAMIYA_CARS[car]||car!=='tamiya'&&!eco.collection[car])throw new Error('Car not owned');
-  const s=newTamiyaRound(track,car,setup,p.nextRound,cleanBuild(p.garage[car],eco.collection));p.nextRound++;p.round=s;return s;
+  const s=newTamiyaRound(track,car,setup,p.nextRound,cleanBuild(p.garage[car],eco.collection));if(tournament){const r=p.tournament.run;if(!r||r.phase==='result'||track!==nextTournamentTrack(eco))throw Error('Invalid tournament race');s.tournamentRun=r.id;}
+  p.nextRound++;p.round=s;return s;
 }
-export function recordTamiya(eco){
+export function recordTamiya(eco,day=1){
   const p=eco.tamiya,s=p.round,awards=[];if(!s||s.phase!=='result'||s.settled)return awards;
-  const [player,faiz,mei]=racePlans(s),win=player.duration<Math.min(faiz.duration,mei.duration)-.001;
+  const plans=racePlans(s),player=plans[0],faiz=plans.find(p=>p.key==='faiz'),mei=plans.find(p=>p.key==='keong'||p.key==='meiling'),win=player.duration<Math.min(...plans.slice(1).map(p=>p.duration))-.001;
   s.settled=true;p.played++;if(win){p.won++;if(!p.wins.includes(s.track))p.wins.push(s.track);}
+  if(eco.chapter.completed.includes('R03')&&!s.tournamentRun&&!eco.chapter.trainingTracks.includes(s.track))eco.chapter.trainingTracks.push(s.track);
+  if(s.tournamentRun){awards.push(...settleTournamentRace(eco,s,plans,day));return awards;}
   if(win)recordNostalgiaWin(eco,{game:'tamiya',track:s.track});
   p.best[s.track]=Math.min(p.best[s.track]||Infinity,player.duration);
   const eligible=['first',player.duration<faiz.duration-.001&&'faiz',player.duration<mei.duration-.001&&'meiling',p.wins.length===Object.keys(TAMIYA_TRACKS).length&&'jaguh'];

@@ -1,21 +1,23 @@
+import { newChapter, cleanChapter, tamiyaUnlocked, markChapterDelivery } from './chapter-data.js?v=2.13.0';
 // Duit Poket, the bag, the collection, delivery jobs and friendship, following
 // the NPC design guide. Pure functions over one plain state object, so the
 // rules are tested in Node and the save file stores the state as it is.
 // Money is whole sen. The guide prices in game coins; here 1 coin = 10 sen.
-import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.12.0';
-import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.12.0';
-import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.12.0';
-import { ITEM_ART, itemImagePath } from './item-art.js?v=2.12.0';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.12.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
-import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.12.0';
-import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.12.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.12.0';
-import { newNostalgia, cleanNostalgia, recordNostalgiaDelivery } from './nostalgia-quests.js?v=2.12.0';
+import { NPCS, npcAt, contactAt, RESIDENTS, HOUSES, PADANG } from './cast.js?v=2.13.0';
+import { newGasingProgress, cleanGasingProgress } from './gasing-progress.js?v=2.13.0';
+import { newDamProgress, cleanDamProgress } from './dam-progress.js?v=2.13.0';
+import { ITEM_ART, itemImagePath } from './item-art.js?v=2.13.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.13.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
+import { newTamiyaProgress, cleanTamiyaProgress } from './tamiya-progress.js?v=2.13.0';
+import { newPrayerProgress, cleanPrayerProgress } from './prayer.js?v=2.13.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.13.0';
+import { newNostalgia, cleanNostalgia, recordNostalgiaDelivery } from './nostalgia-quests.js?v=2.13.0';
 
 // size: carrying space per unit (1 small, 3 bulky). kind: 'goods' can be
 // bought and carried, 'cargo' only comes from a job, 'snack' is eaten on the
 // spot, 'collect' goes to the collection album.
+import { STORY_CARGO } from './chapter-jobs.js?v=2.13.0';
 export const ITEMS = {
   kabelav: { name: 'Kabel AV malam tayangan', size: 1, kind: 'cargo' },
   kerusilipat: { name: 'Kerusi lipat malam tayangan', size: 3, kind: 'cargo' },
@@ -79,7 +81,7 @@ for (const [id, item] of Object.entries(ITEMS)) {
   Object.assign(item, { image: itemImagePath(id), title, memory });
 }
 
-Object.assign(ITEMS, NOSTALGIA_ITEMS);
+Object.assign(ITEMS, NOSTALGIA_ITEMS, STORY_CARGO);
 // What each place sells over the counter.
 export const STOCK = {
   22: ['beras', 'gula', 'teh', 'telur', 'minuman', 'sabun', 'pencuci', 'benih', 'kotak', 'kainlap', 'lampin', 'roti', 'aiskrim', 'keropok', 'sirap'],
@@ -155,7 +157,7 @@ export const itemLabel = (item, qty) => `${qty} × ${ITEMS[item].name}`;
 export const level = points => LEVELS.find(([min]) => points >= min)[1];
 
 export function newEconomy() {
-  return { wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress(), prayer: newPrayerProgress(), nostalgia: newNostalgia() };
+  return { chapter: newChapter(), wallet: START_WALLET, bag: {}, collection: {}, jobs: [], done: [], nextJob: 1, served: {}, friends: {}, talked: {}, congkak: { played: 0, won: 0 }, dam: newDamProgress(), gasing: newGasingProgress(), tamiya: newTamiyaProgress(), prayer: newPrayerProgress(), nostalgia: newNostalgia() };
 }
 const add = (bag, item, qty) => { bag[item] = (bag[item] || 0) + qty; if (bag[item] <= 0) delete bag[item]; };
 const space = (item, qty) => ITEMS[item].size * qty;
@@ -205,6 +207,7 @@ export function offersAt(eco, place, gap, story = []) {
 export function accept(eco, offer) {
   if (!offer) return { ok: false, reason: 'none' };
   if (eco.jobs.length >= MAX_JOBS) return { ok: false, reason: 'full' };
+  if(offer.story?.startsWith('c1-')&&(eco.jobs.some(j=>j.story?.startsWith('c1-'))||eco.chapter.paid.includes(offer.story.slice(3))))return {ok:false,reason:'taken'};
   if (eco.jobs.some(j => j.offer === offer.id)) return { ok: false, reason: 'taken' };
   if (freeSpace(eco) < space(offer.item, offer.qty)) return { ok: false, reason: 'space' };
   const job = { id: `J${eco.nextJob}`, offer: offer.id, kind: offer.kind, requester: offer.requester, from: offer.from, to: offer.to, stops: [...offer.stops], left: offer.stops.length,
@@ -227,13 +230,14 @@ export function deliver(eco, id, place) {
   const job = eco.jobs.find(j => j.id === id);
   if (!job || eco.done.includes(id)) return { ok: false, reason: 'unknown' };
   if (job.status !== 'carrying' || nextStop(job) !== place) return { ok: false, reason: 'not-here' };
-  const unit = job.stops.length > 1 ? 1 : job.qty;
+  const relay=job.story?.startsWith('c1-R');const unit = relay?(job.left===1?1:0):job.stops.length > 1 ? 1 : job.qty;
   if ((eco.bag[job.item] || 0) < unit) return { ok: false, reason: 'missing' };
   add(eco.bag, job.item, -unit); job.left -= 1;
   if (job.left > 0) return { ok: true, job, paid: 0, more: job.left };
   const paid = job.upah + (job.kind === 'purchase' ? job.cost : 0);
   eco.wallet += paid; eco.jobs = eco.jobs.filter(j => j !== job);
   eco.done = [...eco.done, id].slice(-200); eco.served[job.requester] = (eco.served[job.requester] || 0) + 1;
+  markChapterDelivery(eco, job);
   recordNostalgiaDelivery(eco, job);
   return { ok: true, job, paid, more: 0 };
 }
@@ -256,6 +260,8 @@ export function cancel(eco, id, place = null) {
 export function buy(eco, place, item) {
   if (ITEMS[item]?.rewardOnly) return { ok: false, reason: 'quest-only' };
   if (!STOCK[place]?.includes(item)) return { ok: false, reason: 'not-sold' };
+  if ((TAMIYA_CARS[item] || TAMIYA_PARTS[item]) && !tamiyaUnlocked(eco)) return { ok:false, reason:'meet-faiz' };
+
   const it = ITEMS[item];
   if ((TAMIYA_CARS[item] || TAMIYA_PARTS[item]) && eco.collection[item]) return { ok: false, reason: 'owned' };
   if (eco.wallet < it.price) return { ok: false, reason: 'funds' };
@@ -285,6 +291,7 @@ export function befriend(eco, key, reason, today) {
 export function cleanEconomy(value) {
   const eco = newEconomy();
   if (!value || typeof value !== 'object') return eco;
+  eco.chapter = cleanChapter(value.chapter);
   eco.prayer = cleanPrayerProgress(value.prayer);
   eco.nostalgia = cleanNostalgia(value.nostalgia);
   const int = (n, lo, hi) => Number.isInteger(n) && n >= lo && n <= hi, place = n => int(n, 1, 38);

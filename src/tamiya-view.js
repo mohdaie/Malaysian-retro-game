@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
-import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=2.12.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.13.0';
+import { trackPoint, raceTrackPoint, racePlans, racerAt, TAMIYA_TRACKS } from './tamiya.js?v=2.13.0';
 // Local low-poly track and cars. One small renderer is reused between races.
 export function createTamiyaView(canvas) {
   const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(900,540,false);renderer.setClearColor('#c6d5ac');renderer.outputColorSpace=T.SRGBColorSpace;
@@ -32,8 +32,8 @@ export function createTamiyaView(canvas) {
     g.rotation.order='YXZ';return {group:g,wheels,key};
   }
   function build(s){clear();track=s.track;box(world,34,.12,20,'#dbc69a',0,-.17);box(world,34.3,.18,20.3,'#796b51',0,-.33);
-    for(let lane=0;lane<3;lane++)ribbon(lane,['#9dc2c5','#cc7360','#8eaa89'][lane]);
-    if(track==='jaguh')for(let lane=0;lane<3;lane++)for(const side of [-.5,.5])rail(lane,side);else for(let lane=-.5;lane<3;lane++)rail(lane);
+    for(let lane=0;lane<5;lane++)ribbon(lane,['#9dc2c5','#cc7360','#8eaa89','#d3b46d','#a796b8'][lane]);
+    if(track==='jaguh')for(let lane=0;lane<5;lane++)for(const side of [-.5,.5])rail(lane,side);else for(let lane=-.5;lane<5;lane++)rail(lane);
     // Bridges carry supports; the elevated upper route crosses over the lower.
     if(track==='eight')for(const u of [.42,.58]){const p=trackPoint(track,u);for(const side of [-1,1])box(world,.22,p.y,.22,'#696c76',p.x+Math.cos(p.heading)*side*1.5,p.y/2,p.z-Math.sin(p.heading)*side*1.5);}
     box(world,2.1,.24,1.5,'#777360',-12,0,7);const pitSign=label('PIT',1.6,.55);pitSign.position.set(-12,1.3,7);world.add(pitSign);
@@ -45,9 +45,9 @@ export function createTamiyaView(canvas) {
   }
   function draw(s,reduced=false){lastState=s;lastReduced=reduced;if(lost)return;
     const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight),dimensions=`${w}:${h}`;if(dimensions!==size){size=dimensions;renderer.setSize(w,h,false);camera.left=-10.56*w/h;camera.right=10.56*w/h;camera.updateProjectionMatrix();}
-    const next=`${s.track}:${s.car}`;if(next!==signature){build(s);signature=next;}const plans=racePlans(s),racing=['race','result'].includes(s.phase);
-    cars.forEach((c,i)=>{const r=racerAt(plans[i],racing?s.elapsed:0,s.track),u=racing?r.fraction:0,lap=Math.floor(r.distance/TAMIYA_TRACKS[s.track].length),p=raceTrackPoint(s.track,u,i,lap);
-      const next=u+.0001,q=raceTrackPoint(s.track,next>=1?next-1:next,i,lap+(next>=1?1:0)),dx=q.x-p.x,dz=q.z-p.z,heading=Math.atan2(dx,dz);
+    const next=`${s.track}:${s.car}:${racePlans(s).length}`;if(next!==signature){build(s);signature=next;}const plans=racePlans(s),racing=['race','result'].includes(s.phase);
+    cars.forEach((c,i)=>{const r=racerAt(plans[i],racing?s.elapsed:0,s.track),u=racing?r.fraction:0,lap=Math.floor(r.distance/TAMIYA_TRACKS[s.track].length),p=raceTrackPoint(s.track,u,i,lap,0,plans.length);
+      const next=u+.0001,q=raceTrackPoint(s.track,next>=1?next-1:next,i,lap+(next>=1?1:0),0,plans.length),dx=q.x-p.x,dz=q.z-p.z,heading=Math.atan2(dx,dz);
       c.group.position.set(r.pitting?-12+i*2:p.x,r.pitting?.2:p.y+.14,r.pitting?7:p.z);c.group.rotation.y=r.pitting?0:heading;c.group.rotation.x=r.pitting?0:-Math.atan2(q.y-p.y,Math.hypot(dx,dz));
       if(r.derailed&&!reduced){const sideways=Math.sin(r.recovery*Math.PI)*1.2;c.group.position.x+=Math.cos(p.heading)*sideways;c.group.position.z-=Math.sin(p.heading)*sideways;c.group.position.y+=Math.sin(r.recovery*Math.PI)*.45;c.group.rotation.z=Math.sin(r.recovery*Math.PI)*.65;}else c.group.rotation.z=0;
       if(racing&&!r.finished&&!r.derailed&&!r.pitting&&!reduced)for(const w of c.wheels)w.rotation.x=s.elapsed*16;

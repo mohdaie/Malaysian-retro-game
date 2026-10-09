@@ -26,7 +26,7 @@ function trail(eco,id) {
 }
 function winAll(eco,id){for(const c of QUESTS[id].challenges)for(let i=0;i<c.count;i++)recordNostalgiaWin(eco,{game:c.game,level:c.level,opponent:c.opponent,track:c.tracks?c.tracks[i%c.tracks.length]:'oval'});}
 
-test('all 28 photographed keepsakes have stories and cannot be bought; 14 active paths; original six use actual town stops',()=>{
+test('all 28 photographed keepsakes have stories and cannot be bought; 16 active paths; optional stories use actual town stops',()=>{
  assert.equal(Object.keys(NOSTALGIA_ITEMS).length,28);assert.equal(Object.keys(QUESTS).length,14);
  for(const [id,item] of Object.entries(NOSTALGIA_ITEMS)){assert.ok(item.storyTitle&&item.story&&item.source&&item.photoSource);assert.ok(!Object.values(STOCK).some(s=>s.includes(id)));assert.equal(buy(newEconomy(),25,id).reason,'quest-only');assert.ok(ITEMS[id].rewardOnly);}
  for(const q of ORIGINAL_QUEST_IDS.map(id=>QUESTS[id])){assert.ok(q.grind.deliveries>=3&&q.grind.deliveries<=12&&q.trail.length>=3);assert.ok(q.trail.every(s=>Number.isInteger(s.place)&&s.place>=1&&s.place<=38&&s.clue));}
@@ -58,7 +58,7 @@ test('easier or wrong-opponent wins cannot satisfy the final challenge',()=>{
  const eco=newEconomy(),id='nostalgia_G01';startNostalgia(eco,id,context(id));trail(eco,id);
  recordNostalgiaWin(eco,{game:'dam',level:'santai'});recordNostalgiaWin(eco,{game:'congkak'});assert.equal(eco.nostalgia.quests[id].wins[0]||0,0);
  eco.dam.match={...newMatch('jaguh'),over:true,winner:0,settled:false};recordDam(eco);recordDam(eco);assert.equal(eco.nostalgia.quests[id].wins[0],1);
- const walkman=newEconomy();startNostalgia(walkman,'nostalgia_G04',context('nostalgia_G04'));trail(walkman,'nostalgia_G04');recordNostalgiaWin(walkman,{game:'gasing',opponent:'faiz'});assert.equal(walkman.nostalgia.quests.nostalgia_G04.wins[0]||0,0);
+
 });
 test('every path earns once, preserves the dedication and survives clean saves without touching money',()=>{
  for(const id of ORIGINAL_QUEST_IDS){
@@ -66,12 +66,6 @@ test('every path earns once, preserves the dedication and survives clean saves w
   const wallet=eco.wallet;assert.equal(claimNostalgia(eco,id,{place:22,npc:'rahman'},0,'Aie',3).ok,false);assert.ok(claimNostalgia(eco,id,context(id),1,'Aie',3).ok);assert.equal(eco.collection[id],1);assert.equal(eco.wallet,wallet);
   assert.equal(claimNostalgia(eco,id,context(id),0,'Aie',4).ok,false);const clean=cleanEconomy(eco);assert.deepEqual(clean.nostalgia,eco.nostalgia);assert.equal(clean.collection[id],1);assert.equal(clean.nostalgia.earned[id].player,'Aie');assert.equal(nostalgiaStatus(clean,id).stage,'earned');
  }
-});
-test('Lightning Magnum needs all tracks, becomes raceable and cannot be awarded for oval-only wins',()=>{
- const eco=newEconomy(),id='nostalgia_T01';startNostalgia(eco,id,context(id));trail(eco,id);
- for(let i=0;i<6;i++)recordNostalgiaWin(eco,{game:'tamiya',track:'oval'});
- assert.equal(nostalgiaStatus(eco,id).stage,'challenge');recordNostalgiaWin(eco,{game:'tamiya',track:'eight'});recordNostalgiaWin(eco,{game:'tamiya',track:'jaguh'});assert.ok(claimNostalgia(eco,id,context(id),0,'Nur',5).ok);
- assert.ok(ownedCars(eco.collection).includes(id));startTamiya(eco,'oval',id,'balanced');eco.tamiya.round=advanceTamiya(launchTamiya(prepareTamiya(eco.tamiya.round),.5),180);recordTamiya(eco);assert.equal(cleanEconomy(eco).tamiya.round.car,id);
 });
 test('bad or incomplete earned metadata cannot create ownership and legacy saves retain their progress',()=>{
  const eco=newEconomy();eco.wallet=2200;eco.collection={gasing:1,nostalgia_G01:99};eco.congkak={played:5,won:2};

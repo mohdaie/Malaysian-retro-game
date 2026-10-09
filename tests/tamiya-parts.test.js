@@ -11,9 +11,9 @@ const stop=(s,setup,build=s.loadout,seconds=2)=>rejoinPit(advanceTamiya(editPit(
 
 test('twelve distinct parts across six slots are collectible, priced and sold only at Uncle Lim',()=>{
  assert.equal(PART_IDS.length,12);assert.equal(Object.keys(PART_SLOTS).length,6);
- const eco=newEconomy();eco.wallet=20000;for(const id of PART_IDS){assert.ok(STOCK[25].includes(id));assert.equal(ITEMS[id].price,TAMIYA_PARTS[id].price);assert.equal(buy(eco,22,id).reason,'not-sold');const before=eco.wallet;assert.equal(buy(eco,25,id).ok,true);assert.equal(eco.wallet,before-TAMIYA_PARTS[id].price);assert.equal(buy(eco,25,id).reason,'owned');}
+ const eco=newEconomy();eco.chapter.completed=['S04'];eco.wallet=20000;for(const id of PART_IDS){assert.ok(STOCK[25].includes(id));assert.equal(ITEMS[id].price,TAMIYA_PARTS[id].price);assert.equal(buy(eco,22,id).reason,'not-sold');const before=eco.wallet;assert.equal(buy(eco,25,id).ok,true);assert.equal(eco.wallet,before-TAMIYA_PARTS[id].price);assert.equal(buy(eco,25,id).reason,'owned');}
  assert.deepEqual(cleanEconomy(eco).collection,eco.collection);
- const poor=newEconomy();assert.equal(buy(poor,25,'mini_motor_dash').reason,'funds');assert.deepEqual(poor.collection,{});
+ const poor=newEconomy();poor.chapter.completed=['S04'];assert.equal(buy(poor,25,'mini_motor_dash').reason,'funds');assert.deepEqual(poor.collection,{});
 });
 test('garage enforces ownership and slot compatibility, saves independently per car, and never consumes parts',()=>{
  const eco=newEconomy(),build={...STOCK_BUILD,gear:'mini_gear_sprint'};assert.throws(()=>equipTamiya(eco,'tamiya',build));eco.collection={...collection};

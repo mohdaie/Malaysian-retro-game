@@ -1,91 +1,43 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { newEconomy, accept, collect, deliver } from '../src/economy.js';
-import { NOSTALGIA_QUESTS, startNostalgia as startRaw, followNostalgiaClue, recordNostalgiaWin, claimNostalgia } from '../src/nostalgia-quests.js';
-import { DONE, advance, syncChapter, chapterGuide, chapterKeepsake, cleanExhibition, shareKeepsake, EXHIBITION_LINKS } from '../src/story.js';
-import { validateSave, readSave, writeSave } from '../src/save.js';
-
-import { unlockLater, ORIGINAL_QUEST_IDS } from './quest-helpers.js';
-const startNostalgia=(eco,id,context)=>{unlockLater(eco,id);return startRaw(eco,id,context);};
-const context = id => ({ place: NOSTALGIA_QUESTS[id].place, npc: NOSTALGIA_QUESTS[id].npc });
-function deliveries(eco, id) {
-  for (let n=0;n<NOSTALGIA_QUESTS[id].grind.deliveries;n++) {
-    const to=1+n%18;
-    const {job}=accept(eco,{id:`chapter-${id}-${n}`,kind:'parcel',requester:22,from:22,to,stops:[to],item:'gula',qty:1,cost:0,upah:100,route:90});
-    assert.ok(collect(eco,job.id,22).ok);assert.ok(deliver(eco,job.id,to).ok);
-  }
-}
-function earn(eco,id) {
-  startNostalgia(eco,id,context(id));deliveries(eco,id);
-  for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
-  for(const c of NOSTALGIA_QUESTS[id].challenges)for(let i=0;i<c.count;i++)recordNostalgiaWin(eco,{game:c.game,level:c.level,opponent:c.opponent,track:c.tracks?.[i%c.tracks.length]||'oval'});
-  assert.ok(claimNostalgia(eco,id,context(id),0,'Aie',4).ok);
-}
-const save=(eco,story,extra={})=>({version:3,who:'amir',name:'Aie',story,x:0,z:0,...eco,clock:{day:4,minute:840},...extra});
-
-test('buying the first toy leads to Pak Salleh; empty or unrelated events cannot finish a chapter step',()=>{
-  assert.equal(advance(5,'bought-collectible'),6);
-  const g=chapterGuide(6,newEconomy());assert.equal(g.target,'salleh');assert.notEqual(g.step,DONE);assert.match(g.text,/exhibition/i);
-  assert.equal(advance(6,'bought-collectible'),6);assert.equal(advance(6,'invited-exhibition'),7);
-  for(const step of [7,8,9,10,11,DONE])assert.equal(advance(step,null),step);
+import test from 'node:test';import assert from 'node:assert/strict';
+import{newEconomy,cleanEconomy,accept,collect,deliver,cancel,buy,ITEMS}from'../src/economy.js';
+import{STEPS,DONE,STORY_REVISION,storyOffers,storyAt,storiesAt,availableScenes,completeChapterStep,syncChapter,chapterGuide,discoveredEvidence,canInvestigate,claimRelationship,tamiyaUnlocked,sceneLines}from'../src/story.js';
+import{validateSave}from'../src/save.js';import{normalizeLine,PORTRAITS,showPortrait}from'../src/dialogue-portraits.js';
+import{opening,branch,prepared,registered,scene,job,race}from'./chapter-helpers.js';
+import{NPCS,RESIDENTS}from'../src/cast.js';import{CROWD}from'../src/crowds.js';
+const save=e=>({version:4,who:e.chapter.who,name:'Aie',story:e.chapter.step,x:0,z:0,...e,clock:{day:4,minute:900}});
+for(const order of [['A','B','C'],['A','C','B'],['B','A','C'],['B','C','A'],['C','A','B'],['C','B','A']])test('all branch orders converge with independent evidence: '+order.join(' → '),()=>{
+ let e=prepared(order);assert.equal(e.chapter.paid.length,16);assert.ok(storyAt(e,17,'hakim'));assert.ok(e.chapter.evidence.includes('E15'));assert.equal(e.chapter.evidence.includes('E19'),false);scene(e,'S20');assert.equal(e.chapter.evidence.includes('E18'),true);assert.equal(completeChapterStep(e,'S21','Aie',4),false);job(e,'D17');scene(e,'S21');job(e,'D18');scene(e,'S22');e=validateSave(save(e));assert.ok(e.chapter.completed.includes('S22'));assert.ok(e.chapter.evidence.includes('E19'));assert.equal(e.chapter.tournamentWon,false);assert.equal(e.collection.nostalgia_T01,undefined);
 });
-test('the chapter follows real delivery, clue, challenge, claim and exhibition gates',()=>{
-  const eco=newEconomy(),id='nostalgia_P02';assert.equal(syncChapter(7,eco),7);
-  startNostalgia(eco,id,context(id));assert.equal(syncChapter(7,eco),8);assert.equal(chapterGuide(8,eco).target,'rahman');
-  const {job}=accept(eco,{id:'pending',kind:'parcel',requester:22,from:22,to:2,stops:[2],item:'gula',qty:1,cost:0,upah:100,route:90});
-  assert.deepEqual(chapterGuide(8,eco).target,{place:22,job:true});collect(eco,job.id,22);
-  assert.deepEqual(chapterGuide(8,eco).target,{place:2,job:true});deliver(eco,job.id,2);
-  assert.equal(syncChapter(8,eco),8);deliveries(eco,id);assert.equal(syncChapter(8,eco),9);
-  assert.deepEqual(chapterGuide(9,eco).target,{place:25});
-  for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
-  assert.equal(syncChapter(9,eco),10);assert.equal(chapterGuide(10,eco).target,'nenek');
-  assert.equal(shareKeepsake(eco,10,id,4).ok,false);
-  for(let i=0;i<4;i++)recordNostalgiaWin(eco,{game:'congkak'});
-  assert.equal(syncChapter(10,eco),11);assert.equal(chapterGuide(11,eco).target,'farid');
-  assert.ok(claimNostalgia(eco,id,context(id),1,'Aie',4).ok);assert.equal(syncChapter(11,eco),12);
-  assert.equal(chapterGuide(12,eco).target,'salleh');assert.equal(syncChapter(12,eco),12,'owning it still requires the exhibition return');
-  const before=structuredClone(eco),result=shareKeepsake(eco,12,id,4);assert.ok(result.ok);assert.deepEqual(eco,before,'sharing neither sells nor removes the keepsake');
-  assert.equal(syncChapter(12,eco,result.exhibition),DONE);assert.equal(shareKeepsake(eco,DONE,id,4).ok,false);
-  assert.match(chapterGuide(DONE,eco,result.exhibition).text,/Shared at the balai raya on game day 4/);
+test('Amir and Nur begin with the correct mother and home; named crowd speakers retain their existing bodies',()=>{
+ for(const who of ['amir','nur']){const e=newEconomy();e.chapter.who=who;assert.equal(chapterGuide(0,e).target.place,who==='amir'?1:11);const s=storyAt(e,who==='amir'?1:11,null);assert.ok(s);assert.equal(sceneLines(e,s)[0].speaker,who==='amir'?'zaitun':'aminah');scene(e,'S01');assert.equal(storyOffers(0,e)[0].from,who==='amir'?1:11);}
+ assert.deepEqual(['hakim','keong','ravi'].map(k=>CROWD[k].name),['Badrul','Johnny','Logeswaran']);assert.equal(NPCS.meiling.post,25);assert.equal(NPCS.meiling.role.includes('registrar'),true);
 });
-test('any of the six stories can complete Chapter 1; the remaining stories stay open',()=>{
-  assert.equal(Object.keys(EXHIBITION_LINKS).length,14);
-  for(const id of ORIGINAL_QUEST_IDS){
-    const eco=newEconomy();earn(eco,id);assert.equal(syncChapter(7,eco),12);
-    assert.ok(shareKeepsake(eco,12,id,4).ok);
-    const other=Object.keys(NOSTALGIA_QUESTS).find(k=>!eco.nostalgia.quests[k]);assert.ok(startNostalgia(eco,other,context(other)).ok);
-    assert.ok(eco.nostalgia.earned[chapterKeepsake(eco)]);assert.equal(eco.nostalgia.quests[other].stage,'grind');
-  }
+test('evidence requires selected supporting cards and a justified conclusion; wrong answers cost nothing',()=>{
+ const e=prepared();e.chapter.completed=e.chapter.completed.filter(x=>!x.startsWith('deduce'));const s=STEPS.find(s=>s.id==='deduceA'),before=JSON.stringify(e);
+ for(const proof of [undefined,{answer:'wrong0',cards:['E01','E04','E03']},{answer:'A',cards:['E01']},{answer:'A',cards:['E02','E05','E17']}]){assert.equal(canInvestigate(e,s,proof),false);assert.equal(completeChapterStep(e,s.on,'Aie',4,proof),false);assert.equal(JSON.stringify(e),before);}
+ assert.ok(canInvestigate(e,s,{answer:'A',cards:['E01','E04','E06']}));assert.ok(completeChapterStep(e,s.on,'Aie',4,{answer:'A',cards:['E01','E04','E06']}));assert.equal(completeChapterStep(e,s.on,'Aie',4,{answer:'A',cards:['E01','E04','E06']}),false);
 });
-test('starter guidance asks for one congkak win; later Tamiya requires every track',()=>{
- const eco=newEconomy(),id='nostalgia_I01';startNostalgia(eco,id,context(id));deliveries(eco,id);
- for(const stop of NOSTALGIA_QUESTS[id].trail)followNostalgiaClue(eco,id,stop.place);
- assert.equal(chapterGuide(10,eco).target,'nenek');
- recordNostalgiaWin(eco,{game:'congkak'});assert.equal(syncChapter(10,eco),11);
- const race=newEconomy();startNostalgia(race,'nostalgia_T01',context('nostalgia_T01'));deliveries(race,'nostalgia_T01');
- for(const stop of NOSTALGIA_QUESTS.nostalgia_T01.trail)followNostalgiaClue(race,'nostalgia_T01',stop.place);
- for(let i=0;i<3;i++)recordNostalgiaWin(race,{game:'tamiya',track:'oval'});
- assert.equal(race.nostalgia.quests.nostalgia_T01.stage,'challenge');
+test('delivery offers are prepaid, distinct, restart after cancel, and pay only once',()=>{
+ const e=newEconomy();scene(e,'S01');const o=storyOffers(0,e)[0];assert.equal(o.cost,0);assert.equal(o.upah,80);assert.equal(o.item,'story_D01');let j=accept(e,o).job;assert.deepEqual(storyOffers(0,e),[]);collect(e,j.id,j.from);assert.ok(cancel(e,j.id,j.from).ok);assert.deepEqual(e.bag,{});assert.equal(e.chapter.completed.includes('D01'),false);j=accept(e,o).job;collect(e,j.id,j.from);deliver(e,j.id,j.to);const wallet=e.wallet;assert.equal(deliver(e,j.id,j.to).ok,false);assert.equal(accept(e,o).reason,'taken');assert.equal(e.wallet,wallet);assert.equal(storyOffers(0,e).some(x=>x.id===o.id),false);
 });
-test('old completed saves resume at the invitation without resetting earned keepsakes or money',()=>{
-  const eco=newEconomy();earn(eco,'nostalgia_P02');eco.wallet=1900;
-  const old=validateSave(save(eco,6));assert.equal(old.story,6);assert.equal(old.wallet,1900);assert.deepEqual(old.nostalgia,eco.nostalgia);
-  assert.equal(syncChapter(advance(old.story,'invited-exhibition'),old),12);
-  assert.equal(shareKeepsake(old,6,'nostalgia_P02',4).ok,false,'the invitation must be heard');
+test('practice is the only required learning session; losses qualify and old races do not skip it',()=>{
+ const e=newEconomy();e.chapter.completed=['S01','D01','S02','D02','S03','D03'];e.tamiya.played=9;scene(e,'S04');assert.ok(tamiyaUnlocked(e));syncChapter(0,e);assert.equal(e.chapter.completed.includes('training'),false);assert.equal(e.chapter.baseline,9);race(e,'jaguh',false,'fast');assert.equal(e.tamiya.won,0);assert.ok(e.chapter.completed.includes('training'));assert.ok(availableScenes(e).some(s=>s.id==='S05'));
 });
-test('earned progress survives an interrupted challenge or exhibition dialogue; forged completion does not',()=>{
-  const eco=newEconomy();earn(eco,'nostalgia_M01');
-  assert.equal(validateSave(save(eco,11)).story,12);
-  assert.equal(validateSave(save(eco,DONE)).story,12,'an ending without a display resumes at sharing');
-  for(const bad of [{id:'nostalgia_M01',day:3},{id:'nostalgia_M01',day:1.5},{id:'nostalgia_G01',day:4},{id:'nostalgia_M02',day:4}]){
-    assert.equal(cleanExhibition(bad,eco),null);assert.equal(validateSave(save(eco,DONE,{exhibition:bad})).story,12);
-  }
-  assert.equal(validateSave(save(newEconomy(),10)).story,7,'a corrupt chapter number cannot invent quest progress');
+test('Chapter 1 reserves adult keepsakes and ends only after the tournament certificate and prize',()=>{
+ const e=registered();assert.equal(e.chapter.paid.length,19);assert.equal(e.chapter.paid.reduce((n,id)=>n+STEPS.find(s=>s.id===id).delivery.upah,0),2560);assert.equal(completeChapterStep(e,'S25','Aie',4),false);assert.equal(storyOffers(0,e).some(j=>j.story==='c1-D20'),false);e.chapter.tournamentWon=true;syncChapter(0,e);job(e,'D20');scene(e,'S25');assert.equal(e.chapter.step,DONE);assert.equal(e.chapter.paid.reduce((n,id)=>n+STEPS.find(s=>s.id===id).delivery.upah,0),2680);assert.equal(e.collection.nostalgia_T01,1);const after=JSON.stringify(e);assert.equal(completeChapterStep(e,'S25','Aie',4),false);assert.equal(JSON.stringify(e),after);for(const id of ['nostalgia_I01','nostalgia_I03','nostalgia_I05'])assert.equal(e.collection[id],undefined);assert.ok(storyAt(e,6,null));
 });
-test('the personal display saves separately for Amir and Nur, with its game day and dedication',()=>{
-  const data=new Map(),storage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
-  const eco=newEconomy();earn(eco,'nostalgia_M01');const exhibition=shareKeepsake(eco,12,'nostalgia_M01',4).exhibition;
-  assert.ok(writeSave(storage,save(eco,DONE,{exhibition})));
-  assert.ok(writeSave(storage,{...save(newEconomy(),2),who:'nur',name:'Nur'}));
-  const amir=readSave(storage,'amir'),nur=readSave(storage,'nur');assert.equal(amir.story,DONE);assert.deepEqual(amir.exhibition,exhibition);assert.equal(amir.nostalgia.earned.nostalgia_M01.player,'Aie');assert.equal(nur.story,2);assert.equal(nur.exhibition,undefined);
+test('relationship relays use one parcel, require all stops and keep gifts separate from payment',()=>{
+ let e=registered();const o=storyOffers(0,e).find(o=>o.story==='c1-R01');assert.equal(o.qty,1);let j=accept(e,o).job;collect(e,j.id,j.from);const wallet=e.wallet;assert.equal(deliver(e,j.id,36).paid,0);assert.equal(e.bag[j.item],1);e=cleanEconomy(e);j=e.jobs[0];assert.equal(j.left,1);assert.equal(deliver(e,j.id,15).paid,120);assert.equal(e.wallet,wallet+120);assert.equal(e.collection.nostalgia_G04,undefined);assert.ok(claimRelationship(e,'nostalgia_G04','Aie',4).ok);assert.equal(claimRelationship(e,'nostalgia_G04','Aie',4).ok,false);job(e,'R02');assert.ok(claimRelationship(e,'nostalgia_M02','Aie',4).ok);assert.equal(e.collection.nostalgia_M02,1);
+});
+test('Digimon requires three completed post-delivery practice tracks; Tamagotchi two distinct game days',()=>{
+ let e=registered();job(e,'R03');assert.equal(claimRelationship(e,'nostalgia_G02','Aie',4).reason,'tracks');for(const t of ['oval','eight','jaguh'])race(e,t);assert.ok(claimRelationship(e,'nostalgia_G02','Aie',4).ok);job(e,'R05');assert.equal(claimRelationship(e,'nostalgia_G03','Aie',4).reason,'day');e.chapter.haniDay=4;e=cleanEconomy(e);assert.equal(claimRelationship(e,'nostalgia_G03','Aie',4).reason,'day');assert.ok(claimRelationship(e,'nostalgia_G03','Aie',5).ok);
+});
+test('Charizard requires consent and two ordinary duplicates; gift cannot be exchanged or repeated',()=>{
+ const e=registered();job(e,'R04');e.collection.kad=2;assert.equal(claimRelationship(e,'nostalgia_P05','Aie',4,{cards:['kad','kad'],confirm:true}).reason,'duplicates');e.collection.kad=3;assert.equal(claimRelationship(e,'nostalgia_P05','Aie',4,{cards:['nostalgia_G04','kad'],confirm:true}).ok,false);assert.equal(claimRelationship(e,'nostalgia_P05','Aie',4,{cards:['kad','kad']}).ok,false);assert.ok(claimRelationship(e,'nostalgia_P05','Aie',4,{cards:['kad','kad'],confirm:true}).ok);assert.equal(e.collection.kad,1);e.collection.kad=3;assert.equal(claimRelationship(e,'nostalgia_P05','Aie',4,{cards:['kad','kad'],confirm:true}).ok,false);assert.equal(e.collection.kad,3);
+});
+test('revision migration retains wallet, ordinary work, collections and previously earned unique items',()=>{
+ const e=registered();job(e,'R01');claimRelationship(e,'nostalgia_G04','Aie',4);e.wallet=5000;e.collection.guli=2;const j=accept(e,{id:'ordinary',kind:'purchase',requester:22,from:25,to:12,stops:[12],item:'gula',qty:1,cost:80,upah:120}).job;collect(e,j.id,25);const raw=save(e);raw.chapter={revision:2,step:22,baseline:0};const old=accept(e,{id:'retired',story:'c1-old',kind:'purchase',requester:6,from:25,to:32,stops:[32],item:'kotak',qty:1,cost:100,upah:100}).job;collect(e,old.id,25);raw.jobs=e.jobs;raw.bag=e.bag;raw.wallet=e.wallet;const r=validateSave(raw);assert.ok(r.upgraded);assert.equal(r.story,0);assert.equal(r.wallet,e.wallet+100);assert.equal(r.collection.guli,2);assert.equal(r.collection.nostalgia_G04,1);assert.deepEqual(r.jobs.map(x=>x.id),[j.id]);assert.equal(r.bag.kotak,undefined);assert.equal(r.bag.gula,1);assert.deepEqual(discoveredEvidence(r),[]);
+});
+test('all chapter lines use real speakers; confirmed player portraits switch and missing sheets stay hidden',()=>{
+ const keys=new Set(['player','mother','notification',...Object.keys(NPCS),...Object.keys(CROWD),...Object.values(RESIDENTS).map(r=>r.key)]);for(const s of STEPS)for(const l of s.lines||[])assert.ok(keys.has(l.speaker),l.speaker);assert.doesNotMatch(JSON.stringify(STEPS),/RM30|Rizal|\bLan\b/);const s={who:'nur',name:'Aina'};assert.equal(normalizeLine({speaker:'player',text:'Saya {name}.'},null,s).name,'Aina');assert.equal(normalizeLine({speaker:'hakim',text:'Hai'},null,s).name,'Badrul');const el={hidden:false,style:{},removeAttribute(){},setAttribute(){}};showPortrait(el,'nur');assert.equal(el.hidden,false);showPortrait(el,'farid');assert.equal(el.hidden,true);
 });
