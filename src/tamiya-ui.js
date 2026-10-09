@@ -1,8 +1,8 @@
-import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.11.1';
-import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.11.1';
-import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.11.1';
-import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.11.1';
-import { createTamiyaView } from './tamiya-view.js?v=2.11.1';
+import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.12.0';
+import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.12.0';
+import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.12.0';
+import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.12.0';
+import { createTamiyaView } from './tamiya-view.js?v=2.12.0';
 
 export function createTamiyaUI({getEco,getName,isPaused,onOpen,onClose,onChange}){
   const $=id=>document.getElementById(id),panel=$('tamiya-panel');let view=null,visible=false,playing=false,raf=0,last=0,savedAt=0,phase='',sample=null,notice='',shownTime=-1,bench=null;

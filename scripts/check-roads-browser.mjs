@@ -26,8 +26,8 @@ try{
   const T=await import('three'),ray=new T.Raycaster(),w=riverReview.world;
   const points=[[-43.137,-3.083],[-25.137,-3.083],[68.363,-3.083],[-25.137,36.417],[-22.137,62.917],[65.363,23.917],[6.863,.667],[-43.137,36.417],[23.863,34.917],[43.863,42.917]];
   const tops=points.map(([x,z])=>{ray.set(new T.Vector3(x,10,z),new T.Vector3(0,-1,0));return {x,z,count:ray.intersectObjects(w.scene.children,true).filter(h=>Math.abs(h.point.y-.055)<.0001).length};});
-  const {BRIDGES}=await import('/src/town-layout.js?v=2.11.1');
-  const {clearSegment}=await import('/src/map-navigation.js?v=2.11.1');
+  const {BRIDGES}=await import('/src/town-layout.js?v=2.12.0');
+  const {clearSegment}=await import('/src/map-navigation.js?v=2.12.0');
   return {tops,bridges:BRIDGES.map(b=>clearSegment({x:b.x-7.4,z:b.z},{x:b.x+7.4,z:b.z},w.canWalk))};
  })()`);
  assert.ok(checks.tops.every(p=>p.count===1),JSON.stringify(checks.tops));assert.ok(checks.bridges.every(Boolean));

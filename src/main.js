@@ -1,40 +1,41 @@
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.11.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.12.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.11.1';
-import { createBicycle, stepBike } from './bicycle.js?v=2.11.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.11.1';
-import { readSave, readSaves, writeSave } from './save.js?v=2.11.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.11.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.11.1';
-import { createSoundscape } from './soundscape.js?v=2.11.1';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.11.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.11.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.11.1';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.11.1';
-import { tripAt } from './errands.js?v=2.11.1';
-import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.11.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.11.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.11.1';
-import { ITEM_KINDS } from './item-art.js?v=2.11.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.11.1';
-import { createGasingUI } from './gasing-ui.js?v=2.11.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.11.1';
-import { createDamUI } from './dam-ui.js?v=2.11.1';
-import { DAM_QUESTS } from './dam-progress.js?v=2.11.1';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.11.1';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.11.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.11.1';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.11.1';
-import { createTownMap } from './town-map-ui.js?v=2.11.1';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.11.1';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.11.1';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.11.1';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.11.1';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.11.1';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.11.1';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.11.1';
-import { renderQuestJournal } from './journal-ui.js?v=2.11.1';
-import { chapterBrief } from './journal.js?v=2.11.1';
+import { makeWorld } from './world.js?v=2.12.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.12.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.12.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.12.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.12.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.12.0';
+import { createSoundscape } from './soundscape.js?v=2.12.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.12.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.12.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.12.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.12.0';
+import { tripAt } from './errands.js?v=2.12.0';
+import { crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.12.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, shareKeepsake, EXHIBITION_STORIES } from './story.js?v=2.12.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.12.0';
+import { ITEM_KINDS } from './item-art.js?v=2.12.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.12.0';
+import { createGasingUI } from './gasing-ui.js?v=2.12.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.12.0';
+import { createDamUI } from './dam-ui.js?v=2.12.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.12.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.12.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.12.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.12.0';
+import { createTownMap } from './town-map-ui.js?v=2.12.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.12.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.12.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.12.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.12.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.12.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.12.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.12.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.12.0';
+import { chapterBrief } from './journal.js?v=2.12.0';
+import { playIntro } from './intro.js?v=2.12.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -64,6 +65,7 @@ let errandClock = null, cameraPitch = CAMERA_PITCH, lastLook = -10, cameraSettle
 const viewPointers = new Map();
 let pinchDistance = null;
 let orientationBlocked = needsLandscape(innerWidth, innerHeight);
+let intro = null;
 const keys = new Set();
 let storage;
 try { storage = localStorage; } catch { storage = null; }
@@ -162,6 +164,7 @@ function syncOrientation() {
   orientationBlocked = needsLandscape(innerWidth, innerHeight);
   $('orientation-panel').hidden = !orientationBlocked;
   if (orientationBlocked) clearControls();
+  if (intro) orientationBlocked ? intro.pause() : intro.resume();
   world.resize();
   syncAudio();
 }
@@ -220,11 +223,16 @@ function showTime(){
 }
 $('start-form').addEventListener('submit', event => { event.preventDefault(); if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); if(saved) {
   const other = Object.keys(PLAYERS).find(w => w !== chosen);
-  showDialogue('A new afternoon', [`Starting a new story as ${PLAYERS[chosen].name} replaces ${saved.name}'s saved journey on this device.${saves[other] ? ` ${saves[other].name}'s journey${saves[other].name === PLAYERS[other].name ? '' : ` as ${PLAYERS[other].name}`} is kept.` : ''}`], () => begin());
+  showDialogue('A new afternoon', [`Starting a new story as ${PLAYERS[chosen].name} replaces ${saved.name}'s saved journey on this device.${saves[other] ? ` ${saves[other].name}'s journey${saves[other].name === PLAYERS[other].name ? '' : ` as ${PLAYERS[other].name}`} is kept.` : ''}`], newStory);
   $('dialogue-next').textContent = 'Start new story →';
   const cancelButton=document.createElement('button');cancelButton.textContent='Keep my saved journey';cancelButton.className='secondary';cancelButton.id='cancel-new';
   cancelButton.onclick=()=>{cancelButton.remove();$('dialogue-panel').hidden=true;setMode('title');};$('dialogue-panel').append(cancelButton);
-} else begin(); });
+} else newStory(); });
+// A new story opens with the intro film; Continue goes straight back to town.
+function newStory() {
+  setMode('intro'); $('start-screen').hidden = true;
+  intro = playIntro($('game'), { onDone: () => { intro = null; begin(); } });
+}
 $('continue-button').onclick = () => { if (matchMedia('(pointer: coarse)').matches) void enterLandscape($('game')); begin(saved); };
 function toast(text) { $('toast').textContent=text; $('toast').hidden=false; clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').hidden=true,4200); }
 function showDialogue(speaker, lines, done) {
@@ -597,6 +605,7 @@ $('home-button').onclick=()=>{persist();choose(state.who);$('pause-panel').hidde
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
   if(orientationBlocked)return;
+  if(mode==='intro'){if(event.key==='Escape'){event.preventDefault();intro?.skip();}return;}
   if(mode==='pause'&&event.key==='Escape'){event.preventDefault();$('resume-button').click();return;}
   if(mode==='item'&&event.key==='Tab'){event.preventDefault();$('item-close').focus();return;}
   if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.repeat && ['e','m','Escape',' ','c','h','f','z'].includes(event.key))return;
@@ -736,7 +745,7 @@ function refreshAudioLabels() {
 }
 refreshAudioLabels();
 function syncAudio() {
-  const active = !document.hidden && !orientationBlocked && mode !== 'title';
+  const active = !document.hidden && !orientationBlocked && mode !== 'title' && mode !== 'intro';
   void music.setActive(active);
   try {
     if (active && audioPrefs.ambienceEnabled && audioPrefs.ambienceVolume > 0) {
@@ -768,7 +777,7 @@ document.addEventListener('visibilitychange', syncAudio);
 window.addEventListener('pagehide', () => { void music.setActive(false); void audio?.suspend().catch(() => {}); });
 window.addEventListener('pageshow', syncAudio);
 // A fresh gesture also recovers mobile autoplay restrictions or interrupted audio.
-document.addEventListener('pointerdown', () => { if (!document.hidden && !orientationBlocked && mode !== 'title') void music.sync(); }, { passive: true });
+document.addEventListener('pointerdown', () => { if (!document.hidden && !orientationBlocked && mode !== 'title' && mode !== 'intro') void music.sync(); }, { passive: true });
 
 function openBoard(name='Nenek',place=2){opponent=name;setMode('board');board=newRound();boardBusy=false;boardToken++;$('board-panel').hidden=false;$('board-return').hidden=true;$('board-player-name').textContent=state.name;$('opponent-name').textContent=name;$('board-eyebrow').textContent=`${placeName(place).toUpperCase()} · CONGKAK`;renderBoard();$('sowing-status').textContent='Choose any non-empty house on your bottom row.';}
 function closeBoard(){boardToken++;boardBusy=false;$('board-panel').hidden=true;setMode('explore');persist();if(!board?.over)toast(`Round paused. Talk to ${opponent} to start a fresh one.`);}
@@ -1013,7 +1022,7 @@ function tick(){
   aimDrop=T.MathUtils.lerp(aimDrop,talkingTo?.85:0,1-Math.exp(-dt*4));camera.lookAt(look.x,look.y-aimDrop,look.z);
   world.updateOcclusion(camera,look,dt,mode==='explore'&&!orientationBlocked);
   // Modal minigames and menus keep the last world frame; no 3D work behind them.
-  if (!orientationBlocked && !['board','dam','gasing','tamiya','map','pause','prayer','counter','bag','book'].includes(mode)) renderer.render(scene,camera);
+  if (!orientationBlocked && !['board','dam','gasing','tamiya','map','pause','prayer','counter','bag','book','intro'].includes(mode)) renderer.render(scene,camera);
   if(mode==='explore'&&Math.floor(elapsed*8)!==Math.floor((elapsed-dt)*8))drawMap($('minimap'));
   requestAnimationFrame(tick);
 }

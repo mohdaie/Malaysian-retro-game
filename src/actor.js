@@ -2,10 +2,10 @@ import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, outline } from './illustration.js?v=2.11.1';
-import { createCharacter, motif } from './characters.js?v=2.11.1';
-import { dressModel } from './outfit.js?v=2.11.1';
-import { createFace } from './face.js?v=2.11.1';
+import { toon, outline } from './illustration.js?v=2.12.0';
+import { createCharacter, motif } from './characters.js?v=2.12.0';
+import { dressModel } from './outfit.js?v=2.12.0';
+import { createFace } from './face.js?v=2.12.0';
 
 // Amir and Nur on a real human skeleton (v2.0). The skeleton and its
 // motion-captured clips come from Quaternius' Universal Animation Library

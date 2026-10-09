@@ -56,7 +56,7 @@ test('manifest and icons identify a standalone game under the Pages subfolder', 
   assert.match(html, /type="module" src="\.\/src\/pwa.js/);
 });
 
-test('build release changes with file contents and includes nested game assets', async () => {
+test('build release changes with file contents and includes nested game assets, not the streamed intro film', async () => {
   const root = await mkdtemp(join(tmpdir(), 'retro-pwa-'));
   try {
     await mkdir(join(root, 'src'));
@@ -64,6 +64,8 @@ test('build release changes with file contents and includes nested game assets',
     await writeFile(join(root, 'src/main.js'), 'old');
     await writeFile(join(root, 'manifest.webmanifest'), '{}');
     await writeFile(join(root, 'admin.html'), 'admin');
+    await mkdir(join(root, 'assets/video'), { recursive: true });
+    await writeFile(join(root, 'assets/video/intro.mp4'), 'film');
     const first = await buildPwa(root, template);
     assert.deepEqual(first.files, ['index.html', 'src/main.js']);
     assert.equal((await buildPwa(root, template)).release, first.release);

@@ -8,11 +8,11 @@
 [hidden]{display:none!important}body{margin:0;background:#192d29;font:14px system-ui;color:#fff}canvas{display:block;width:100vw;height:100vh}header{position:fixed;top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#142a25dd;padding:10px;border-radius:10px}strong{margin-right:auto}button,select{font:inherit;background:#f2e6ce;color:#203c32;border:0;border-radius:6px;padding:6px 10px}#status{position:fixed;bottom:12px;left:12px;background:#142a25dd;padding:8px 12px;border-radius:8px}
 </style>
 <canvas id="view"></canvas>
-<header><strong>River review · v2.11.1 · unmerged</strong><select id="viewpoint"><option value="overview">Overview</option><option value="bridge">Under the bridge</option><option value="bank">At the bank</option></select><select id="light"><option value="840">Afternoon</option><option value="1125">Dusk</option><option value="1260">Night</option></select><button id="animate">Play water</button></header>
+<header><strong>River review · v2.12.0 · unmerged</strong><select id="viewpoint"><option value="overview">Overview</option><option value="bridge">Under the bridge</option><option value="bank">At the bank</option></select><select id="light"><option value="840">Afternoon</option><option value="1125">Dusk</option><option value="1260">Night</option></select><button id="animate">Play water</button></header>
 <div id="status">Loading the game scene…</div>
 <script type="module">
-import {makeWorld} from '../src/world.js?v=2.11.1';
-import {skyAt} from '../src/clock.js?v=2.11.1';
+import {makeWorld} from '../src/world.js?v=2.12.0';
+import {skyAt} from '../src/clock.js?v=2.12.0';
 const world=await makeWorld(document.getElementById('view'));
 let minute=840,view='overview',elapsed=6,playing=false,previous;
 const cameras={overview:[[-46,17,57],[-65,-.3,29],48],bridge:[[-74,2.2,47],[-65,-.4,34],53],bank:[[-58.7,1.75,22],[-65,-.5,15],58]};

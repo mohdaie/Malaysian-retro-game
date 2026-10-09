@@ -7,6 +7,7 @@
     "check": "npx --yes hyperframes@0.8.141 check",
     "audio": "./scripts/make-audio.sh",
     "render": "npx --yes hyperframes@0.8.141 render -o renders/retro-malaysia-intro.mp4 -f 24 --crf 23",
-    "publish": "npx --yes hyperframes@0.8.141 publish"
+    "publish": "npx --yes hyperframes@0.8.141 publish",
+    "export-game": "ffmpeg -y -i renders/retro-malaysia-intro.mp4 -vf scale=1280:720:flags=lanczos -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart ../assets/video/intro.mp4"
   }
 }

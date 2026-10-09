@@ -1,7 +1,7 @@
 // Original illustrated objects from a Malaysian town around 2001.
 // Kept separate from the economy so descriptions never change item/save IDs.
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.11.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.11.1';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.12.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.12.0';
 export const ITEM_ART = {
   kabelav: ['Kabel AV', 'Kabel merah, putih dan kuning untuk malam tayangan jiran-jiran di balai raya.'],
   kerusilipat: ['Kerusi lipat', 'Kerusi stor balai raya. Angkat elok-elok dan pulangkan selepas malam tayangan.'],

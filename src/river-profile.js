@@ -1,4 +1,4 @@
-import { RIVER, BRIDGES } from './town-layout.js?v=2.11.1';
+import { RIVER, BRIDGES } from './town-layout.js?v=2.12.0';
 
 // The banks and water stay inside the river corridor reserved by the town plan.
 // Walking, bridge heights and rendering use these same dimensions.
