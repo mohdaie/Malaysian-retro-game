@@ -35,6 +35,10 @@ export function tickClock(clock, seconds) {
 export const canSleep = minute => minute >= BEDTIME || minute < 5 * 60 + 45;
 export function sleep(clock) { if (clock.minute >= BEDTIME) clock.day += 1; clock.minute = WAKE; return clock; }
 export const weekday = day => WEEKDAYS[(day - 1) % 7];
+// The calendar (v2.15): day 1 is Saturday 2 June 2001, early in the mid-year
+// school holidays, so the weekday and the date always agree.
+export const MONTHS = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sep', 'Okt', 'Nov', 'Dis'];
+export function dateLabel(day) { const d = new Date(Date.UTC(2001, 5, day + 1)); return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; }
 export const timeLabel = minute => { const m = Math.floor(minute); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 export function period(minute) { let name = PERIODS[0][1]; for (const [from, label] of PERIODS) if (minute >= from) name = label; return name; }
 export const isNight = minute => minute >= 19 * 60 + 30 || minute < 6 * 60 + 15;

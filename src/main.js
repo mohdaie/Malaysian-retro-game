@@ -1,47 +1,47 @@
-import { showPortrait, speakerName, normalizeLine } from './dialogue-portraits.js?v=2.14.1';
-import { conversationSpeakers, stageConversation } from './conversation.js?v=2.14.1';
-import { createWalkability } from './collision.js?v=2.14.1';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.14.1';
+import { showPortrait, speakerName, normalizeLine } from './dialogue-portraits.js?v=2.15.0';
+import { conversationSpeakers, stageConversation } from './conversation.js?v=2.15.0';
+import { createWalkability } from './collision.js?v=2.15.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.15.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.14.1';
-import { createBicycle, stepBike } from './bicycle.js?v=2.14.1';
-import { createSkateboard, stepSkate, stepSkateAir, ollieSkate, kickflipSkate, SKATE } from './skateboard.js?v=2.14.1';
-import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.14.1';
-import { renderSkateOptions } from './skate-ui.js?v=2.14.1';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.14.1';
-import { readSave, readSaves, writeSave } from './save.js?v=2.14.1';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.14.1';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.14.1';
-import { createSoundscape } from './soundscape.js?v=2.14.1';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.14.1';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.14.1';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.14.1';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.14.1';
-import { tripAt } from './errands.js?v=2.14.1';
-import { CROWD, crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.14.1';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, completeChapterStep, storyAt, CHAPTER_IDS, EXHIBITION_STORIES, investigationChoices, canInvestigate, tamiyaUnlocked, discoveredEvidence, availableScenes, storiesAt, sceneLines, jobDefinition, chapterHint, claimRelationship } from './story.js?v=2.14.1';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.14.1';
-import { ITEM_KINDS } from './item-art.js?v=2.14.1';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.14.1';
-import { createGasingUI } from './gasing-ui.js?v=2.14.1';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.14.1';
-import { createDamUI } from './dam-ui.js?v=2.14.1';
-import { DAM_QUESTS } from './dam-progress.js?v=2.14.1';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.14.1';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.14.1';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.14.1';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.14.1';
-import { createTownMap } from './town-map-ui.js?v=2.14.1';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.14.1';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.14.1';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.14.1';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.14.1';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.14.1';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.14.1';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.14.1';
-import { renderQuestJournal } from './journal-ui.js?v=2.14.1';
-import { chapterBrief } from './journal.js?v=2.14.1';
-import { playIntro } from './intro.js?v=2.14.1';
+import { makeWorld } from './world.js?v=2.15.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.15.0';
+import { createSkateboard, stepSkate, stepSkateAir, ollieSkate, kickflipSkate, SKATE } from './skateboard.js?v=2.15.0';
+import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.15.0';
+import { renderSkateOptions } from './skate-ui.js?v=2.15.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.15.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.15.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.15.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.15.0';
+import { createSoundscape } from './soundscape.js?v=2.15.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.15.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.15.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.15.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.15.0';
+import { tripAt } from './errands.js?v=2.15.0';
+import { CROWD, crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.15.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, completeChapterStep, storyAt, CHAPTER_IDS, EXHIBITION_STORIES, investigationChoices, canInvestigate, tamiyaUnlocked, discoveredEvidence, availableScenes, storiesAt, sceneLines, jobDefinition, chapterHint, claimRelationship } from './story.js?v=2.15.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.15.0';
+import { ITEM_KINDS } from './item-art.js?v=2.15.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, dateLabel, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.15.0';
+import { createGasingUI } from './gasing-ui.js?v=2.15.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.15.0';
+import { createDamUI } from './dam-ui.js?v=2.15.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.15.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.15.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.15.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.15.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.15.0';
+import { createTownMap } from './town-map-ui.js?v=2.15.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.15.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.15.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.15.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.15.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.15.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.15.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.15.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.15.0';
+import { chapterBrief } from './journal.js?v=2.15.0';
+import { playIntro } from './intro.js?v=2.15.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -226,13 +226,13 @@ function begin(value = null) {
   const parked = value?.bike && world.canWalk(value.bike.x, value.bike.z) ? value.bike : parkAtHome();
   bike = { x: parked.x, z: parked.z, heading: parked.heading, speed: 0, steer: 0, lean: 0 };
   bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); bicycle.setSize(player.bikeScale ?? 1); parkBike();
-  const board = value?.skate && world.canWalk(value.skate.x, value.skate.z) ? value.skate : parkSkate();
-  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0, ...SKATE_REST, parts: cleanSkateParts(board.parts) }; skatePop = null; skatePush = skateLand = 0; skateboard.setLook(skate.parts); placeSkate(); updateMoveButtons();
+  // The board starts strapped to the backpack (v2.15); only its parts come from the save.
+  skate = { x, z, heading: player.group.rotation.y, speed: 0, lean: 0, ...SKATE_REST, parts: cleanSkateParts(value?.skate?.parts) }; skatePop = null; skatePush = skateLand = 0; skateboard.setLook(skate.parts); updateMoveButtons();
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
   toast(PREVIEW ? 'Map preview · this layout comes from the map editor link.' : value?.upgraded ? `Selamat kembali, ${state.name}. The story has been rewritten: chapter 1 starts fresh, and your Duit Poket is kept.` : value ? `Selamat kembali, ${state.name}.` : `Jumpa ibu di rumah. Bungkusan pertama menunggu untuk dihantar.`);
-  if(PREVIEW)$('day-label').textContent='Map preview';
+  if(PREVIEW)$('clock-date').textContent='Map preview';
 }
 // ---- Town clock: the light follows the time; from Maghrib you can sleep at
 // home and wake at Subuh the next day. ----
@@ -241,9 +241,11 @@ function showTime(){
   const wasNight=shownMinute>=0&&!isNight(shownMinute)&&isNight(minute);shownMinute=minute;
   world.setSky(skyAt(minute));
   world.setShopTime(minute);
-  const label=`${weekday(time.day)} · ${timeLabel(minute)}`;
-  if(!PREVIEW)$('day-label').textContent=label;$('day-icon').textContent=isNight(minute)?'☾':'☀';$('hud').classList.toggle('night',isNight(minute));
-  $('clock-label').textContent=`HARI ${time.day} · ${label} · ${period(minute)}`.toUpperCase();
+  // The clock at the top (v2.15): time, weekday and date, day count and period; dark at night.
+  const night=isNight(minute);
+  $('clock-time').textContent=timeLabel(minute);$('clock-icon').textContent=night?'☾':'☀';$('hud').classList.toggle('night',night);
+  if(!PREVIEW)$('clock-date').textContent=`${weekday(time.day)}, ${dateLabel(time.day)}`;
+  $('clock-day').textContent=`Hari ${time.day} · ${period(minute)}`;
   // Who is out changes with the hour, and so does the story marker.
   refreshQuest();
   if(wasNight)toast('Dah Maghrib. The shops are closing. Go home to sleep when you are ready.');
@@ -505,7 +507,7 @@ function goToSleep(){
   setTimeout(()=>{
     sleep(time);showTime();
     // Off the board for the night; it stays where it was left.
-    if(onSkate){onSkate=false;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;placeSkate();updateMoveButtons();}
+    if(onSkate){onSkate=false;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;updateMoveButtons();}
     const home=world.spawns[state.who];player.group.position.set(home.x,world.groundHeight(home.x,home.z)-.065,home.z);player.group.rotation.y=home.heading;yaw=home.heading+Math.PI;
     persist();$('sleep-text').textContent=`Subuh · Hari ${time.day}, ${weekday(time.day)}`;
     setTimeout(()=>{fade.classList.remove('shown');setTimeout(()=>{fade.hidden=true;sleeping=false;setMode('explore');toast(`Selamat pagi, ${state.name}! ${weekday(time.day)}, ${timeLabel(time.minute)}. The azan from the masjid; the town wakes up at seven.`);},700);},1600);
@@ -734,16 +736,16 @@ function resetBike(){
   bike={x:spot.x,z:spot.z,heading:spot.heading,speed:0,steer:0,lean:0};parkBike();updateMoveButtons();persist();
 }
 function parkBike(){bicycle.place(bike,world.groundHeight(bike.x,bike.z),!riding);}
-// The skateboard lies a metre beside the bicycle, on the first side with room for its deck, facing the same way.
-function parkSkate(){
-  const b=bike,h=b.heading,fx=Math.sin(h),fz=Math.cos(h);
-  for(const s of [1,-1]){
-    const x=b.x+Math.cos(h)*s,z=b.z-Math.sin(h)*s;
-    if([-.4,0,.4].every(t=>world.canWalk(x+fx*t,z+fz*t)))return {x,z,heading:h};
-  }
-  return parkNear(b.x,b.z,h,2.5);
+// Off the board (v2.15) it rides strapped behind the backpack, following the
+// upper back as you walk, run, duck or ride the bicycle.
+const BAG_BACK = .3, carryAt = new T.Vector3(), carryUp = new T.Vector3(), carryIn = new T.Vector3(), carryTmp = new T.Vector3();
+function stowSkate(){
+  const g=player.group,bone=player.bone;g.updateMatrixWorld(true);
+  carryIn.set(0,0,1).applyQuaternion(g.quaternion);
+  if(bone){bone('hips').getWorldPosition(carryTmp);bone('neck').getWorldPosition(carryUp).sub(carryTmp).normalize();bone('spine002').getWorldPosition(carryAt).lerp(bone('spine003').getWorldPosition(carryTmp),.3);}
+  else{carryUp.set(0,1,0);carryAt.copy(g.position).addScaledVector(carryUp,player.height*.62);}
+  skateboard.carry(carryAt,carryUp,carryIn,BAG_BACK);
 }
-function placeSkate(){skateboard.place(skate,world.groundHeight(skate.x,skate.z));}
 function updateMoveButtons(){
   $('duck-button').setAttribute('aria-pressed',String(crouching));$('walk-button').setAttribute('aria-pressed',String(walkOnly));$('bike-button').setAttribute('aria-pressed',String(riding));$('skate-button').setAttribute('aria-pressed',String(onSkate));
   $('jump-button').disabled=riding;$('duck-button').disabled=riding;$('wave-button').textContent=riding?'Loceng':'Hai';
@@ -793,17 +795,17 @@ function toggleSkate(){
   if(mode!=='explore')return;
   if(onSkate){if(!skate.air&&!skatePop)dismountSkate();return;}
   if(riding){toast('Get off the bicycle first (F).');return;}
-  const p=player.group.position,gap=Math.hypot(p.x-skate.x,p.z-skate.z);
-  if(gap>2.8){toast(`Your skateboard is ${Math.round(gap)} m away. Walk up to it and press Papan (G).`);return;}
   if(airborne||jumpQueued>=0)return;
-  onSkate=true;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,0);
+  // Off the bag and under the feet, pointing the way you face.
+  const p=player.group.position;crouching=false;
+  onSkate=true;Object.assign(skate,{x:p.x,z:p.z,heading:player.group.rotation.y,speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;player.group.rotation.set(0,skate.heading,0);
   updateMoveButtons();
 }
 function dismountSkate(){
   onSkate=false;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;
   const p=player.group.position;
   for(const s of [1,-1]){const x=skate.x+Math.cos(skate.heading)*.6*s,z=skate.z-Math.sin(skate.heading)*.6*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
-  p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,skate.heading,0);placeSkate();updateMoveButtons();persist();
+  p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,skate.heading,0);updateMoveButtons();persist();
 }
 // Papan customise (v2.14): board, tyre and components are chosen one at a time; only colours change. Opens with K or from the pause menu.
 function openSkate(){
@@ -994,7 +996,6 @@ function drawMap(canvas){
   world.residents.filter(atPost).forEach(n=>{ctx.fillStyle='#7d9a86';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),1.8,0,Math.PI*2);ctx.fill();});
   world.npcs.filter(atPost).forEach(n=>{ctx.fillStyle='#3f6e5b';ctx.beginPath();ctx.arc(px(n.x),pz(n.z),2.5,0,Math.PI*2);ctx.fill();});
   if(!riding){ctx.fillStyle='#c8322c';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(bike.x),pz(bike.z),3.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
-  if(!onSkate){ctx.fillStyle='#5c3d2e';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(skate.x),pz(skate.z),3,0,Math.PI*2);ctx.fill();ctx.stroke();}
   const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-facing());ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
   if(navigation?.route.length){ctx.beginPath();navigation.route.forEach((p,i)=>{i?ctx.lineTo(px(p.x),pz(p.z)):ctx.moveTo(px(p.x),pz(p.z));});ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#175fd0';ctx.lineWidth=3;ctx.stroke();}
@@ -1081,6 +1082,7 @@ function tick(){
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
   } else player.animate(dt,0,false,0,mode==='counter'||mode==='dialogue'&&(!conversation||conversation.speaker===state.who)?'talk':null,{crouch:crouching,ride:riding?bicycle.targets():null,skate:onSkate?skateboard.targets(skatePose()):null});
+  if(!onSkate)stowSkate();
   // Errand walkers jump to where the clock says after a load, sleep or prayer.
   const sync=!errandClock||errandClock.day!==time.day||Math.abs(time.minute-errandClock.minute)>3;errandClock={day:time.day,minute:time.minute};
   for(const n of townsfolk()){

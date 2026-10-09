@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.14.1**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.15.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -192,11 +192,11 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 - **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
 - **Stuck?** Pause (Ⅱ) → **Reset basikal** parks it beside you, facing open ground. If you push for two seconds without the bike moving, it lifts itself out to open ground (v2.1.2).
 
-**The papan.** Every player starts with a standard skateboard, parked a short way from the bicycle: an 80 cm deck, 20 cm wide, kicked up at nose and tail, 36 cm between the trucks, and 55 mm wheels. The stock board is a plain street complete: black grip tape over the whole top with the bolt heads showing, a seven-ply maple edge, dark red trucks with steel hardware, and cream wheels with a black graphic. Walk up to it and press Papan (G); get off the bicycle first.
+**The papan.** Every player starts with a standard skateboard, strapped behind the backpack: an 80 cm deck, 20 cm wide, kicked up at nose and tail, 36 cm between the trucks, and 55 mm wheels. The stock board is a plain street complete: black grip tape over the whole top with the bolt heads showing, a seven-ply maple edge, dark red trucks with steel hardware, and cream wheels with a black graphic. Press Papan (G) anywhere: the board comes off the bag and you roll away the way you are facing. Press it again to step off, and the board goes back on the bag, nose up, tipped across your back with the wheels out. It stays there while you walk, run, duck or ride the bicycle. Get off the bicycle before you ride the board.
 - **Riding, old-school style:** the rider stands side-on, left foot to the nose, knees bent, and looks ahead. The stick steers and pushes; speeding up, the back foot steps down and pushes in strokes. Run pushes harder. Let go and the board keeps rolling, slowing down slowly. Carving leans the body onto its toes or heels. Pulling back brakes, and the board never rolls backwards. The camera follows the board, not the body.
 - **Tricks:** **Ollie** (Space, or Lompat): a quick crouch, then the nose pops up and the board rises with the feet, about 35 cm and half a second in the air. **Kickflip** (C, or Cangkung): the board spins once about its length under the lifted feet and lands wheels down, with a *Kickflip!* on landing. A kickflip can also start just after an ollie, if there is time to finish it before landing. The board keeps its speed and line in the air.
 - **Customise:** press K, or Customise papan in the pause menu. Three slots are chosen separately: the **board** (the underside and the dyed middle ply: maple, orange, pandan, malam or gula-gula), the **tyres** (cream, yellow, black, neon or sky) and the **other components** (dark red, chrome, gold or bright red trucks, each with its grip tape). Only the look changes; the ride is the same.
-- **Saves:** the board stays where you left it, keeps its chosen parts and saves with your game. Older saves get a board parked beside the bicycle, with the stock parts. Sleeping steps you off the board and leaves it where it was.
+- **Saves:** the chosen parts save with your game. The board always travels on your backpack, so older saves find it there with the stock parts. Sleeping steps you off the board.
 
 ## Real movement for Amir and Nur (v2.0)
 
@@ -328,6 +328,8 @@ Pekan uses an explicit **8×8 house-rule variant**, 12 pieces per side, red firs
 The Buku lists the milestones, record and saved-match status. The Jaguh badge appears in the Beg. Rewards and completed-match counts settle once, including after reloading. Older saves receive empty Dam progress while retaining the wallet, jobs, collection, chapter and clock. Dam Haji is solo in this release.
 
 ## Jam kampung · the town clock (v1.4)
+
+**The clock (v2.15)** sits in the middle of the top bar, on phones too: the time in large figures, then the weekday and date, the day count and the period, for example *14:00 · Sabtu, 2 Jun 2001 · Hari 1 · Petang*. Day 1 is Saturday 2 June 2001, early in the mid-year school holidays, so the weekday and the date always agree. After Maghrib the clock turns dark.
 
 Time passes while you explore: one game minute per real second. Menus, conversations, congkak, Dam Haji and Tamiya stop the clock. A new story starts on **Hari 1, Sabtu, 14:00**. The time, weekday and period (Subuh, Pagi, Tengah hari, Petang, Maghrib, Isyak, Malam) show above your location and in the top bar.
 
