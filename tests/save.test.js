@@ -50,7 +50,7 @@ test('the skateboard is saved where it was left; a missing or broken spot puts i
   assert.equal(validateSave(noSkate).skate, null, 'older saves have no board and get one parked at home');
   for (const bad of [{ x: 200, z: 0, heading: 0 }, { x: 1, z: NaN, heading: 0 }, { x: 1, z: 2 }, 'papan']) assert.equal(cleanSkate(bad), null);
   assert.deepEqual(validateSave(valid).skate, { x: 6, z: -3, heading: .4, parts: { board: 'board_jade', tyre: 'tyre_black', components: 'components_red' } });
-  assert.deepEqual(validateSave({ ...valid, skate: { x: 6, z: -3, heading: .4 } }).skate.parts, { board: 'board_tangerine', tyre: 'tyre_yellow', components: 'components_chrome' }, 'older boards get stock parts');
+  assert.deepEqual(validateSave({ ...valid, skate: { x: 6, z: -3, heading: .4 } }).skate.parts, { board: 'board_maple', tyre: 'tyre_cream', components: 'components_maroon' }, 'older boards get stock parts');
 });
 
 test('Amir and Nur keep separate journeys: saving one never touches the other', () => {

@@ -37,3 +37,44 @@ test('a board never rolls backwards: pulling back at a stop does nothing', () =>
   assert.equal(board.speed, 0);
   assert.ok(Math.abs(board.heading) < 1e-9, 'the heading stays put');
 });
+import { ollieSkate, kickflipSkate, stepSkateAir, airTimeLeft, pushFoot } from '../src/skateboard.js';
+
+const grounded = () => ({ ...fresh(), y: 0, vy: 0, air: false, airTime: 0, pitch: 0, flip: null });
+const fly = board => { let trick = null, top = 0, turned = 0, t = 0; while (!trick && t < 3) { trick = stepSkateAir(board, 1 / 60); top = Math.max(top, board.y); if (board.flip !== null) turned = board.flip; t += 1 / 60; } return { trick, top, turned, t }; };
+
+test('an ollie pops about a third of a metre, noses up, and lands flat in about half a second', () => {
+  const board = grounded();
+  assert.equal(ollieSkate(board), true);
+  assert.equal(ollieSkate(board), false, 'no second pop in the air');
+  for (let i = 0; i < 9; i++) stepSkateAir(board, 1 / 60);
+  assert.ok(board.pitch > .2, 'nose up after the pop');
+  const { trick, top, t } = fly(board);
+  assert.equal(trick, 'ollie');
+  assert.ok(top > .25 && top < .45, `height ${top}`);
+  assert.ok(t > .25 && t < .45, 'the rest of the air time');
+  assert.deepEqual([board.air, board.y, board.pitch, board.flip], [false, 0, 0, null]);
+});
+test('a kickflip turns the board once about its length before it lands, and only once per jump', () => {
+  const board = grounded();
+  assert.equal(kickflipSkate(board), true, 'from the ground it pops with the flip');
+  assert.equal(kickflipSkate(board), false, 'never twice in one jump');
+  const { trick, turned } = fly(board);
+  assert.equal(trick, 'kickflip');
+  assert.ok(Math.abs(turned - Math.PI * 2) < 1e-9, 'a full turn before touchdown');
+  assert.equal(board.flip, null);
+});
+test('a kickflip late in the air is refused, so the board always lands wheels down', () => {
+  const board = grounded(); ollieSkate(board);
+  while (airTimeLeft(board) >= SKATE.flipTime) stepSkateAir(board, 1 / 60);
+  assert.equal(kickflipSkate(board), false);
+  assert.equal(fly(board).trick, 'ollie');
+});
+test('pushing is reported while speeding up, and the push stroke starts and ends on the tail', () => {
+  const board = fresh();
+  assert.equal(stepSkate(board, { dx: 0, dz: 1 }, 1 / 60), true);
+  ride(board, { dx: 0, dz: 1 }, 4);
+  assert.equal(stepSkate(board, { dx: 0, dz: 1 }, 1 / 60), false, 'at cruising speed the rider rides');
+  for (const phase of [0, .999]) { const f = pushFoot(phase); assert.ok(Math.abs(f.x) < .01 && Math.abs(f.z + .16) < .01 && f.down < .01, `phase ${phase}`); }
+  const planted = pushFoot(.3); assert.equal(planted.down, 1); assert.ok(planted.x < 0, 'on the toe side');
+  assert.ok(pushFoot(.2).z > pushFoot(.5).z, 'the planted foot sweeps back');
+});

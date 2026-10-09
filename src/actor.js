@@ -371,9 +371,10 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
     if (state.landed) { landClock = 0; jumpClock = -1; actions.jumpLand.reset().play(); actions.jumpLand.time = .04; }
     if (jumpClock >= 0) jumpClock += dt;
     if (landClock >= 0 && (landClock += dt) > 1.2) landClock = -1;
-    const riding = !!state.ride, crouching = !!state.crouch && !riding, go = smooth(.08, .5, speed);
+    const riding = !!state.ride, skating = !!state.skate && !riding, crouching = !!state.crouch && !riding && !skating, go = smooth(.08, .5, speed);
     const target = Object.fromEntries(LAYERS.map(k => [k, 0]));
     if (riding) target.ride = 1;
+    else if (skating) target.idle = 1;
     else if (state.air || (jumpClock >= 0 && jumpClock < .2)) {
       const start = jumpClock >= 0 ? 1 - smooth(.1, .32, jumpClock) : 0;
       target.jumpStart = start; target.jumpAir = 1 - start;
@@ -405,9 +406,10 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
     mixer.update(dt);
     root.updateMatrixWorld(true);
     // Bodies with other proportions keep their feet on the ground.
-    if (groundLock && !riding) groundLock(dt, !!state.air || (jumpClock >= 0 && jumpClock < .2));
+    if (groundLock && !riding && !skating) groundLock(dt, !!state.air || (jumpClock >= 0 && jumpClock < .2));
     // Overlays on top of the clips: the rider's seat, feet and hands, then the wave.
     if (riding) ride(state.ride);
+    if (skating) skate(state.skate);
     if (waveClock >= 0) { waveClock += dt; waveArm(waveClock); if (waveClock > 2.1) waveClock = -1; }
   }
 
@@ -454,6 +456,25 @@ function attachMotion({ root, skeletonRoot, bone, rig, clips, scale, groundLock 
       aim(R('foot' + s), R('toe' + s), pedals[i].clone().addScaledVector(forward, .12).addScaledVector(up, -.035));
       const out = right.clone().multiplyScalar(s === 'L' ? -1 : 1);
       reach(R('upper_arm' + s), R('forearm' + s), R('hand' + s), grips[i], out.multiplyScalar(.7).addScaledVector(up, -.5).addScaledVector(forward, -.2));
+    });
+  }
+  // On the skateboard (v2.14), old-school arcade style: side-on, left foot to
+  // the nose. The hips drop by `crouch` metres so the knees bend over the toes,
+  // the feet go to the board's targets (the back one may be pushing on the
+  // ground), the chest opens and the head turns toward the nose, and the arms
+  // hang out for balance, lifted by `arms` in the air.
+  function skate({ feet, crouch, arms, along, up, toes }) {
+    const now = R('hips').getWorldPosition(new T.Vector3());
+    skeletonRoot.position.add(root.worldToLocal(now.clone().addScaledVector(up, -crouch)).sub(root.worldToLocal(now.clone())));
+    skeletonRoot.updateMatrixWorld(true);
+    const pelvis = R('hips').getWorldPosition(new T.Vector3()), back = R('neck').getWorldPosition(new T.Vector3()).distanceTo(pelvis);
+    aim(R('hips'), R('neck'), pelvis.clone().addScaledVector(up, back * .96).addScaledVector(toes, back * (.08 + crouch * .9)));
+    turn(R('spine003'), up, .3); turn(R('neck'), up, .6);
+    [['L', 0, 1], ['R', 1, -1]].forEach(([s, i, end]) => {
+      reach(R('thigh' + s), R('shin' + s), R('foot' + s), feet[i], toes.clone().addScaledVector(along, .4 * end).addScaledVector(up, .15));
+      aim(R('foot' + s), R('toe' + s), feet[i].clone().addScaledVector(toes, .12).addScaledVector(along, .035 * end).addScaledVector(up, -.06));
+      const hand = R('upper_arm' + s).getWorldPosition(new T.Vector3()).addScaledVector(along, (.22 + .12 * arms) * end).addScaledVector(up, -.34 + .24 * arms).addScaledVector(toes, .05);
+      reach(R('upper_arm' + s), R('forearm' + s), R('hand' + s), hand, up.clone().negate().addScaledVector(toes, -.4));
     });
   }
   // Say hi: the right arm lifts out and up and the forearm waves, layered on

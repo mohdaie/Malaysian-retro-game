@@ -3,7 +3,7 @@ import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.13.0';
 import * as T from 'three';
 import { makeWorld } from './world.js?v=2.13.0';
 import { createBicycle, stepBike } from './bicycle.js?v=2.13.0';
-import { createSkateboard, stepSkate, SKATE } from './skateboard.js?v=2.13.0';
+import { createSkateboard, stepSkate, stepSkateAir, ollieSkate, kickflipSkate, SKATE } from './skateboard.js?v=2.13.0';
 import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.13.0';
 import { renderSkateOptions } from './skate-ui.js?v=2.13.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.13.0';
@@ -54,7 +54,9 @@ const bicycle = createBicycle(scene), WALK_ONLY = 1.35, JUMP_SPEED = 4.3, GRAVIT
 let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false, bikeStuck = 0;
 // The starter skateboard (v2.14) waits beside the bicycle, saves where it is left, and is ridden with G.
 const skateboard = createSkateboard(scene);
-let skate = { x: 0, z: 0, heading: 0, speed: 0, lean: 0, parts: { ...STOCK_SKATE_PARTS } }, onSkate = false;
+// Old-school arcade riding (v2.14): the rider stands side-on, pushes in strokes, ollies and kickflips.
+const SKATE_REST = { y: 0, vy: 0, air: false, airTime: 0, pitch: 0, flip: null }, skateEuler = new T.Euler();
+let skate = { x: 0, z: 0, heading: 0, speed: 0, lean: 0, ...SKATE_REST, parts: { ...STOCK_SKATE_PARTS } }, onSkate = false, skatePop = null, skatePush = 0, skateLand = 0;
 let jumpY = 0, jumpVy = 0, airborne = false, jumpQueued = -1, jumpedNow = false, landedNow = false;
 let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
@@ -220,7 +222,7 @@ function begin(value = null) {
   bike = { x: parked.x, z: parked.z, heading: parked.heading, speed: 0, steer: 0, lean: 0 };
   bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); bicycle.setSize(player.bikeScale ?? 1); parkBike();
   const board = value?.skate && world.canWalk(value.skate.x, value.skate.z) ? value.skate : parkSkate();
-  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0, parts: cleanSkateParts(board.parts) }; skateboard.setLook(skate.parts); placeSkate(); updateMoveButtons();
+  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0, ...SKATE_REST, parts: cleanSkateParts(board.parts) }; skatePop = null; skatePush = skateLand = 0; skateboard.setLook(skate.parts); placeSkate(); updateMoveButtons();
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
@@ -476,6 +478,8 @@ function goToSleep(){
   requestAnimationFrame(()=>fade.classList.add('shown'));
   setTimeout(()=>{
     sleep(time);showTime();
+    // Off the board for the night; it stays where it was left.
+    if(onSkate){onSkate=false;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;placeSkate();updateMoveButtons();}
     const home=world.spawns[state.who];player.group.position.set(home.x,world.groundHeight(home.x,home.z)-.065,home.z);player.group.rotation.y=home.heading;yaw=home.heading+Math.PI;
     persist();$('sleep-text').textContent=`Subuh · Hari ${time.day}, ${weekday(time.day)}`;
     setTimeout(()=>{fade.classList.remove('shown');setTimeout(()=>{fade.hidden=true;sleeping=false;setMode('explore');toast(`Selamat pagi, ${state.name}! ${weekday(time.day)}, ${timeLabel(time.minute)}. The azan from the masjid; the town wakes up at seven.`);},700);},1600);
@@ -700,7 +704,7 @@ function parkNear(x,z,heading,run=4){
 // Pause menu: bring the bike to wherever you are, parked facing open ground.
 function resetBike(){
   if(riding){riding=false;player.group.rotation.set(0,bike.heading,0);}
-  const p=player.group.position,spot=parkNear(p.x,p.z,player.group.rotation.y);
+  const p=player.group.position,spot=parkNear(p.x,p.z,facing());
   bike={x:spot.x,z:spot.z,heading:spot.heading,speed:0,steer:0,lean:0};parkBike();updateMoveButtons();persist();
 }
 function parkBike(){bicycle.place(bike,world.groundHeight(bike.x,bike.z),!riding);}
@@ -716,10 +720,23 @@ function parkSkate(){
 function placeSkate(){skateboard.place(skate,world.groundHeight(skate.x,skate.z));}
 function updateMoveButtons(){
   $('duck-button').setAttribute('aria-pressed',String(crouching));$('walk-button').setAttribute('aria-pressed',String(walkOnly));$('bike-button').setAttribute('aria-pressed',String(riding));$('skate-button').setAttribute('aria-pressed',String(onSkate));
-  $('jump-button').disabled=riding||onSkate;$('duck-button').disabled=riding||onSkate;$('wave-button').textContent=riding?'Loceng':'Hai';
+  $('jump-button').disabled=riding;$('duck-button').disabled=riding;$('wave-button').textContent=riding?'Loceng':'Hai';
+  $('jump-button').textContent=onSkate?'Ollie':'Lompat';$('duck-button').textContent=onSkate?'Kickflip':'Cangkung';$('duck-button').setAttribute('aria-label',onSkate?'Kickflip':'Duck');
 }
-function jump(){if(mode!=='explore'||riding||onSkate||airborne||jumpQueued>=0)return;crouching=false;jumpQueued=.07;jumpedNow=true;updateMoveButtons();}
-function duck(){if(mode!=='explore'||riding||onSkate)return;crouching=!crouching;updateMoveButtons();}
+function jump(){if(mode!=='explore'||riding||airborne||jumpQueued>=0)return;if(onSkate){popSkate(false);return;}crouching=false;jumpQueued=.07;jumpedNow=true;updateMoveButtons();}
+function duck(){if(mode!=='explore'||riding)return;if(onSkate){if(skate.air)kickflipSkate(skate);else if(skatePop)skatePop.flip=true;else popSkate(true);return;}crouching=!crouching;updateMoveButtons();}
+// Ollie (v2.14): a short crouch loads the tail, then the board pops; `flip` makes it a kickflip.
+function popSkate(flip){if(!skate.air&&!skatePop)skatePop={t:.09,flip};}
+// Which way the player is heading: on the board the body stands side-on, so the board's heading leads the camera and the map.
+function facing(){return onSkate?skate.heading:player.group.rotation.y;}
+// The rider's pose: knees bend more with speed, load before the pop, extend at take-off then tuck,
+// and soak up the landing; arms rise in the air and the feet lift off the grip mid-flip.
+function skatePose(){
+  let crouch=.1+.05*Math.min(1,skate.speed/SKATE.cruise);
+  if(skatePop)crouch=.2;else if(skate.air)crouch=.04+.16*Math.sin(Math.PI*Math.min(1,skate.airTime/.46));
+  crouch+=.14*skateLand/.3;
+  return {push:skate.air?0:skatePush,crouch,arms:skate.air?1:0,lift:skate.flip!==null?.06*Math.sin(skate.flip/2):0};
+}
 function toggleWalk(){if(mode!=='explore')return;walkOnly=!walkOnly;updateMoveButtons();toast(walkOnly?'Jalan · walking pace. Tap Jalan again to jog.':'Jog · a full push jogs again.');}
 // Say hi: wave, and anyone close by on duty waves back. On the bike it rings the bell.
 function sayHi(){
@@ -748,16 +765,16 @@ function dismount(){
 // Papan (v2.14): step onto the skateboard when you are beside it, or step off.
 function toggleSkate(){
   if(mode!=='explore')return;
-  if(onSkate){dismountSkate();return;}
+  if(onSkate){if(!skate.air&&!skatePop)dismountSkate();return;}
   if(riding){toast('Get off the bicycle first (F).');return;}
   const p=player.group.position,gap=Math.hypot(p.x-skate.x,p.z-skate.z);
   if(gap>2.8){toast(`Your skateboard is ${Math.round(gap)} m away. Walk up to it and press Papan (G).`);return;}
   if(airborne||jumpQueued>=0)return;
-  onSkate=true;Object.assign(skate,{speed:0,lean:0});p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,0);
+  onSkate=true;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,0);
   updateMoveButtons();
 }
 function dismountSkate(){
-  onSkate=false;Object.assign(skate,{speed:0,lean:0});
+  onSkate=false;Object.assign(skate,{speed:0,lean:0},SKATE_REST);skatePop=null;skatePush=skateLand=0;
   const p=player.group.position;
   for(const s of [1,-1]){const x=skate.x+Math.cos(skate.heading)*.6*s,z=skate.z-Math.sin(skate.heading)*.6*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
   p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,skate.heading,0);placeSkate();updateMoveButtons();persist();
@@ -904,7 +921,7 @@ function mapEntries(){
   });
   const kids=Object.entries({hakim:17,keong:18,ravi:5}).map(([key,home])=>{const c=world.crowd.find(c=>c.id===key),p=c?.pose?c:placeOf(home).door;return {id:'npc:'+key,type:'npc',place:c?.pose?34:home,name:CROWD[key].name,subtitle:c?.pose?'Di pekan':'Panggil di pintu rumah',badge:CROWD[key].name[0],color:'#30634d',mapX:p.x,mapZ:p.z,x:p.x,z:p.z,tags:['npc']};});return [...places,...npcs,...kids];
 }
-const mapPlayer=()=>({x:player.group.position.x,z:player.group.position.z,heading:player.group.rotation.y});
+const mapPlayer=()=>({x:player.group.position.x,z:player.group.position.z,heading:facing()});
 const planMapRoute=entry=>findWalkRoute(mapPlayer(),entry,world.canWalk,TOWN_BOUNDS);
 const townMap=createTownMap({buildings:BUILDINGS,districts:DISTRICTS,roads:ROADS,bridges:BRIDGES,
   getEntries:mapEntries,getPlayer:mapPlayer,getQuest:()=>storyTarget(),getJobs:jobStops,getNavigation:()=>navigation,planRoute:planMapRoute,
@@ -953,7 +970,7 @@ function drawMap(canvas){
   if(!riding){ctx.fillStyle='#c8322c';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(bike.x),pz(bike.z),3.5,0,Math.PI*2);ctx.fill();ctx.stroke();}
   if(!onSkate){ctx.fillStyle='#5c3d2e';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px(skate.x),pz(skate.z),3,0,Math.PI*2);ctx.fill();ctx.stroke();}
   const p=player.group.position;ctx.fillStyle='#175fd0';ctx.strokeStyle='#faf6df';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(p.x),pz(p.z),4,0,Math.PI*2);ctx.fill();ctx.stroke();
-  ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-player.group.rotation.y);ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(px(p.x),pz(p.z));ctx.rotate(-facing());ctx.fillStyle='#175fd0';ctx.beginPath();ctx.moveTo(0,8);ctx.lineTo(-3,4);ctx.lineTo(3,4);ctx.fill();ctx.restore();
   if(navigation?.route.length){ctx.beginPath();navigation.route.forEach((p,i)=>{i?ctx.lineTo(px(p.x),pz(p.z)):ctx.moveTo(px(p.x),pz(p.z));});ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.stroke();ctx.strokeStyle='#175fd0';ctx.lineWidth=3;ctx.stroke();}
   if(navigation){const d=navigation.entry,x=px(d.x),y=pz(d.z);ctx.fillStyle='#175fd0';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.stroke();}
   // Redraw the player over the route and show north on the local mini-map.
@@ -986,12 +1003,19 @@ function tick(){
       if(bikeStuck>2.2){bikeStuck=0;const spot=parkNear(bike.x,bike.z,bike.heading,2.5);Object.assign(bike,{x:spot.x,z:spot.z,heading:spot.heading,speed:0});toast('Basikal tersangkut · lifted out to open ground.');}
       p.x=bike.x;p.z=bike.z;player.group.rotation.set(0,bike.heading,bike.lean);
     }else if(onSkate){
-      // The board pushes toward the stick, rolls on by itself and carries the rider.
-      stepSkate(skate,{dx,dz,fast:isRunning},dt);
+      // On the ground the board pushes toward the stick and carves; in the air it keeps its line while it pops, flips and lands.
+      if(skatePop&&(skatePop.t-=dt)<=0){ollieSkate(skate,skatePop.flip);skatePop=null;skatePush=0;}
+      const pushing=skate.air?false:stepSkate(skate,{dx,dz,fast:isRunning},dt);
+      const trick=stepSkateAir(skate,dt);
+      skateLand=Math.max(0,skateLand-dt);
+      if(trick){skateLand=.3;audio?.footsteps(1);if(trick==='kickflip')toast('Kickflip!');}
+      // The back foot pushes in strokes while speeding up, and finishes its stroke after.
+      if(pushing||skatePush>0){const next=skatePush+dt*1.5;skatePush=next>=1?(pushing?next-1:0):next;}
       const moved={x:skate.x,z:skate.z};moveWithCollision(moved,Math.sin(skate.heading),Math.cos(skate.heading),skate.speed,dt,world.canWalk);
       const went=Math.hypot(moved.x-skate.x,moved.z-skate.z),sign=Math.sign(skate.speed);if(dt>0&&went<Math.abs(skate.speed)*dt*.6)skate.speed=sign*went/dt;
       skate.x=moved.x;skate.z=moved.z;skateboard.roll(went*(sign||1));
-      p.x=skate.x;p.z=skate.z;player.group.rotation.set(0,skate.heading,skate.lean);
+      // Side-on, left foot to the nose; carving leans the body onto its toes or heels.
+      p.x=skate.x;p.z=skate.z;player.group.quaternion.setFromEuler(skateEuler.set(skate.lean,skate.heading-Math.PI/2,0,'YXZ'));
     }else{
       moveWithCollision(p,dx,dz,crouching?(player.native?.crouchWalk??1.2):walkOnly?WALK_ONLY:isRunning?RUN_SPEED:WALK_SPEED,dt,world.canWalk);
       if(length>.08){const angle=Math.atan2(dx,dz);player.group.rotation.y+=Math.atan2(Math.sin(angle-player.group.rotation.y),Math.cos(angle-player.group.rotation.y))*Math.min(1,dt*14);}
@@ -1000,7 +1024,7 @@ function tick(){
     if(jumpQueued>=0){jumpQueued-=dt;if(jumpQueued<0){airborne=true;jumpVy=JUMP_SPEED;}}
     if(airborne){jumpVy-=GRAVITY*dt;jumpY+=jumpVy*dt;if(jumpY<=0){jumpY=0;airborne=false;landedNow=true;audio?.footsteps(1);}}
     const ground=world.groundHeight(p.x,p.z);
-    p.y=ground-.065+(onSkate?SKATE.top:0)+jumpY;
+    p.y=ground-.065+(onSkate?SKATE.top+skate.y:0)+jumpY;
     if(riding)bicycle.place(bike,ground);
     if(onSkate)skateboard.place(skate,ground);
     if(!riding&&!onSkate&&!airborne)audio?.footsteps(Math.hypot(p.x-previousX,p.z-previousZ));
@@ -1008,12 +1032,12 @@ function tick(){
     // Chase camera: swing in behind the runner while they move, gently when
     // turning and not at all when they run back toward the lens.
     if(length>.08&&elapsed-lastLook>1.2){
-      const behind=player.group.rotation.y+Math.PI,delta=Math.atan2(Math.sin(behind-yaw),Math.cos(behind-yaw));
+      const behind=facing()+Math.PI,delta=Math.atan2(Math.sin(behind-yaw),Math.cos(behind-yaw));
       const weight=(Math.cos(delta)*.5+.5)*Math.min(1,travel/Math.max(.0001,dt*WALK_SPEED));
       yaw+=delta*(1-Math.exp(-dt*2.6*weight));
     }
     // On the board the rider stands still: no walking legs, and the feet stay on the deck.
-    player.animate(dt,dt>0&&!onSkate?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,onSkate?0:travel,null,{crouch:crouching,air:airborne,jumped:jumpedNow,landed:landedNow,ride:riding?bicycle.targets():null});
+    player.animate(dt,dt>0&&!onSkate?Math.min(1,travel/(dt*(isRunning?RUN_SPEED:WALK_SPEED))):0,isRunning,onSkate?0:travel,null,{crouch:crouching,air:airborne,jumped:jumpedNow,landed:landedNow,ride:riding?bicycle.targets():null,skate:onSkate?skateboard.targets(skatePose()):null});
     jumpedNow=landedNow=false;
     nearby=null;let best=2.6;
     for(const n of world.npcs){if(!atPost(n))continue;const gap=Math.hypot(p.x-n.x,p.z-n.z);if(gap<best){best=gap;nearby={kind:'npc',...n};}}
@@ -1030,7 +1054,7 @@ function tick(){
     if(navigation){const next=navigation.route[1]||navigation.entry,angle=Math.atan2(next.x-p.x,-(next.z-p.z))+yaw;$('navigation-arrow').textContent=navigation.arrived?'✓':'↑';$('navigation-arrow').style.transform=`rotate(${navigation.arrived?0:angle}rad)`;$('navigation-hud').hidden=false;}
     if(elapsed-lastSave>5){persist();lastSave=elapsed;}
     tickClock(time,dt);showTime();
-  } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null,{crouch:crouching,ride:riding?bicycle.targets():null});
+  } else player.animate(dt,0,false,0,mode==='dialogue'||mode==='counter'?'talk':null,{crouch:crouching,ride:riding?bicycle.targets():null,skate:onSkate?skateboard.targets(skatePose()):null});
   // Errand walkers jump to where the clock says after a load, sleep or prayer.
   const sync=!errandClock||errandClock.day!==time.day||Math.abs(time.minute-errandClock.minute)>3;errandClock={day:time.day,minute:time.minute};
   for(const n of townsfolk()){
@@ -1088,7 +1112,7 @@ function tick(){
   if(mode==='title'){look.set(-30,0,25);cameraTarget.set(-10,32,58);}
   else{
     if(mode!=='dialogue')talkingTo=null;
-    if(talkingTo){const shot=player.group.rotation.y+Math.PI+.8;yaw+=Math.atan2(Math.sin(shot-yaw),Math.cos(shot-yaw))*(1-Math.exp(-dt*3));}
+    if(talkingTo){const shot=facing()+Math.PI+.8;yaw+=Math.atan2(Math.sin(shot-yaw),Math.cos(shot-yaw))*(1-Math.exp(-dt*3));}
     const reach=distance*Math.cos(cameraPitch);look.set(talkingTo?(p.x+talkingTo.x)/2:p.x,p.y+CAMERA_LOOK_HEIGHT,talkingTo?(p.z+talkingTo.z)/2:p.z);cameraTarget.set(look.x+Math.sin(yaw)*reach,look.y+distance*Math.sin(cameraPitch),look.z+Math.cos(yaw)*reach);
     // Pull in front of a wall behind the player; ease back out once clear.
     const clear=world.cameraClearance(look,cameraTarget),wanted=Math.min(distance,Math.max(.9,clear-.35));

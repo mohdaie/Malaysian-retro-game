@@ -170,8 +170,8 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 
 | Move | Desktop | Phone | What happens |
 |---|---|---|---|
-| **Lompat** (jump) | Space | Lompat | Motion-captured take-off, airtime and a knee-bend landing; you can jump while running |
-| **Cangkung** (duck) | C | Cangkung | Crouch idle and crouch-walk (motion-captured); Run stands you back up |
+| **Lompat** (jump) | Space | Lompat | Motion-captured take-off, airtime and a knee-bend landing; you can jump while running. On the papan it becomes **Ollie** |
+| **Cangkung** (duck) | C | Cangkung | Crouch idle and crouch-walk (motion-captured); Run stands you back up. On the papan it becomes **Kickflip** |
 | **Jalan** (walk) | Z | Jalan | Toggles a brisk walk (1.35 m/s) instead of a jog on a full push |
 | **Hai** (say hi) | H | Hai | The right arm waves over whatever the body is doing; townsfolk within 8 m stop, turn and wave back |
 | **Basikal** | F | Basikal | Get on or off your bicycle |
@@ -184,11 +184,11 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 - **Bell and getting off:** Hai becomes **Loceng** and rings the bell. Talking to someone or pressing Basikal again gets you off. The bike stays where you left it on its kickstand, shows as a red dot on the minimap, and saves with your game.
 - **Stuck?** Pause (Ⅱ) → **Reset basikal** parks it beside you, facing open ground. If you push for two seconds without the bike moving, it lifts itself out to open ground (v2.1.2).
 
-**The papan.** Every player starts with a basic skateboard, parked a short way from the bicycle. It is a standard size: an 80 cm maple deck with round noses kicked up at each end, 20 cm wide, 36 cm between the trucks, and 55 mm wheels with hubs. Walk up to it and press Papan (G). Jump and crouch are off while you ride, and you must get off the bicycle first.
-- **Riding:** the stick steers the board and pushes it along. Push harder to go faster, and Run for a faster push. Let go and the board keeps rolling, slowing down slowly. It turns more gradually than the bike, and leans into corners. Pulling back brakes, and the board never rolls backwards.
-- **The rider:** stands still on the deck with the feet on the grip tape. Getting on or off is from beside the board.
-- **Customise:** press K, or Customise papan in the pause menu. Three slots are chosen separately: the **board** (four deck colours), the **tyres** (four wheel colours) and the **other components** (three truck and grip-tape sets). Only the look changes; the ride is the same.
-- **Saves:** the board stays where you left it, keeps its chosen parts and saves with your game. Older saves get a board parked beside the bicycle, with the stock parts.
+**The papan.** Every player starts with a standard skateboard, parked a short way from the bicycle: an 80 cm deck, 20 cm wide, kicked up at nose and tail, 36 cm between the trucks, and 55 mm wheels. The stock board is a plain street complete: black grip tape over the whole top with the bolt heads showing, a seven-ply maple edge, dark red trucks with steel hardware, and cream wheels with a black graphic. Walk up to it and press Papan (G); get off the bicycle first.
+- **Riding, old-school style:** the rider stands side-on, left foot to the nose, knees bent, and looks ahead. The stick steers and pushes; speeding up, the back foot steps down and pushes in strokes. Run pushes harder. Let go and the board keeps rolling, slowing down slowly. Carving leans the body onto its toes or heels. Pulling back brakes, and the board never rolls backwards. The camera follows the board, not the body.
+- **Tricks:** **Ollie** (Space, or Lompat): a quick crouch, then the nose pops up and the board rises with the feet, about 35 cm and half a second in the air. **Kickflip** (C, or Cangkung): the board spins once about its length under the lifted feet and lands wheels down, with a *Kickflip!* on landing. A kickflip can also start just after an ollie, if there is time to finish it before landing. The board keeps its speed and line in the air.
+- **Customise:** press K, or Customise papan in the pause menu. Three slots are chosen separately: the **board** (the underside and the dyed middle ply: maple, orange, pandan, malam or gula-gula), the **tyres** (cream, yellow, black, neon or sky) and the **other components** (dark red, chrome, gold or bright red trucks, each with its grip tape). Only the look changes; the ride is the same.
+- **Saves:** the board stays where you left it, keeps its chosen parts and saves with your game. Older saves get a board parked beside the bicycle, with the stock parts. Sleeping steps you off the board and leaves it where it was.
 
 ## Real movement for Amir and Nur (v2.0)
 
