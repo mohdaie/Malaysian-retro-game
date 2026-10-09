@@ -1,4 +1,4 @@
-import { SKATE_SLOTS, SKATE_PARTS, SKATE_PART_IDS } from './skate-parts.js?v=2.13.0';
+import { SKATE_SLOTS, SKATE_PARTS, SKATE_PART_IDS } from './skate-parts.js?v=2.14.0';
 
 // One group per slot, one button per part. The chosen part is pressed, and each
 // button shows its colour chips so the three slots read apart at a glance.

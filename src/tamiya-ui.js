@@ -1,11 +1,11 @@
-import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.13.0';
-import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.13.0';
-import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.13.0';
-import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.13.0';
-import { createTamiyaView } from './tamiya-view.js?v=2.13.0';
+import { PART_SLOTS, TAMIYA_PARTS, partStats } from './tamiya-parts.js?v=2.14.0';
+import { TAMIYA_CARS, ownedCars } from './tamiya-cars.js?v=2.14.0';
+import { TAMIYA_TRACKS, TAMIYA_SETUPS, newTamiyaRound, prepareTamiya, launchTamiya, launchMeter, launchQuality, advanceTamiya, raceDuration, standings, racePlans, racerAt, activePit, beginPit, editPit, rejoinPit } from './tamiya.js?v=2.14.0';
+import { TAMIYA_QUESTS, startTamiya, recordTamiya, equipTamiya, garageBuild } from './tamiya-progress.js?v=2.14.0';
+import { createTamiyaView } from './tamiya-view.js?v=2.14.0';
 
-import { startTournament, nextTournamentTrack, tournamentTable, RACER_NAMES } from './tamiya-tournament.js?v=2.13.0';
-import { DIALOGUE } from './chapter-dialogue.js?v=2.13.0';
+import { startTournament, nextTournamentTrack, tournamentTable, RACER_NAMES } from './tamiya-tournament.js?v=2.14.0';
+import { DIALOGUE } from './chapter-dialogue.js?v=2.14.0';
 export function createTamiyaUI({getEco,getName,getDay=()=>1,isPaused,onOpen,onClose,onChange}){
   const $=id=>document.getElementById(id),panel=$('tamiya-panel');let view=null,visible=false,playing=false,raf=0,last=0,savedAt=0,phase='',sample=null,notice='',shownTime=-1,bench=null;
   const round=()=>getEco().tamiya.round;

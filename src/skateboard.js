@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon } from './illustration.js?v=2.13.0';
-import { SKATE_PARTS } from './skate-parts.js?v=2.13.0';
+import { toon } from './illustration.js?v=2.14.0';
+import { SKATE_PARTS } from './skate-parts.js?v=2.14.0';
 
 // A standard skateboard (v2.14): an 80 cm deck, 20 cm wide, kicked up at nose
 // and tail, 36 cm between the trucks and 55 mm wheels. One unit is about a metre

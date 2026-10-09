@@ -1,7 +1,7 @@
-import { STEPS, DONE } from './chapter-data.js?v=2.13.0';
+import { STEPS, DONE } from './chapter-data.js?v=2.14.0';
 // Only accepted stories and already revealed clues enter the book.
-import { NOSTALGIA_QUESTS, LONG_ROUTE, clueRequirement } from './nostalgia-quests.js?v=2.13.0';
-import { itemLabel, rm } from './economy.js?v=2.13.0';
+import { NOSTALGIA_QUESTS, LONG_ROUTE, clueRequirement } from './nostalgia-quests.js?v=2.14.0';
+import { itemLabel, rm } from './economy.js?v=2.14.0';
 export const discoveredMemories = eco => Object.keys(NOSTALGIA_QUESTS).filter(id => eco.nostalgia.quests[id]);
 const phases={grind:'Bantu penduduk',trail:'Jejak petunjuk',challenge:'Menang cabaran',ready:'Jumpa semula pemberi',earned:'Kenangan diperoleh'};
 export const TRACK_NAMES={oval:'Oval',eight:'Selekoh Lapan',jaguh:'Jaguh'};
