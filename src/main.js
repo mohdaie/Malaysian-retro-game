@@ -4,6 +4,8 @@ import * as T from 'three';
 import { makeWorld } from './world.js?v=2.13.0';
 import { createBicycle, stepBike } from './bicycle.js?v=2.13.0';
 import { createSkateboard, stepSkate, SKATE } from './skateboard.js?v=2.13.0';
+import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.13.0';
+import { renderSkateOptions } from './skate-ui.js?v=2.13.0';
 import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.13.0';
 import { readSave, readSaves, writeSave } from './save.js?v=2.13.0';
 import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.13.0';
@@ -52,7 +54,7 @@ const bicycle = createBicycle(scene), WALK_ONLY = 1.35, JUMP_SPEED = 4.3, GRAVIT
 let bike = { x: 0, z: 0, heading: 0, speed: 0, steer: 0, lean: 0 }, riding = false, crouching = false, walkOnly = false, bikeStuck = 0;
 // The starter skateboard (v2.14) waits beside the bicycle, saves where it is left, and is ridden with G.
 const skateboard = createSkateboard(scene);
-let skate = { x: 0, z: 0, heading: 0, speed: 0, lean: 0 }, onSkate = false;
+let skate = { x: 0, z: 0, heading: 0, speed: 0, lean: 0, parts: { ...STOCK_SKATE_PARTS } }, onSkate = false;
 let jumpY = 0, jumpVy = 0, airborne = false, jumpQueued = -1, jumpedNow = false, landedNow = false;
 let player = world.player;
 // Who you play, your name and the chapter step; the economy (Duit Poket, bag,
@@ -193,7 +195,7 @@ function setMode(next) {
 }
 function persist() {
   refreshQuest();
-  const ok = writeSave(storage, { version: 4, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, skate: { x: skate.x, z: skate.z, heading: skate.heading }, x: player.group.position.x, z: player.group.position.z });
+  const ok = writeSave(storage, { version: 4, ...state, ...eco, clock: { ...time }, bike: { x: bike.x, z: bike.z, heading: bike.heading }, skate: { x: skate.x, z: skate.z, heading: skate.heading, parts: { ...skate.parts } }, x: player.group.position.x, z: player.group.position.z });
   $('save-status').textContent = ok ? 'Progress saved on this device.' : 'Saving unavailable in this browser. You can still play this session.';
   if(ok) { saves[state.who] = readSave(storage, state.who); }
   return ok;
@@ -218,7 +220,7 @@ function begin(value = null) {
   bike = { x: parked.x, z: parked.z, heading: parked.heading, speed: 0, steer: 0, lean: 0 };
   bicycle.setColour(state.who === 'nur' ? 0x4fa58f : 0xc8322c); bicycle.setSize(player.bikeScale ?? 1); parkBike();
   const board = value?.skate && world.canWalk(value.skate.x, value.skate.z) ? value.skate : parkSkate();
-  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0 }; placeSkate(); updateMoveButtons();
+  skate = { x: board.x, z: board.z, heading: board.heading, speed: 0, lean: 0, parts: cleanSkateParts(board.parts) }; skateboard.setLook(skate.parts); placeSkate(); updateMoveButtons();
   world.renameHomes(state.who === 'amir' ? state.name : 'Amir', state.who === 'nur' ? state.name : 'Nur');
   $('start-screen').hidden = true; $('hud').hidden = false;
   setMode('explore'); refreshQuest(); refreshEconomy(); persist();
@@ -636,6 +638,7 @@ $('dev-cheats').onsubmit=event=>{
 };
 $('resume-button').onclick=()=>{$('pause-panel').hidden=true;setMode('explore');};
 $('bike-reset-button').onclick=()=>{resetBike();$('pause-panel').hidden=true;setMode('explore');toast('Basikal parked beside you.');};
+$('skate-custom-button').onclick=openSkate;$('skate-close').onclick=()=>closePanel('skate-panel');
 $('home-button').onclick=()=>{persist();choose(state.who);$('pause-panel').hidden=true;$('hud').hidden=true;$('start-screen').hidden=false;setMode('title');};
 $('zoom').oninput=()=>{distance=Number($('zoom').value);};
 window.addEventListener('keydown',event=>{
@@ -648,11 +651,11 @@ window.addEventListener('keydown',event=>{
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(key))event.preventDefault();
   keys.add(key);
   if(key==='e')interact();
-  if(mode==='explore'){if(key===' ')jump();if(key==='c')duck();if(key==='h')sayHi();if(key==='f')toggleBike();if(key==='g')toggleSkate();if(key==='z')toggleWalk();}
+  if(mode==='explore'){if(key===' ')jump();if(key==='c')duck();if(key==='h')sayHi();if(key==='f')toggleBike();if(key==='g')toggleSkate();if(key==='k')openSkate();if(key==='z')toggleWalk();}
   if(key==='b'){if(mode==='bag')closePanel('bag-panel');else openBag();}
   if(key==='j'){if(mode==='book')closePanel('book-panel');else openBook();}
   if(key==='m'){if(mode==='map')$('map-close').click();else openMap();}
-  if(key==='escape'){if(mode==='tamiya')tamiyaUI.close();else if(mode==='gasing')gasingUI.close();else if(mode==='dam')damUI.close();else if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
+  if(key==='escape'){if(mode==='tamiya')tamiyaUI.close();else if(mode==='skate')closePanel('skate-panel');else if(mode==='gasing')gasingUI.close();else if(mode==='dam')damUI.close();else if(mode==='item')closeItem();else if(mode==='catalogue')$('catalogue-close').click();else if(mode==='counter')closeCounter();else if(mode==='bag')closePanel('bag-panel');else if(mode==='book')closePanel('book-panel');else if(mode==='map')$('map-close').click();else if(mode==='pause')$('resume-button').click();else if(mode==='board')closeBoard();else pause();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.key.toLowerCase()));
 window.addEventListener('blur',clearControls);
@@ -758,6 +761,14 @@ function dismountSkate(){
   const p=player.group.position;
   for(const s of [1,-1]){const x=skate.x+Math.cos(skate.heading)*.6*s,z=skate.z-Math.sin(skate.heading)*.6*s;if(world.canWalk(x,z)){p.x=x;p.z=z;break;}}
   p.y=world.groundHeight(p.x,p.z)-.065;player.group.rotation.set(0,skate.heading,0);placeSkate();updateMoveButtons();persist();
+}
+// Papan customise (v2.14): board, tyre and components are chosen one at a time; only colours change. Opens with K or from the pause menu.
+function openSkate(){
+  if(mode!=='explore'&&mode!=='pause')return;
+  $('pause-panel').hidden=true;setMode('skate');$('skate-panel').hidden=false;showSkateOptions();$('skate-close').focus();
+}
+function showSkateOptions(){
+  renderSkateOptions($('skate-options'),skate.parts,(slot,id)=>{skate.parts={...skate.parts,[slot]:id};skateboard.setLook(skate.parts);persist();showSkateOptions();});
 }
 // Act on touch-down, like Run, so the buttons work while the other thumb
 // holds the joystick (phones send no click during a second touch).

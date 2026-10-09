@@ -5,7 +5,7 @@ import { newEconomy } from '../src/economy.js';
 import { DONE, STORY_REVISION } from '../src/story.js';
 const valid = { version: 4, who: 'nur', name: 'Nur', story: 1, x: 12, z: 0, ...newEconomy(), chapter:{...newEconomy().chapter,who:'nur',step:1,baseline:1,completed:['S01','D01']}, wallet: 350, bag: { gula: 2 }, collection: { guli: 1 },
   jobs: [{ id: 'J1', offer: 'S-first-parcel', kind: 'parcel', requester: 22, from: 22, to: 2, stops: [2], left: 1, item: 'gula', qty: 2, cost: 0, upah: 100, status: 'carrying', story: 'first-parcel' }], nextJob: 2,
-  friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 }, bike: { x: 4, z: -6, heading: 1.2 }, skate: { x: 6, z: -3, heading: .4 } };
+  friends: { faiz: 8, meiling: 8 }, talked: { nenek: '2001-06-02' }, congkak: { played: 1, won: 1 }, clock: { day: 3, minute: 1200 }, bike: { x: 4, z: -6, heading: 1.2 }, skate: { x: 6, z: -3, heading: .4, parts: { board: 'board_jade', tyre: 'tyre_black', components: 'components_red' } } };
 const memory = () => { const data = new Map(); return { data, getItem: k => data.get(k) ?? null, setItem: (k, v) => data.set(k, v), removeItem: k => data.delete(k) }; };
 const withoutStamp = ({ savedAt, ...rest }) => rest;
 test('valid saves roundtrip and invalid/out-of-bounds saves are rejected', () => {
@@ -49,7 +49,8 @@ test('the skateboard is saved where it was left; a missing or broken spot puts i
   const { skate, ...noSkate } = valid;
   assert.equal(validateSave(noSkate).skate, null, 'older saves have no board and get one parked at home');
   for (const bad of [{ x: 200, z: 0, heading: 0 }, { x: 1, z: NaN, heading: 0 }, { x: 1, z: 2 }, 'papan']) assert.equal(cleanSkate(bad), null);
-  assert.deepEqual(validateSave(valid).skate, { x: 6, z: -3, heading: .4 });
+  assert.deepEqual(validateSave(valid).skate, { x: 6, z: -3, heading: .4, parts: { board: 'board_jade', tyre: 'tyre_black', components: 'components_red' } });
+  assert.deepEqual(validateSave({ ...valid, skate: { x: 6, z: -3, heading: .4 } }).skate.parts, { board: 'board_tangerine', tyre: 'tyre_yellow', components: 'components_chrome' }, 'older boards get stock parts');
 });
 
 test('Amir and Nur keep separate journeys: saving one never touches the other', () => {

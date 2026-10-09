@@ -2,6 +2,7 @@ import { cleanEconomy, newEconomy } from './economy.js?v=2.13.0';
 import { PLAYERS, DONE, STORY_REVISION, CHAPTER_IDS, REWARD_STORIES, syncChapter } from './story.js?v=2.13.0';
 import { newChapter } from './chapter-data.js?v=2.13.0';
 import { cleanClock, newClock } from './clock.js?v=2.13.0';
+import { cleanSkateParts } from './skate-parts.js?v=2.13.0';
 // One save per character (v2.5): Amir and Nur each keep their own journey.
 // The single save from earlier versions moves into its character's slot the
 // first time that character saves.
@@ -45,10 +46,10 @@ export function cleanBike(bike) {
   if (!bike || ![bike.x, bike.z, bike.heading].every(Number.isFinite) || Math.abs(bike.x) > 78 || Math.abs(bike.z) > 68) return null;
   return { x: bike.x, z: bike.z, heading: bike.heading };
 }
-// Where the skateboard was left (v2.14); missing or broken means beside the bicycle at home.
+// Where the skateboard was left and its chosen parts (v2.14); a missing or broken spot means beside the bicycle at home, and missing parts mean stock.
 export function cleanSkate(board) {
   if (!board || ![board.x, board.z, board.heading].every(Number.isFinite) || Math.abs(board.x) > 78 || Math.abs(board.z) > 68) return null;
-  return { x: board.x, z: board.z, heading: board.heading };
+  return { x: board.x, z: board.z, heading: board.heading, parts: cleanSkateParts(board.parts) };
 }
 const parse = (storage, key) => { try { return validateSave(JSON.parse(storage.getItem(key))); } catch { return null; } };
 const stamp = (storage, key) => { try { return JSON.parse(storage.getItem(key))?.savedAt || 0; } catch { return 0; } };

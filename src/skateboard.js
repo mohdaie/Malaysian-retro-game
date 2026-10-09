@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { toon, outline } from './illustration.js?v=2.13.0';
+import { SKATE_PARTS } from './skate-parts.js?v=2.13.0';
 
 // A standard skateboard (v2.14): an 80 cm deck, 20 cm wide, with a slight kick
 // at each end, 36 cm between the trucks and 55 mm wheels. One unit is about a
@@ -83,7 +84,12 @@ export function createSkateboard(scene) {
     group.position.set(state.x, ground, state.z);
     group.rotation.set(0, state.heading, state.lean);
   }
-  return { group, roll, place };
+  // Each chosen part paints the surfaces it names: deck, wheel, truck or grip.
+  const paint = { deck: deckMaterial, wheel: wheelMaterial, truck: metal, grip };
+  function setLook(parts) {
+    for (const id of Object.values(parts)) for (const [surface, hex] of Object.entries(SKATE_PARTS[id].colours)) paint[surface].color.setHex(hex);
+  }
+  return { group, roll, place, setLook };
 }
 
 // Merge parts that share one material, as the bicycle does.

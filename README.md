@@ -176,6 +176,7 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 | **Hai** (say hi) | H | Hai | The right arm waves over whatever the body is doing; townsfolk within 8 m stop, turn and wave back |
 | **Basikal** | F | Basikal | Get on or off your bicycle |
 | **Papan** | G | Papan | Get on or off your skateboard |
+| **Customise papan** | K | Pause menu | Choose the board, tyres and other components |
 
 **The basikal.** A 2001 kid's bicycle (red for Amir, mint for Nur) waits beside your house, facing open ground. Walk up to it and press Basikal.
 - **Riding:** the bike steers toward the stick, speeds up and coasts, turns harder at low speed and leans into corners. Pulling back brakes, and from a stop rolls the bike backwards with the rear wheel turning toward the stick, so it can back away from a wall (v2.1.1). A full push cruises at 6.5 m/s and Run pedals at 8.5 m/s.
@@ -186,7 +187,8 @@ Amir and Nur can now jump, duck, walk, say hi and ride a bicycle. On a phone, ev
 **The papan.** Every player starts with a basic skateboard, parked a short way from the bicycle. It is a standard size: an 80 cm maple deck with a slight kick at each end, 20 cm wide, 36 cm between the trucks, and 55 mm wheels. Walk up to it and press Papan (G). Jump and crouch are off while you ride, and you must get off the bicycle first.
 - **Riding:** the stick steers the board and pushes it along. Push harder to go faster, and Run for a faster push. Let go and the board keeps rolling, slowing down slowly. It turns more gradually than the bike, and leans into corners. Pulling back brakes, and the board never rolls backwards.
 - **The rider:** stands still on the deck with the feet on the grip tape. Getting on or off is from beside the board.
-- **Saves:** the board stays where you left it and saves with your game. Older saves get a board parked beside the bicycle.
+- **Customise:** press K, or Customise papan in the pause menu. Three slots are chosen separately: the **board** (four deck colours), the **tyres** (four wheel colours) and the **other components** (three truck and grip-tape sets). Only the look changes; the ride is the same.
+- **Saves:** the board stays where you left it, keeps its chosen parts and saves with your game. Older saves get a board parked beside the bicycle, with the stock parts.
 
 ## Real movement for Amir and Nur (v2.0)
 
@@ -407,6 +409,8 @@ Save data is stored in the browser on this device and origin; it does not sync a
 - `scripts/bake-model.mjs`, `assets/models/{amir,nur}.glb`, `assets/models/{amir,nur}.joints.json`: Amir's (v2.3) and Nur's (v2.4) TRELLIS.2 models, prepared for the skeleton.
 - `src/bicycle.js`: the basikal model, its pose and the rider's saddle, pedal and grip targets, and the riding step (speed, steering, lean).
 - `src/skateboard.js`: the starter papan model (standard 80 cm deck, 55 mm wheels) and its riding step (pushing, coasting, braking, turning, lean).
+- `src/skate-parts.js`: the registry of papan parts (board, tyre and other components), each with its own choices and surfaces, and the per-slot fallback for saves.
+- `src/skate-ui.js`: the customise panel's option buttons.
 - `assets/models/kids-mocap.glb`: the CC0 skeleton and 14 motion-captured clips (Quaternius Universal Animation Library), pruned from the Godot release.
 - `src/characters.js`: one look per character (Amir, Nur and the 14 NPCs) built in metres, anime face drawings, printed cloth, rigidly skinned single-draw meshes and joint animation.
 - `src/locomotion.js`: leg-length-relative walk/run cycle, two-bone leg IK and contralateral arm swing.
