@@ -1,6 +1,7 @@
 import * as T from 'three';
 
-// Living grass. One instanced field of small clumps travels with the player:
+// Lawn patches and living grass. The ground shows grass in patches, with
+// bare kampung earth between them. One instanced field of small clumps travels with the player:
 // each clump wraps to the tile cell nearest the view, so phones only ever
 // draw the grass close by, in a single draw call. A ground mask painted from
 // the town plan keeps blades off roads, floors and the river, mows the yards
@@ -16,7 +17,8 @@ function noise(x, z) {
 }
 
 // The mask as RGBA bytes over the ground: R where grass grows (0–255),
-// G its length, B how sun-dried it is. Pure, so tests can read it.
+// G its length, B how sun-dried it is. Grass covers about half the open
+// ground in soft-edged patches, and all of the wild edges. Pure, so tests can read it.
 export function grassMask({ units, roads, bridges, props = [] }, bounds, ground, river) {
   const width = Math.ceil((ground.maxX - ground.minX) * PX), height = Math.ceil((ground.maxZ - ground.minZ) * PX);
   const data = new Uint8Array(width * height * 4), B = bounds;
@@ -27,7 +29,8 @@ export function grassMask({ units, roads, bridges, props = [] }, bounds, ground,
     const edge = Math.min(x - B.minX, B.maxX - x, z - B.minZ, B.maxZ - z), bank = Math.abs(x - river.x) - river.w / 2;
     const wild = Math.max(1 - smooth(-2, 7, edge), 1 - smooth(0, 5, bank));
     const n = noise(x * .13, z * .13), dry = noise(x * .07 + 40, z * .07 - 15);
-    data[k] = 255;
+    const patch = noise(x * .085 + 7, z * .085 - 3) * .65 + noise(x * .23 - 11, z * .23 + 5) * .35;
+    data[k] = Math.round(255 * Math.max(smooth(.33, .45, patch), wild));
     data[k + 1] = Math.round(255 * Math.min(1, .25 + .35 * n + .6 * wild));
     data[k + 2] = Math.round(255 * smooth(.55, .85, dry) * (1 - .6 * wild));
     data[k + 3] = 255;
@@ -74,9 +77,39 @@ function clumpGeometry() {
   return g;
 }
 
-export function createGrass({ scene, toon, mask, radius = 22, count = 8000, groundY = -.05 }) {
-  const tile = radius * 2, texture = new T.DataTexture(mask.data, mask.width, mask.height, T.RGBAFormat);
+export function maskTexture(mask) {
+  const texture = new T.DataTexture(mask.data, mask.width, mask.height, T.RGBAFormat);
   texture.magFilter = texture.minFilter = T.LinearFilter; texture.needsUpdate = true;
+  return texture;
+}
+
+// The ground: the lawn texture where the mask grows grass, earth elsewhere,
+// with a ragged edge between them. Both maps repeat in world metres.
+export function groundMaterial({ toon, mask, texture, lawn, earth }) {
+  const material = toon(0xffffff), halftone = material.onBeforeCompile;
+  const uniforms = { grassMask: { value: texture }, grassArea: { value: new T.Vector4(mask.minX, mask.minZ, 1 / mask.sizeX, 1 / mask.sizeZ) }, lawnMap: { value: lawn }, earthMap: { value: earth } };
+  material.onBeforeCompile = shader => {
+    halftone(shader);
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = 'varying vec2 vGroundSpot;\n' + shader.vertexShader.replace('#include <worldpos_vertex>', `#include <worldpos_vertex>
+      vGroundSpot = (modelMatrix * vec4(transformed, 1.0)).xz;`);
+    shader.fragmentShader = `uniform sampler2D grassMask, lawnMap, earthMap; uniform vec4 grassArea; varying vec2 vGroundSpot;\n` + shader.fragmentShader.replace('#include <map_fragment>', `
+      vec4 ground = texture2D(grassMask, clamp((vGroundSpot - grassArea.xy) * grassArea.zw, .001, .999));
+      vec3 lawn = texture2D(lawnMap, vGroundSpot / 4.5).rgb, earth = texture2D(earthMap, vGroundSpot / 6.0).rgb;
+      // Soften the photo lawn toward the painted palette; dry patches yellow.
+      lawn = mix(lawn, vec3(dot(lawn, vec3(.3, .55, .15))) * vec3(.82, 1.0, .62), .3) * 1.12;
+      lawn = mix(lawn, lawn * vec3(1.35, 1.1, .7), ground.b * .6);
+      earth *= vec3(.93, .86, .74);
+      float tuft = dot(texture2D(lawnMap, vGroundSpot / 1.7).rgb, vec3(.33));
+      float cover = smoothstep(.38, .62, ground.r + (tuft - .3) * .45);
+      diffuseColor.rgb *= mix(earth, lawn, cover);`);
+  };
+  material.customProgramCacheKey = () => 'illustrated-halftone-v1-ground';
+  return material;
+}
+
+export function createGrass({ scene, toon, mask, texture = maskTexture(mask), radius = 22, count = 8000, groundY = -.05 }) {
+  const tile = radius * 2;
   const uniforms = {
     grassMask: { value: texture }, grassArea: { value: new T.Vector4(mask.minX, mask.minZ, 1 / mask.sizeX, 1 / mask.sizeZ) },
     grassCentre: { value: new T.Vector2() }, grassPush: { value: new T.Vector3(0, 0, .9) }, grassTime: { value: 0 },
@@ -93,7 +126,7 @@ export function createGrass({ scene, toon, mask, radius = 22, count = 8000, grou
       // Wrap this clump to the tile cell nearest the view centre.
       vec2 spot = aClump.xy + grassTile * floor((grassCentre - aClump.xy) / grassTile + .5);
       vec4 ground = texture2D(grassMask, (spot - grassArea.xy) * grassArea.zw);
-      float keep = step(fract(aClump.z * 7.13), ground.r);
+      float keep = step(fract(aClump.z * 7.13) * .6 + .4, ground.r);
       float fade = 1.0 - smoothstep(grassRadius * .6, grassRadius, length(spot - grassCentre));
       float tall = (.12 + .58 * ground.g) * (.7 + .6 * fract(aClump.z * 3.7)) * keep * fade;
       float turn = aClump.z * 6.2832;

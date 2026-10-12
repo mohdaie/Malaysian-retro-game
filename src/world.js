@@ -17,7 +17,7 @@ import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.17.0';
 import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.17.0';
 import { findWalkRoute } from './map-navigation.js?v=2.17.0';
 import { createTrees } from './trees.js?v=2.17.0';
-import { createGrass, grassMask } from './grass.js?v=2.17.0';
+import { createGrass, grassMask, maskTexture, groundMaterial } from './grass.js?v=2.17.0';
 import { plantTown, placeProps, TRUNK } from './planting.js?v=2.17.0';
 import { createRiver } from './river.js?v=2.17.0';
 import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.17.0';
@@ -258,8 +258,11 @@ export async function makeWorld(canvas) {
     for(const y of [.35,.95]) box(axis==='x'?length:.1,.12,axis==='z'?length:.1,0xd4c6a0,x+(axis==='x'?length/2:0),y,z+(axis==='z'?length/2:0));
   }
   // Two lawns leave an actual opening for the lower water and sloping banks.
+  // Lawn patches and bare earth share one mask with the living grass.
+  const groundMask=grassMask({units:UNITS,roads:ROADS,bridges:BRIDGES,props:STREET_PROPS},TOWN_BOUNDS,GROUND,RIVER),groundMaskTexture=maskTexture(groundMask);
+  const lawnGround=groundMaterial({toon,mask:groundMask,texture:groundMaskTexture,lawn:grass,earth:textures.dirt});lawnGround.userData.noInk=true;mats.set('lawn-ground',lawnGround);
   const bankBounds=riverBounds();
-  for(const [from,to] of [[GROUND.minX-1,bankBounds.left],[bankBounds.right,GROUND.maxX+1]])box(to-from,.6,GROUND.maxZ-GROUND.minZ+2,textured(0xffffff,'grass'),(from+to)/2,-.35,(GROUND.minZ+GROUND.maxZ)/2);
+  for(const [from,to] of [[GROUND.minX-1,bankBounds.left],[bankBounds.right,GROUND.maxX+1]])box(to-from,.6,GROUND.maxZ-GROUND.minZ+2,lawnGround,(from+to)/2,-.35,(GROUND.minZ+GROUND.maxZ)/2).userData.landscape=true;
   const river=createRiver(scene);
   // One surface per point, including road extensions beyond the town edge.
   // World-aligned UVs keep the texture continuous across the trimmed pieces.
@@ -641,7 +644,7 @@ export async function makeWorld(canvas) {
   patches.instanceMatrix.needsUpdate=true;patches.computeBoundingSphere();scene.add(patches);
   // Living grass near the player (grass.js); phones draw a smaller, sparser field.
   const phone=matchMedia('(pointer: coarse)').matches;
-  const lawn=createGrass({scene,toon,mask:grassMask(TOWN,TOWN_BOUNDS,GROUND,RIVER),radius:phone?17:22,count:phone?6500:14000});
+  const lawn=createGrass({scene,toon,mask:groundMask,texture:groundMaskTexture,radius:phone?17:22,count:phone?6500:14000});
   // Batch geometry by material and 24-metre cells, so off-screen streets
   // can be culled without submitting the entire town on every frame.
   scene.updateMatrixWorld(true);

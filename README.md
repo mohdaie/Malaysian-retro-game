@@ -14,7 +14,7 @@ The first online visit downloads the complete game for offline play (about 16 MB
 
 ## Living grass (v2.17)
 
-The lawns now grow real blades. They sway in the afternoon breeze and lean away from Amir's or Nur's feet. Yards are kept short, while the field past the town edge and the river banks grow long, with sun-dried patches here and there. Grass stays off roads, verandahs, bridges and the river, creeps a little over the dirt lanes, and follows any layout from the map editor. To stay smooth on phones, only the grass around the player is drawn, and phones draw a smaller field.
+The ground is now grass in patches, with bare kampung earth between them and along the lanes, and the patches grow real blades. They sway in the afternoon breeze and lean away from Amir's or Nur's feet. Yards are kept short, while the field past the town edge and the river banks grow long, with sun-dried patches here and there. Grass stays off roads, verandahs, bridges and the river, creeps a little over the dirt lanes, and follows any layout from the map editor. To stay smooth on phones, only the grass around the player is drawn, and phones draw a smaller field.
 
 ## Advanced map editor (v2.16)
 

@@ -25,3 +25,11 @@ test('the field past the town edge grows long, yards are kept short', () => {
   const [ax, az, aw] = yard.area, beside = read(ax + aw / 2 + 1.5, az);
   assert.ok(beside.length <= 70);
 });
+test('grass covers only part of the open ground in town, in patches', () => {
+  let grass = 0, open = 0;
+  for (let x = TOWN_BOUNDS.minX + 8; x < TOWN_BOUNDS.maxX - 8; x += 1.5) for (let z = TOWN_BOUNDS.minZ + 8; z < TOWN_BOUNDS.maxZ - 8; z += 1.5) {
+    if (Math.abs(x - RIVER.x) < 9 || town.units.some(u => u.solids.concat(u.floors).some(([a, b, w, d]) => Math.abs(x - a) < w / 2 + 1 && Math.abs(z - b) < d / 2 + 1)) || town.roads.some(r => Math.abs(x - r.x) < r.w / 2 + 1 && Math.abs(z - r.z) < r.d / 2 + 1)) continue;
+    open++; if (read(x, z).grows > 127) grass++;
+  }
+  assert.ok(grass / open > .3 && grass / open < .75, `${Math.round(grass / open * 100)}% grass`);
+});
