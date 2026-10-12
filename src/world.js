@@ -1,26 +1,26 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.15.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.15.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.15.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, UNITS, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.15.0';
-import { createProps } from './props.js?v=2.15.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.15.0';
-import { ACTIONS } from './actions.js?v=2.15.0';
-import { createWalkability } from './collision.js?v=2.15.0';
-import { createStorefronts } from './storefronts.js?v=2.15.0';
-import { createLandmarks } from './landmarks.js?v=2.15.0';
-import { loadTownCars } from './town-cars.js?v=2.15.0';
-import { loadTownBus } from './town-bus.js?v=2.15.0';
-import { loadPetrolPump } from './petrol-pump.js?v=2.15.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.15.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.15.0';
-import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.15.0';
-import { findWalkRoute } from './map-navigation.js?v=2.15.0';
-import { createTrees } from './trees.js?v=2.15.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.15.0';
-import { createRiver } from './river.js?v=2.15.0';
-import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.15.0';
-import { roadSurfaces } from './road-surfaces.js?v=2.15.0';
+import { createCharacter } from './characters.js?v=2.16.0';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.16.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.16.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, GROUND, UNITS, customLook, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.16.0';
+import { createProps } from './props.js?v=2.16.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.16.0';
+import { ACTIONS } from './actions.js?v=2.16.0';
+import { createWalkability } from './collision.js?v=2.16.0';
+import { createStorefronts } from './storefronts.js?v=2.16.0';
+import { createLandmarks } from './landmarks.js?v=2.16.0';
+import { loadTownCars } from './town-cars.js?v=2.16.0';
+import { loadTownBus } from './town-bus.js?v=2.16.0';
+import { loadPetrolPump } from './petrol-pump.js?v=2.16.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.16.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.16.0';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.16.0';
+import { findWalkRoute } from './map-navigation.js?v=2.16.0';
+import { createTrees } from './trees.js?v=2.16.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.16.0';
+import { createRiver } from './river.js?v=2.16.0';
+import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.16.0';
+import { roadSurfaces } from './road-surfaces.js?v=2.16.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -92,7 +92,8 @@ export async function makeWorld(canvas) {
   const panorama=await loader.loadAsync(new URL('../assets/textures/illustrated-horizon.webp',import.meta.url).href);
   panorama.colorSpace=T.SRGBColorSpace;panorama.wrapS=T.RepeatWrapping;panorama.repeat.x=3;
   scene.background=new T.Color(0x8ab8d1);
-  const horizon=new T.Mesh(new T.CylinderGeometry(210,210,160,64,1,true),new T.MeshBasicMaterial({map:panorama,side:T.BackSide,fog:false}));
+  const horizonRadius=Math.max(210,Math.hypot(Math.max(-GROUND.minX,GROUND.maxX),Math.max(-GROUND.minZ,GROUND.maxZ))+60);
+  const horizon=new T.Mesh(new T.CylinderGeometry(horizonRadius,horizonRadius,160,64,1,true),new T.MeshBasicMaterial({map:panorama,side:T.BackSide,fog:false}));
   horizon.position.y=54;scene.add(horizon);
   const mats = new Map();
   function textured(color,kind) {
@@ -257,7 +258,7 @@ export async function makeWorld(canvas) {
   }
   // Two lawns leave an actual opening for the lower water and sloping banks.
   const bankBounds=riverBounds();
-  for(const [from,to] of [[-90,bankBounds.left],[bankBounds.right,90]])box(to-from,.6,160,textured(0xffffff,'grass'),(from+to)/2,-.35,0);
+  for(const [from,to] of [[GROUND.minX-1,bankBounds.left],[bankBounds.right,GROUND.maxX+1]])box(to-from,.6,GROUND.maxZ-GROUND.minZ+2,textured(0xffffff,'grass'),(from+to)/2,-.35,(GROUND.minZ+GROUND.maxZ)/2);
   const river=createRiver(scene);
   // One surface per point, including road extensions beyond the town edge.
   // World-aligned UVs keep the texture continuous across the trimmed pieces.
@@ -330,6 +331,10 @@ export async function makeWorld(canvas) {
   const storefronts=await createStorefronts(renderer);
   const props=createProps({paint:mats.get('paint'),register:(key,material)=>{mats.set(key,material);return material;},toon});
   const placeName=id=>BUILDINGS.find(b=>b.id===id).name;
+  // Extra buildings added in the map editor have no numbered place: they
+  // take the name given in the plan, or their kind's label.
+  const unitName=u=>u.name||(u.places[0]?placeName(u.places[0].id):u.def.label);
+  const hashOf=text=>[...String(text)].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7);
   const timberColors=[0xc7ad75,0xa8b4a0,0xe0c39b,0xc9bd92,0xb28272];
   const civicColors={19:0xe5a88c,20:0xd99cb6,32:0xf0d18d,33:0x9fc8ba,37:0x9fc8ba};
   // Every builder works in its unit's frame: (0,0) is the unit's centre and
@@ -345,25 +350,25 @@ export async function makeWorld(canvas) {
       for(const xx of [-4,4])for(let i=0;i<5;i++){const zz=5.7+Math.sin(i*2.4)*.12,px=xx+Math.cos(i*2.4)*.16;cylinder(.015,.018,.55,0x667e47,px,2.42,zz);for(let petal=0;petal<5;petal++){const flower=mesh(new T.SphereGeometry(.065,6,5),0xc08178,px+Math.sin(petal*1.256)*.055,2.71,zz+Math.cos(petal*1.256)*.055);flower.scale.y=.4;}mesh(new T.SphereGeometry(.029,6,5),0xe5c775,px,2.73,zz);}
       pot(-4,5.7,1.55);pot(4,5.7,1.55);bicycle(9,6);
     },
-    house(u){const id=u.places[0].id,[,,w,d]=u.def.places[0];house(0,0,timberColors[id%5],w,d,placeName(id).toUpperCase());},
-    wakaf(u){pavilion(7,6,placeName(u.places[0].id));},
-    pondok(u){pavilion(4,5,placeName(u.places[0].id));},
+    house(u){const id=u.places[0]?.id??hashOf(u.id),[,,w,d]=u.def.places[0];house(0,0,timberColors[id%5],w,d,unitName(u).toUpperCase());},
+    wakaf(u){pavilion(7,6,unitName(u));},
+    pondok(u){pavilion(4,5,unitName(u));},
     canteen(u){pavilion(10,6,placeName(u.places[0].id),true);storefronts.add(30,root,{panels:[{x:0,y:1.55,z:3.1,w:8.4,h:2.2}],badge:{x:3.4,y:1.9,z:3.55}});},
     terrace(u){
-      const id=u.places[0].id,color=[0xe5a88c,0x9fc8ba,0xf0d18d,0x89b0ca][(id-11)%4];
+      const id=u.places[0]?.id??11+hashOf(u.id)%4,color=[0xe5a88c,0x9fc8ba,0xf0d18d,0x89b0ca][(id-11)%4];
       box(6.8,3.4,7,textured(color,'plaster'),0,1.8,0);roof(7.1,8,0,3.6,0,0xab6046);
       box(1.3,2.6,.12,0x796956,.9,1.5,-3.55);box(1.9,1.4,.12,glass,-1.6,2,-3.57);
       for(const side of [-1,1])box(.10,1.6,.18,0xf4e9d0,-1.6+side*.99,2,-3.63);
       box(6.8,.1,3.5,0xd3c9a9,0,.1,-5.2);
       fence(-3.4,-6.5,3.6);fence(1.6,-6.5,1.8); // 1.4-metre gate.
       collider(0,0,6.8,7,'building');
-      const name=sign(placeName(id).toUpperCase(),0,3.1,-3.68,3.7);name.rotation.y=Math.PI;
+      const name=sign(unitName(u).toUpperCase(),0,3.1,-3.68,3.7);name.rotation.y=Math.PI;
       box(6.8,.12,.2,0xe6dcca,0,3.3,-3.6);
     },
-    minishop(u){civic(9,8,placeName(19),civicColors[19]);storefronts.add(19,root,{panels:[{x:0,y:1.55,z:4.26,w:7.6,h:2.6}],badge:{x:2.7,y:2.8,z:4.3}});},
-    hall(u){civic(13,8,placeName(32),civicColors[32]);},
-    library(u){civic(12,8,placeName(33),civicColors[33]);},
-    nursery(u){civic(9,10,placeName(20),civicColors[20]);for(let i=0;i<3;i++)box(.6,.2,.6,[0xe5a88c,0xf0d18d,0x89b0ca][i],-2+i*1.1,.18,7);},
+    minishop(u){civic(9,8,unitName(u),civicColors[19]);if(u.places.length)storefronts.add(19,root,{panels:[{x:0,y:1.55,z:4.26,w:7.6,h:2.6}],badge:{x:2.7,y:2.8,z:4.3}});},
+    hall(u){civic(13,8,unitName(u),civicColors[32]);},
+    library(u){civic(12,8,unitName(u),civicColors[33]);},
+    nursery(u){civic(9,10,unitName(u),civicColors[20]);for(let i=0;i<3;i++)box(.6,.2,.6,[0xe5a88c,0xf0d18d,0x89b0ca][i],-2+i*1.1,.18,7);},
     petrol(u){
       // Retro PETRONAS kiosk and two physical pumps under a flat canopy.
       civic(9,8,placeName(37),civicColors[37]);
@@ -488,9 +493,9 @@ export async function makeWorld(canvas) {
       box(10,.18,10,0xb3bca6,0,.1,0);roof(11,11,0,4,0,0x749458);
       collider(0,4.85,10,.3,'wall');box(10,3.8,.3,0xcbbd99,0,2,4.85);
       for(const side of [-1,1]){box(.3,3.8,10,0xcbbd99,side*4.85,2,0);collider(side*4.85,0,.3,10,'wall');}
-      const label=sign(placeName(36).toUpperCase(),0,3.4,-5.1,8);label.rotation.y=Math.PI;
+      const label=sign(unitName(u).toUpperCase(),0,3.4,-5.1,8);label.rotation.y=Math.PI;
       for(const x of [-3,3]){for(let j=0;j<3;j++)cylinder(.65,.65,.35,0x414b3f,x,.3+j*.35,2,undefined,12);roundCollider(x,2,.65,'tyres');}
-      storefronts.add(36,root,{panels:[{x:0,y:1.65,z:-5.17,w:9.2,h:2.9,turn:Math.PI}],badge:{x:3.2,y:2.7,z:-5.23,turn:Math.PI}});
+      if(u.places.length)storefronts.add(36,root,{panels:[{x:0,y:1.65,z:-5.17,w:9.2,h:2.9,turn:Math.PI}],badge:{x:3.2,y:2.7,z:-5.23,turn:Math.PI}});
     },
     market(u){
       const colors=[0xe5a88c,0xf0d18d,0x89b0ca,0xd99cb6,0x71967a,0xc79959];
@@ -520,7 +525,22 @@ export async function makeWorld(canvas) {
       cars.push({id:u.id,source:townCars?'glb':'procedural',paint:new T.Color(color).getHSL({}).l>.65?'white':'red',x:u.x,z:u.z});
       collider(0,0,1.9,4.5,'vehicle');
     },
-    passerby(){}
+    passerby(){},
+    // A building made in the map editor: one of the shared shapes, sized and
+    // coloured by the plan (see CUSTOM_STYLES in town-layout.js).
+    custom(u){
+      const c=customLook(u),label=c.name.toUpperCase(),wall=new T.Color(c.wall).getHex(),top=new T.Color(c.roofColor).getHex();
+      if(c.style==='kampung')return house(0,0,wall,c.w,c.d,label);
+      if(c.style==='wakaf')return pavilion(c.w,c.d,c.name||'Wakaf');
+      if(c.style==='plaza'){box(c.w,.08,c.d,wall,0,.05,0);if(label)sign(label,0,1.4,c.d/2-.2,Math.min(c.w-1,8));return;}
+      const H=c.storeys*3.4+.4;
+      box(c.w,H,c.d,textured(wall,'plaster'),0,H/2+.1,0);
+      if(c.roof==='flat')box(c.w+.6,.35,c.d+.6,top,0,H+.27,0);else roof(c.w+1,c.d+1,0,H+.2,0,top);
+      for(let s=0;s<c.storeys;s++)if(s||c.w>=6)for(const side of [-1,1])windowDetail(side*c.w*.3,2.4+s*3.4,c.d/2+.1,Math.min(1.8,c.w*.2),1.5);
+      box(1.5,2.6,.15,0x677b69,0,1.5,c.d/2+.1);
+      if(label)sign(label,0,3.25,c.d/2+.16,Math.min(c.w-1,9));
+      collider(0,0,c.w,c.d,'building');
+    }
   };
   const patchPositions=[];
   for(const unit of UNITS)place(unit,u=>{

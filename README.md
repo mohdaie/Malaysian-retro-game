@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.15.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.16.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -11,6 +11,10 @@ Road junctions now use a single surface, removing coplanar overlaps between dirt
 Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chrome, then choose **Install app** from the browser menu or **Install Retro Malaysia** when the game offers it. The app has its own RM icon and opens fullscreen in landscape. iPhone users can use Safari → Share → Add to Home Screen.
 
 The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
+
+## Advanced map editor (v2.16)
+
+The [map editor](docs/MAP-EDITOR.md) can now grow the town and build on it. **+ Bangunan** lists every building in the game by category (Rumah, Kedai & pekan, Sekolah & komuniti, Taman & rehat, Pengangkutan, Kenderaan & orang): tap one to add an extra copy on free ground, then name its signboard. **Bangunan baru** makes your own building: a shop block (1–4 storeys, pitched or flat roof), a kampung house on stilts, an open wakaf or a paved plaza, with any size and colours. **Save as template** keeps it in the library under its category. **Saiz peta** adds or removes 10 m of land on any side, up to 400 m across; the ground, river, trees, map and walking routes follow. Story places keep their numbers and cannot be deleted; extra buildings have no contact and show grey on the map.
 
 ## Character faces in dialogue (v2.14.1)
 
@@ -146,7 +150,7 @@ All **38 locations across five districts** fit the original compact map: 10 kamp
 - Complete turn-based congkak with relay sowing, capture, extra turns, scoring and a local opponent.
 - Static world geometry batched by material and spatial cell; pixel ratio capped at 2 for mobile performance. The world renderer pauses behind modal menus, congkak, Dam Haji and gasing.
 - “Sore Kampung” by mohdaie plays quietly on repeat after Start/Continue. Music and synthesized town ambience have separate, saved volume controls in Pause/Settings. Both stop on the title screen, when the tab is hidden or when a phone rotates to portrait.
-- The whole town layout comes from one editable plan, with a drag-and-drop map editor and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
+- The whole town layout comes from one editable plan, with a drag-and-drop map editor (building library, custom buildings, adjustable town size) and automatic overlap checks. See [the map editor guide](docs/MAP-EDITOR.md).
 - No server, sign-in, API keys or runtime CDN needed.
 
 ## A saved journey for each character (v2.5)

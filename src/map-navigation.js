@@ -1,14 +1,16 @@
 // Uniform map coordinates: north is -z; the same transform handles drawing and taps.
-export const MAP_BOUNDS = { minX: -82, maxX: 82, minZ: -70, maxZ: 70 };
-export function mapView(width, height, zoom = 1, x = 0, z = 0) {
-  const scale = Math.max(.01, Math.min((width - 40) / 164, (height - 40) / 140)) * zoom;
+import { TOWN_BOUNDS as B } from './town-layout.js?v=2.16.0';
+export const MAP_BOUNDS = { minX: B.minX - 4, maxX: B.maxX + 6, minZ: B.minZ - 4, maxZ: B.maxZ + 4 };
+const M = MAP_BOUNDS, MW = M.maxX - M.minX, MD = M.maxZ - M.minZ, MX = (M.minX + M.maxX) / 2, MZ = (M.minZ + M.maxZ) / 2;
+export function mapView(width, height, zoom = 1, x = MX, z = MZ) {
+  const scale = Math.max(.01, Math.min((width - 40) / MW, (height - 40) / MD)) * zoom;
   return { width, height, zoom, x, z, scale };
 }
 export const project = (v, p) => ({ x: v.width / 2 + (p.x - v.x) * v.scale, y: v.height / 2 + (p.z - v.z) * v.scale });
 export const unproject = (v, p) => ({ x: v.x + (p.x - v.width / 2) / v.scale, z: v.z + (p.y - v.height / 2) / v.scale });
 export function clampView(v) {
-  const dx = Math.max(0, 82 - (v.width / 2 - 20) / v.scale), dz = Math.max(0, 70 - (v.height / 2 - 20) / v.scale);
-  return { ...v, x: Math.max(-dx, Math.min(dx, v.x)), z: Math.max(-dz, Math.min(dz, v.z)) };
+  const dx = Math.max(0, MW / 2 - (v.width / 2 - 20) / v.scale), dz = Math.max(0, MD / 2 - (v.height / 2 - 20) / v.scale);
+  return { ...v, x: Math.max(MX - dx, Math.min(MX + dx, v.x)), z: Math.max(MZ - dz, Math.min(MZ + dz, v.z)) };
 }
 export function zoomView(v, zoom, anchor = { x: v.width / 2, y: v.height / 2 }) {
   const p = unproject(v, anchor), next = mapView(v.width, v.height, Math.max(1, Math.min(6, zoom)), v.x, v.z);

@@ -1,47 +1,47 @@
-import { showPortrait, speakerName, normalizeLine } from './dialogue-portraits.js?v=2.15.0';
-import { conversationSpeakers, stageConversation } from './conversation.js?v=2.15.0';
-import { createWalkability } from './collision.js?v=2.15.0';
-import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.15.0';
+import { showPortrait, speakerName, normalizeLine } from './dialogue-portraits.js?v=2.16.0';
+import { conversationSpeakers, stageConversation } from './conversation.js?v=2.16.0';
+import { createWalkability } from './collision.js?v=2.16.0';
+import { TAMIYA_PARTS } from './tamiya-parts.js?v=2.16.0';
 import * as T from 'three';
-import { makeWorld } from './world.js?v=2.15.0';
-import { createBicycle, stepBike } from './bicycle.js?v=2.15.0';
-import { createSkateboard, stepSkate, stepSkateAir, ollieSkate, kickflipSkate, SKATE } from './skateboard.js?v=2.15.0';
-import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.15.0';
-import { renderSkateOptions } from './skate-ui.js?v=2.15.0';
-import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.15.0';
-import { readSave, readSaves, writeSave } from './save.js?v=2.15.0';
-import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.15.0';
-import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.15.0';
-import { createSoundscape } from './soundscape.js?v=2.15.0';
-import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.15.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, districtAt } from './town-layout.js?v=2.15.0';
-import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.15.0';
-import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.15.0';
-import { tripAt } from './errands.js?v=2.15.0';
-import { CROWD, crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.15.0';
-import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, completeChapterStep, storyAt, CHAPTER_IDS, EXHIBITION_STORIES, investigationChoices, canInvestigate, tamiyaUnlocked, discoveredEvidence, availableScenes, storiesAt, sceneLines, jobDefinition, chapterHint, claimRelationship } from './story.js?v=2.15.0';
-import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.15.0';
-import { ITEM_KINDS } from './item-art.js?v=2.15.0';
-import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, dateLabel, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.15.0';
-import { createGasingUI } from './gasing-ui.js?v=2.15.0';
-import { GASING_QUESTS } from './gasing-progress.js?v=2.15.0';
-import { createDamUI } from './dam-ui.js?v=2.15.0';
-import { DAM_QUESTS } from './dam-progress.js?v=2.15.0';
-import { createTamiyaUI } from './tamiya-ui.js?v=2.15.0';
-import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.15.0';
-import { TAMIYA_CARS } from './tamiya-cars.js?v=2.15.0';
-import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.15.0';
-import { createTownMap } from './town-map-ui.js?v=2.15.0';
-import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.15.0';
-import { TOWN_BOUNDS } from './town-layout.js?v=2.15.0';
-import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.15.0';
-import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.15.0';
-import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.15.0';
-import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.15.0';
-import { memoryQuestCard } from './nostalgia-ui.js?v=2.15.0';
-import { renderQuestJournal } from './journal-ui.js?v=2.15.0';
-import { chapterBrief } from './journal.js?v=2.15.0';
-import { playIntro } from './intro.js?v=2.15.0';
+import { makeWorld } from './world.js?v=2.16.0';
+import { createBicycle, stepBike } from './bicycle.js?v=2.16.0';
+import { createSkateboard, stepSkate, stepSkateAir, ollieSkate, kickflipSkate, SKATE } from './skateboard.js?v=2.16.0';
+import { STOCK_SKATE_PARTS, cleanSkateParts } from './skate-parts.js?v=2.16.0';
+import { renderSkateOptions } from './skate-ui.js?v=2.16.0';
+import { newRound, legalMoves, playMove, opponentMove } from './congkak.js?v=2.16.0';
+import { readSave, readSaves, writeSave } from './save.js?v=2.16.0';
+import { CAMERA_NEAR, CAMERA_FAR, CAMERA_DEFAULT, CAMERA_PITCH, CAMERA_LOOK_HEIGHT, CAMERA_FOV, needsLandscape, enterLandscape } from './display.js?v=2.16.0';
+import { WALK_SPEED, RUN_SPEED, stickInput, moveWithCollision } from './movement.js?v=2.16.0';
+import { createSoundscape } from './soundscape.js?v=2.16.0';
+import { createMusic, readAudioSettings, saveAudioSettings } from './music.js?v=2.16.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, PREVIEW, UNITS, districtAt } from './town-layout.js?v=2.16.0';
+import { newEconomy, cleanEconomy, offersAt, accept, collect, deliver, cancel, buy, jobsAt, nextStop, befriend, freeSpace, usedSpace, ITEMS, STOCK, BAG_SPACE, MAX_JOBS, rm, itemLabel, level } from './economy.js?v=2.16.0';
+import { NPCS, NPC_KEYS, RESIDENTS, KEEPERS, keeperAt, npcAt, contactAt, line } from './cast.js?v=2.16.0';
+import { tripAt } from './errands.js?v=2.16.0';
+import { CROWD, crowdPose, RUN_SPEED as KID_RUN, WALK_SPEED as CROWD_WALK } from './crowds.js?v=2.16.0';
+import { PLAYERS, STEPS, DONE, CHAPTER, MILESTONES, STORY_EVENTS, advance, storyOffers, chapterGuide, completeChapterStep, storyAt, CHAPTER_IDS, EXHIBITION_STORIES, investigationChoices, canInvestigate, tamiyaUnlocked, discoveredEvidence, availableScenes, storiesAt, sceneLines, jobDefinition, chapterHint, claimRelationship } from './story.js?v=2.16.0';
+import { itemThumbnail, itemIdentity, catalogueCard, detailContents } from './item-ui.js?v=2.16.0';
+import { ITEM_KINDS } from './item-art.js?v=2.16.0';
+import { newClock, cleanClock, tickClock, canSleep, sleep, weekday, dateLabel, timeLabel, period, isNight, onDuty, dayKey, skyAt, LATEST, HOURS } from './clock.js?v=2.16.0';
+import { createGasingUI } from './gasing-ui.js?v=2.16.0';
+import { GASING_QUESTS } from './gasing-progress.js?v=2.16.0';
+import { createDamUI } from './dam-ui.js?v=2.16.0';
+import { DAM_QUESTS } from './dam-progress.js?v=2.16.0';
+import { createTamiyaUI } from './tamiya-ui.js?v=2.16.0';
+import { TAMIYA_QUESTS } from './tamiya-progress.js?v=2.16.0';
+import { TAMIYA_CARS } from './tamiya-cars.js?v=2.16.0';
+import { tamiyaCatalogue } from './tamiya-catalogue.js?v=2.16.0';
+import { createTownMap } from './town-map-ui.js?v=2.16.0';
+import { findWalkRoute, clearSegment, routeLength } from './map-navigation.js?v=2.16.0';
+import { TOWN_BOUNDS } from './town-layout.js?v=2.16.0';
+import { isShop, isShopOpen, shopHours } from './shop-hours.js?v=2.16.0';
+import { PRAYERS, prayerState, performPrayer } from './prayer.js?v=2.16.0';
+import { NOSTALGIA_ITEMS } from './nostalgia-items.js?v=2.16.0';
+import { NOSTALGIA_QUESTS, storyNeedsHome, nostalgiaAt, nostalgiaStatus, startNostalgia, followNostalgiaClue, recordNostalgiaWin, claimNostalgia, nostalgiaOffers } from './nostalgia-quests.js?v=2.16.0';
+import { memoryQuestCard } from './nostalgia-ui.js?v=2.16.0';
+import { renderQuestJournal } from './journal-ui.js?v=2.16.0';
+import { chapterBrief } from './journal.js?v=2.16.0';
+import { playIntro } from './intro.js?v=2.16.0';
 const $ = id => document.getElementById(id);
 let world;
 try { world = await makeWorld($('world')); } catch (error) {
@@ -951,7 +951,7 @@ function mapEntries(){
 }
 const mapPlayer=()=>({x:player.group.position.x,z:player.group.position.z,heading:facing()});
 const planMapRoute=entry=>findWalkRoute(mapPlayer(),entry,world.canWalk,TOWN_BOUNDS);
-const townMap=createTownMap({buildings:BUILDINGS,districts:DISTRICTS,roads:ROADS,bridges:BRIDGES,
+const townMap=createTownMap({buildings:BUILDINGS,extras:UNITS.filter(u=>!u.places.length&&!u.def.vehicle).map(u=>u.area),districts:DISTRICTS,roads:ROADS,bridges:BRIDGES,
   getEntries:mapEntries,getPlayer:mapPlayer,getQuest:()=>storyTarget(),getJobs:jobStops,getNavigation:()=>navigation,planRoute:planMapRoute,
   onNavigate:(entry,route)=>{navigation={entry,route,planned:{x:entry.x,z:entry.z},arrived:false};lastNavigationUpdate=-1;updateNavigation();},
   onClose:()=>{$('hud').inert=false;setMode('explore');$('map-button').focus();}
@@ -982,7 +982,7 @@ function drawMap(canvas){
   const rect=(x,z,rw,rh,color)=>{ctx.fillStyle=color;ctx.fillRect(px(x-rw/2),pz(z-rh/2),rw/76*w,rh/76*h);};
   // A soft halo of district colour around each place, wherever it stands.
   for(const b of BUILDINGS)rect(b.x,b.z,b.w+8,b.d+8,DISTRICTS.find(d=>d.id===b.zone).color+'1c');
-  rect(-65,0,9,140,'#82aaa2');
+  rect(-65,(TOWN_BOUNDS.minZ+TOWN_BOUNDS.maxZ)/2,9,TOWN_BOUNDS.maxZ-TOWN_BOUNDS.minZ+8,'#82aaa2');
   for(const r of ROADS)rect(r.x,r.z,r.w,r.d,r.kind==='asphalt'?'#a5aaa3':'#c9b990');
   for(const b of BRIDGES)rect(b.x,b.z,b.w,b.d,'#c7bd9e');
   for(const c of world.colliders){

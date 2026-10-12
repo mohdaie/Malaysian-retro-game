@@ -1,11 +1,11 @@
-import { RIVER, BRIDGES } from './town-layout.js?v=2.15.0';
+import { RIVER, BRIDGES, GROUND } from './town-layout.js?v=2.16.0';
 
 // The banks and water stay inside the river corridor reserved by the town plan.
 // Walking, bridge heights and rendering use these same dimensions.
 export const RIVER_GROUND_Y = -.05;
 export const RIVER_WATER_Y = -.66;
 export const RIVER_BED_Y = -1.4;
-export const RIVER_END = 80;
+export const RIVER_END = Math.max(-GROUND.minZ, GROUND.maxZ) + 1;
 export const BRIDGE_DECK_Y = .24;
 export const BRIDGE_RAMP = 1.1;
 export const riverBounds = () => ({ left: RIVER.x - RIVER.w / 2, right: RIVER.x + RIVER.w / 2 });
@@ -50,7 +50,7 @@ export function bridgeSurfaceHeight(x, z) {
 export function riverDetails() {
   const rocks = [], grass = [], bamboo = [];
   const bounds = riverBounds();
-  for (let i = 0, z = -74; z <= 74; i++, z += 2.7) {
+  for (let i = 0, z = GROUND.minZ + 5; z <= GROUND.maxZ - 5; i++, z += 2.7) {
     if (BRIDGES.some(b => Math.abs(z - b.z) < b.d / 2 + 2.2)) continue;
     const s = riverSection(z);
     for (const side of [-1, 1]) {

@@ -1,9 +1,17 @@
-import { TOWN_PLAN } from './town-plan.js?v=2.15.0';
+import { TOWN_PLAN } from './town-plan.js?v=2.16.0';
 
 // Town plan geometry shared by the game, the tests and the map editor. The
 // editable positions live in town-plan.js; everything here is derived from
 // them. Rects are [x, z, w, d] in metres, centred, in a unit's own frame.
-export const TOWN_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
+// The town edge comes from the plan's optional `bounds`, which the map editor
+// grows or shrinks a side at a time; GROUND is the land around it.
+export const DEFAULT_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
+export const BOUNDS_LIMIT = 200;
+export function boundsOf(plan) {
+  const b = { ...DEFAULT_BOUNDS, ...(plan?.bounds || {}) }, L = BOUNDS_LIMIT;
+  return { minX: Math.max(-L, Math.min(-20, +b.minX)), maxX: Math.min(L, Math.max(20, +b.maxX)), minZ: Math.max(-L, Math.min(-20, +b.minZ)), maxZ: Math.min(L, Math.max(20, +b.maxZ)) };
+}
+export const groundOf = B => ({ minX: B.minX - 11, maxX: B.maxX + 13, minZ: B.minZ - 13, maxZ: B.maxZ + 13 });
 // The river is fixed terrain. Every road that crosses it gets a bridge as
 // wide as the road; the old footbridge stays where no road crosses nearby.
 export const RIVER = { x: -65, w: 10.5 };
@@ -66,7 +74,14 @@ export const PROPS = {
 // `decorVariants` offers several yards to pick from), and `props`
 // ([name, x, z, quarter turns, height, print]). `doors` gives one
 // interaction point per place, where the player talks to its contact.
-// `open` kinds may sit on roads.
+// `open` kinds may sit on roads. `cat` files each kind under a CATEGORIES
+// heading in the editor's library; `unique` kinds appear once (their builders
+// hang on a numbered place); the others can be added again as extra,
+// unnumbered buildings.
+export const CATEGORIES = [
+  { id: 'rumah', name: 'Rumah' }, { id: 'kedai', name: 'Kedai & pekan' }, { id: 'komuniti', name: 'Sekolah & komuniti' },
+  { id: 'rehat', name: 'Taman & rehat' }, { id: 'jalan', name: 'Pengangkutan' }, { id: 'kenderaan', name: 'Kenderaan & orang' }
+];
 export const KINDS = {
   home: stiltHouse(10, 8, {
     label: 'Rumah Amir and yard',
@@ -131,6 +146,33 @@ export const KINDS = {
   sedan: { label: 'Family car', vehicle: true, places: [], solids: [[0, 0, 1.9, 4.5]], floors: [] },
   passerby: { label: 'Passer-by', vehicle: true, places: [], solids: [[0, 0, .6, .6]], floors: [] }
 };
+for (const [kind, cat, unique] of [['home', 'rumah', 1], ['house', 'rumah'], ['terrace', 'rumah'], ['minishop', 'kedai'], ['warung', 'kedai', 1], ['shophouses', 'kedai', 1],
+  ['market', 'kedai'], ['school', 'komuniti', 1], ['canteen', 'komuniti', 1], ['nursery', 'komuniti'], ['mosque', 'komuniti', 1], ['hall', 'komuniti'], ['library', 'komuniti'],
+  ['court', 'komuniti'], ['wakaf', 'rehat'], ['pondok', 'rehat'], ['square', 'rehat'], ['busstop', 'jalan'], ['workshop', 'jalan'], ['petrol', 'jalan', 1],
+  ['bus', 'kenderaan', 1], ['sedan', 'kenderaan'], ['passerby', 'kenderaan']]) Object.assign(KINDS[kind], { cat, unique: !!unique });
+
+// Custom buildings (kind 'custom') carry their own size and look in the plan:
+// { style, w, d, storeys, wall, roofColor, roof: 'pitched'|'flat', name, cat }.
+// Each style reuses a built-in shape, so a new building needs no new code.
+export const CUSTOM_STYLES = {
+  block: { label: 'Bangunan batu (kedai, pejabat)', def: (w, d) => civic('Custom building', w, d) },
+  kampung: { label: 'Rumah kampung bertiang', def: (w, d) => stiltHouse(w, d, { label: 'Custom kampung house' }) },
+  wakaf: { label: 'Wakaf / pondok terbuka', def: (w, d) => pavilion('Custom shelter', w, d) },
+  plaza: { label: 'Dataran / padang (boleh di atas jalan)', def: (w, d) => ({ label: 'Custom plaza', open: true, places: [[0, 0, w, d]], solids: [[0, 0, w, d]], floors: [[0, 0, w, d, .09]] }) }
+};
+export const CUSTOM_DEFAULTS = { style: 'block', w: 9, d: 8, storeys: 1, wall: '#e8dbb8', roofColor: '#ab6046', roof: 'pitched', name: '', cat: 'kedai' };
+const clamp = (v, lo, hi, fallback) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : fallback;
+export function customLook(u) {
+  const c = { ...CUSTOM_DEFAULTS, ...u };
+  const colour = (v, fallback) => /^#[0-9a-f]{6}$/i.test(v) ? v : fallback;
+  return { ...c, style: CUSTOM_STYLES[c.style] ? c.style : 'block', w: clamp(c.w, 2, 80, 9), d: clamp(c.d, 2, 80, 8), storeys: Math.round(clamp(c.storeys, 1, 4, 1)),
+    wall: colour(c.wall, CUSTOM_DEFAULTS.wall), roofColor: colour(c.roofColor, CUSTOM_DEFAULTS.roofColor), roof: c.roof === 'flat' ? 'flat' : 'pitched', name: String(c.name || '').slice(0, 40) };
+}
+export const kindDef = u => {
+  if (u.kind !== 'custom') return KINDS[u.kind];
+  const c = customLook(u);
+  return { ...CUSTOM_STYLES[c.style].def(c.w, c.d), label: c.name || 'Custom building', cat: c.cat, custom: true };
+};
 
 // Quarter-turn transforms match Three.js rotation.y = rot·π/2:
 // world = (x + lx·cos + lz·sin, z − lx·sin + lz·cos).
@@ -157,7 +199,7 @@ const EPS = -.02;
 // Everything the game needs, derived from one plan.
 export function derive(plan) {
   const units = plan.units.map(u => {
-    const def = KINDS[u.kind];
+    const def = kindDef(u);
     if (!def) throw new Error(`Unknown kind ${u.kind} for ${u.id}`);
     const solids = def.solids.map(r => rectToWorld(u, r));
     const floors = (def.floors || []).map(f => [...rectToWorld(u, f), f[4]]);
@@ -194,14 +236,19 @@ export function derive(plan) {
 // Layout checks shared by the tests and the editor. Errors make a plan
 // unusable; warnings are worth a look but still play.
 export function planProblems(plan) {
-  const problems = [], town = derive(plan);
-  const river = [RIVER.x, 0, RIVER.w, 400];
+  const problems = [], town = derive(plan), B = boundsOf(plan);
+  const river = [RIVER.x, 0, RIVER.w, 2 * BOUNDS_LIMIT + 40];
   const label = u => `${u.def.label}${u.places.length ? ' (' + u.places.map(p => p.id).join(', ') + ')' : ''}`;
   for (const u of town.units) {
     const edges = u.def.vehicle ? u.solids : u.places.map(p => p.rect);
     for (const [x, z, w, d] of edges.length ? edges : u.solids)
-      if (x - w / 2 < TOWN_BOUNDS.minX - .01 || x + w / 2 > TOWN_BOUNDS.maxX + .01 || z - d / 2 < TOWN_BOUNDS.minZ - .01 || z + d / 2 > TOWN_BOUNDS.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
+      if (x - w / 2 < B.minX - .01 || x + w / 2 > B.maxX + .01 || z - d / 2 < B.minZ - .01 || z + d / 2 > B.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
     if (u.solids.some(r => overlap(r, river, EPS))) problems.push({ level: 'error', units: [u.id], text: `${label(u)} is in the river.` });
+  }
+  if (new Set(plan.units.map(u => u.id)).size !== plan.units.length) problems.push({ level: 'error', units: [], text: 'Two buildings share one id.' });
+  for (const kind of Object.keys(KINDS).filter(k => KINDS[k].unique)) {
+    const same = town.units.filter(u => u.kind === kind);
+    if (same.length > 1) problems.push({ level: 'error', units: same.slice(1).map(u => u.id), text: `There can be only one ${KINDS[kind].label.toLowerCase()}.` });
   }
   for (let i = 0; i < town.units.length; i++) for (let j = i + 1; j < town.units.length; j++) {
     const a = town.units[i], b = town.units[j];
@@ -210,7 +257,7 @@ export function planProblems(plan) {
   }
   for (const u of town.units) {
     if (u.def.vehicle || u.def.open) continue;
-    for (const r of town.roads) if (r.kind === 'asphalt' && u.places.some(p => overlap(p.rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
+    for (const r of town.roads) if (r.kind === 'asphalt' && (u.places.length ? u.places.map(p => p.rect) : u.solids).some(rect => overlap(rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
   }
   for (const r of town.roads) {
     const inRiver = r.x - r.w / 2 < BANKS[1] && r.x + r.w / 2 > BANKS[0];
@@ -235,6 +282,8 @@ export function planFromHash(hash) {
 }
 export const PLAN = planFromHash(globalThis.location?.hash) || TOWN_PLAN;
 export const PREVIEW = PLAN !== TOWN_PLAN;
+export const TOWN_BOUNDS = boundsOf(PLAN);
+export const GROUND = groundOf(TOWN_BOUNDS);
 const TOWN = derive(PLAN);
 export const UNITS = TOWN.units;
 export const BUILDINGS = TOWN.buildings;

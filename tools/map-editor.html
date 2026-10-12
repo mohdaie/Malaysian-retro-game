@@ -62,6 +62,25 @@ button.primary{background:var(--green);border-color:var(--green);color:var(--pap
 .legend span{display:flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 .saveinfo{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:2px;margin:-16px -16px 0;padding:6px 10px 0;border-bottom:1px solid var(--line);position:sticky;top:-16px;background:var(--panel);z-index:2}
+.tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;font-weight:650;color:var(--muted);padding:8px 10px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
+.pane{display:flex;flex-direction:column;gap:18px}
+.search{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:8px 10px}
+.cat h3{font:16px/1.2 var(--display);font-weight:400;margin:4px 0 8px;display:flex;align-items:center;gap:8px}
+.cat h3 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.cat h3 small{margin-left:auto;font:11px var(--body);color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
+.card{position:relative}
+.card>button:first-child{width:100%;height:100%;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;padding:8px;border-radius:10px}
+.card svg{width:100%;height:46px;display:block}
+.card b{font-size:12.5px;line-height:1.25;font-weight:650}
+.card small{font-size:11px;color:var(--muted)}
+.card .x{position:absolute;top:4px;right:4px;min-height:0;width:24px;height:24px;padding:0;border-radius:7px;font-size:12px;line-height:1}
+.sides{display:grid;grid-template-columns:1fr auto auto;gap:6px 8px;align-items:center}
+.field input[type=color]{padding:2px;height:34px}
+.field input.wide{width:100%}
+.note{font-size:12px;color:var(--muted)}
 .confirm{display:flex;flex-direction:column;gap:8px;border:1px solid var(--error);border-radius:10px;padding:10px}
 a{color:var(--green)}
 svg text{font-family:var(--body);pointer-events:none}
@@ -103,6 +122,17 @@ svg text{font-family:var(--body);pointer-events:none}
     <div class="scale" id="scale">10 m</div>
   </main>
   <aside class="panel">
+    <nav class="tabs" role="tablist" aria-label="Editor tools">
+      <button role="tab" data-tab="edit" aria-selected="true">Edit</button>
+      <button role="tab" data-tab="library" aria-selected="false">+ Bangunan</button>
+      <button role="tab" data-tab="town" aria-selected="false">Saiz peta</button>
+    </nav>
+    <div class="pane" data-pane="library" hidden>
+      <input id="lib-search" class="search" type="search" placeholder="Cari bangunan atau kategori…" aria-label="Search buildings">
+      <div class="pane" id="library"></div>
+    </div>
+    <div class="pane" data-pane="town" id="town-size" hidden></div>
+    <div class="pane" data-pane="edit">
     <section id="selection"></section>
     <section>
       <p class="eyebrow">Layout checks</p>
@@ -125,6 +155,7 @@ svg text{font-family:var(--body);pointer-events:none}
     <section id="reset-zone">
       <button id="reset">Reset to the game's layout</button>
     </section>
+    </div>
   </aside>
 </div>
 
@@ -134,7 +165,15 @@ const TOWN_PLAN = {"version":1,"units":[{"id":"home","kind":"home","x":-44,"z":5
 // Town plan geometry shared by the game, the tests and the map editor. The
 // editable positions live in town-plan.js; everything here is derived from
 // them. Rects are [x, z, w, d] in metres, centred, in a unit's own frame.
-const TOWN_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
+// The town edge comes from the plan's optional `bounds`, which the map editor
+// grows or shrinks a side at a time; GROUND is the land around it.
+const DEFAULT_BOUNDS = { minX: -78, maxX: 76, minZ: -66, maxZ: 66 };
+const BOUNDS_LIMIT = 200;
+function boundsOf(plan) {
+  const b = { ...DEFAULT_BOUNDS, ...(plan?.bounds || {}) }, L = BOUNDS_LIMIT;
+  return { minX: Math.max(-L, Math.min(-20, +b.minX)), maxX: Math.min(L, Math.max(20, +b.maxX)), minZ: Math.max(-L, Math.min(-20, +b.minZ)), maxZ: Math.min(L, Math.max(20, +b.maxZ)) };
+}
+const groundOf = B => ({ minX: B.minX - 11, maxX: B.maxX + 13, minZ: B.minZ - 13, maxZ: B.maxZ + 13 });
 // The river is fixed terrain. Every road that crosses it gets a bridge as
 // wide as the road; the old footbridge stays where no road crosses nearby.
 const RIVER = { x: -65, w: 10.5 };
@@ -197,7 +236,14 @@ const PROPS = {
 // `decorVariants` offers several yards to pick from), and `props`
 // ([name, x, z, quarter turns, height, print]). `doors` gives one
 // interaction point per place, where the player talks to its contact.
-// `open` kinds may sit on roads.
+// `open` kinds may sit on roads. `cat` files each kind under a CATEGORIES
+// heading in the editor's library; `unique` kinds appear once (their builders
+// hang on a numbered place); the others can be added again as extra,
+// unnumbered buildings.
+const CATEGORIES = [
+  { id: 'rumah', name: 'Rumah' }, { id: 'kedai', name: 'Kedai & pekan' }, { id: 'komuniti', name: 'Sekolah & komuniti' },
+  { id: 'rehat', name: 'Taman & rehat' }, { id: 'jalan', name: 'Pengangkutan' }, { id: 'kenderaan', name: 'Kenderaan & orang' }
+];
 const KINDS = {
   home: stiltHouse(10, 8, {
     label: 'Rumah Amir and yard',
@@ -262,6 +308,33 @@ const KINDS = {
   sedan: { label: 'Family car', vehicle: true, places: [], solids: [[0, 0, 1.9, 4.5]], floors: [] },
   passerby: { label: 'Passer-by', vehicle: true, places: [], solids: [[0, 0, .6, .6]], floors: [] }
 };
+for (const [kind, cat, unique] of [['home', 'rumah', 1], ['house', 'rumah'], ['terrace', 'rumah'], ['minishop', 'kedai'], ['warung', 'kedai', 1], ['shophouses', 'kedai', 1],
+  ['market', 'kedai'], ['school', 'komuniti', 1], ['canteen', 'komuniti', 1], ['nursery', 'komuniti'], ['mosque', 'komuniti', 1], ['hall', 'komuniti'], ['library', 'komuniti'],
+  ['court', 'komuniti'], ['wakaf', 'rehat'], ['pondok', 'rehat'], ['square', 'rehat'], ['busstop', 'jalan'], ['workshop', 'jalan'], ['petrol', 'jalan', 1],
+  ['bus', 'kenderaan', 1], ['sedan', 'kenderaan'], ['passerby', 'kenderaan']]) Object.assign(KINDS[kind], { cat, unique: !!unique });
+
+// Custom buildings (kind 'custom') carry their own size and look in the plan:
+// { style, w, d, storeys, wall, roofColor, roof: 'pitched'|'flat', name, cat }.
+// Each style reuses a built-in shape, so a new building needs no new code.
+const CUSTOM_STYLES = {
+  block: { label: 'Bangunan batu (kedai, pejabat)', def: (w, d) => civic('Custom building', w, d) },
+  kampung: { label: 'Rumah kampung bertiang', def: (w, d) => stiltHouse(w, d, { label: 'Custom kampung house' }) },
+  wakaf: { label: 'Wakaf / pondok terbuka', def: (w, d) => pavilion('Custom shelter', w, d) },
+  plaza: { label: 'Dataran / padang (boleh di atas jalan)', def: (w, d) => ({ label: 'Custom plaza', open: true, places: [[0, 0, w, d]], solids: [[0, 0, w, d]], floors: [[0, 0, w, d, .09]] }) }
+};
+const CUSTOM_DEFAULTS = { style: 'block', w: 9, d: 8, storeys: 1, wall: '#e8dbb8', roofColor: '#ab6046', roof: 'pitched', name: '', cat: 'kedai' };
+const clamp = (v, lo, hi, fallback) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : fallback;
+function customLook(u) {
+  const c = { ...CUSTOM_DEFAULTS, ...u };
+  const colour = (v, fallback) => /^#[0-9a-f]{6}$/i.test(v) ? v : fallback;
+  return { ...c, style: CUSTOM_STYLES[c.style] ? c.style : 'block', w: clamp(c.w, 2, 80, 9), d: clamp(c.d, 2, 80, 8), storeys: Math.round(clamp(c.storeys, 1, 4, 1)),
+    wall: colour(c.wall, CUSTOM_DEFAULTS.wall), roofColor: colour(c.roofColor, CUSTOM_DEFAULTS.roofColor), roof: c.roof === 'flat' ? 'flat' : 'pitched', name: String(c.name || '').slice(0, 40) };
+}
+const kindDef = u => {
+  if (u.kind !== 'custom') return KINDS[u.kind];
+  const c = customLook(u);
+  return { ...CUSTOM_STYLES[c.style].def(c.w, c.d), label: c.name || 'Custom building', cat: c.cat, custom: true };
+};
 
 // Quarter-turn transforms match Three.js rotation.y = rot·π/2:
 // world = (x + lx·cos + lz·sin, z − lx·sin + lz·cos).
@@ -288,7 +361,7 @@ const EPS = -.02;
 // Everything the game needs, derived from one plan.
 function derive(plan) {
   const units = plan.units.map(u => {
-    const def = KINDS[u.kind];
+    const def = kindDef(u);
     if (!def) throw new Error(`Unknown kind ${u.kind} for ${u.id}`);
     const solids = def.solids.map(r => rectToWorld(u, r));
     const floors = (def.floors || []).map(f => [...rectToWorld(u, f), f[4]]);
@@ -325,14 +398,19 @@ function derive(plan) {
 // Layout checks shared by the tests and the editor. Errors make a plan
 // unusable; warnings are worth a look but still play.
 function planProblems(plan) {
-  const problems = [], town = derive(plan);
-  const river = [RIVER.x, 0, RIVER.w, 400];
+  const problems = [], town = derive(plan), B = boundsOf(plan);
+  const river = [RIVER.x, 0, RIVER.w, 2 * BOUNDS_LIMIT + 40];
   const label = u => `${u.def.label}${u.places.length ? ' (' + u.places.map(p => p.id).join(', ') + ')' : ''}`;
   for (const u of town.units) {
     const edges = u.def.vehicle ? u.solids : u.places.map(p => p.rect);
     for (const [x, z, w, d] of edges.length ? edges : u.solids)
-      if (x - w / 2 < TOWN_BOUNDS.minX - .01 || x + w / 2 > TOWN_BOUNDS.maxX + .01 || z - d / 2 < TOWN_BOUNDS.minZ - .01 || z + d / 2 > TOWN_BOUNDS.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
+      if (x - w / 2 < B.minX - .01 || x + w / 2 > B.maxX + .01 || z - d / 2 < B.minZ - .01 || z + d / 2 > B.maxZ + .01) { problems.push({ level: 'error', units: [u.id], text: `${label(u)} is outside the town edge.` }); break; }
     if (u.solids.some(r => overlap(r, river, EPS))) problems.push({ level: 'error', units: [u.id], text: `${label(u)} is in the river.` });
+  }
+  if (new Set(plan.units.map(u => u.id)).size !== plan.units.length) problems.push({ level: 'error', units: [], text: 'Two buildings share one id.' });
+  for (const kind of Object.keys(KINDS).filter(k => KINDS[k].unique)) {
+    const same = town.units.filter(u => u.kind === kind);
+    if (same.length > 1) problems.push({ level: 'error', units: same.slice(1).map(u => u.id), text: `There can be only one ${KINDS[kind].label.toLowerCase()}.` });
   }
   for (let i = 0; i < town.units.length; i++) for (let j = i + 1; j < town.units.length; j++) {
     const a = town.units[i], b = town.units[j];
@@ -341,7 +419,7 @@ function planProblems(plan) {
   }
   for (const u of town.units) {
     if (u.def.vehicle || u.def.open) continue;
-    for (const r of town.roads) if (r.kind === 'asphalt' && u.places.some(p => overlap(p.rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
+    for (const r of town.roads) if (r.kind === 'asphalt' && (u.places.length ? u.places.map(p => p.rect) : u.solids).some(rect => overlap(rect, [r.x, r.z, r.w, r.d], EPS))) problems.push({ level: 'warning', units: [u.id], roads: [r.id], text: `${label(u)} sits on the ${r.id.replace(/-/g, ' ')}.` });
   }
   for (const r of town.roads) {
     const inRiver = r.x - r.w / 2 < BANKS[1] && r.x + r.w / 2 > BANKS[0];
@@ -366,6 +444,8 @@ function planFromHash(hash) {
 }
 const PLAN = planFromHash(globalThis.location?.hash) || TOWN_PLAN;
 const PREVIEW = PLAN !== TOWN_PLAN;
+const TOWN_BOUNDS = boundsOf(PLAN);
+const GROUND = groundOf(TOWN_BOUNDS);
 const TOWN = derive(PLAN);
 const UNITS = TOWN.units;
 const BUILDINGS = TOWN.buildings;
@@ -390,7 +470,8 @@ function districtAt(x, z) {
 // ---------------------------------------------------------------- state
 const GAME_URL = 'https://mohdaie.github.io/Malaysian-retro-game/';
 const BASE = JSON.stringify(TOWN_PLAN);
-const SNAP = .5;
+let SNAP = .5, gridStep = 10, showGrid = true, tab = 'edit';
+try { ({ snap: SNAP = .5, grid: gridStep = 10, show: showGrid = true } = JSON.parse(localStorage.getItem('pelan-view') || '{}')); } catch { /* storage unavailable */ }
 const $ = id => document.getElementById(id);
 const svg = $('map'), NS = 'http://www.w3.org/2000/svg';
 let plan = JSON.parse(BASE), town = derive(plan), problems = planProblems(plan);
@@ -399,14 +480,22 @@ let history = [BASE], step = 0, dirty = false, savedAt = null, db = null;
 const view = { cx: -1, cz: 0, scale: 4 };
 const zoneColor = Object.fromEntries(DISTRICT_INFO.map(d => [d.id, d.color]));
 const kindColor = { square: '#7f9c6a', bus: '#557a8c', sedan: '#557a8c', passerby: '#b15c33' };
+const catColor = { rumah: '#c87537', kedai: '#b95670', komuniti: '#4a9270', rehat: '#7f9c6a', jalan: '#4b8db4', kenderaan: '#557a8c' };
+const LOOK = Object.keys(CUSTOM_DEFAULTS);
+const townBounds = () => boundsOf(plan);
 const FACING = ['south', 'east', 'north', 'west'];
 const snap = v => Math.round(v / SNAP) * SNAP;
 const unitById = id => plan.units.find(u => u.id === id);
 const roadById = id => plan.roads.find(r => r.id === id);
 // Plan units list place ids; derived units list {id, rect}. Accept both.
-const placeIds = u => u.places.map(p => typeof p === 'object' ? p.id : p);
-const nameOf = u => { const ids = placeIds(u); return ids.length === 1 ? PLACES[ids[0]][0] : ids.length ? KINDS[u.kind].label : (u.kind === 'passerby' ? 'Passer-by spot' : KINDS[u.kind].label); };
-const colorOf = u => { const ids = placeIds(u); return ids.length ? zoneColor[PLACES[ids[0]][1]] : kindColor[u.kind] || '#888'; };
+const placeIds = u => (u.places || []).map(p => typeof p === 'object' ? p.id : p);
+const nameOf = u => { const ids = placeIds(u), def = kindDef(u); return ids.length === 1 ? PLACES[ids[0]][0] : ids.length ? def.label : u.name || (u.kind === 'passerby' ? 'Passer-by spot' : def.label); };
+const colorOf = u => { const ids = placeIds(u); return ids.length ? zoneColor[PLACES[ids[0]][1]] : u.kind === 'custom' ? customLook(u).wall : kindColor[u.kind] || catColor[kindDef(u).cat] || '#888'; };
+// Extra (unnumbered) buildings can be deleted; any kind not marked unique can be added again.
+const canDelete = u => !placeIds(u).length && !KINDS[u.kind]?.unique;
+const canCopy = u => !KINDS[u.kind]?.unique;
+const nextId = base => { let n = 2; while (unitById(`${base}-${n}`)) n++; return `${base}-${n}`; };
+function saveView() { try { localStorage.setItem('pelan-view', JSON.stringify({ snap: SNAP, grid: gridStep, show: showGrid })); } catch { /* storage unavailable */ } }
 const roadName = r => r.id.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase());
 function readLocal() { try { return JSON.parse(localStorage.getItem('pelan-draft') || 'null'); } catch { return null; } }
 function writeLocal() { try { localStorage.setItem('pelan-draft', JSON.stringify({ plan, editedAt: Date.now() })); } catch { /* storage unavailable */ } }
@@ -448,7 +537,8 @@ function el(name, attrs = {}, parent) {
 const rect = ([x, z, w, d], attrs, parent) => el('rect', { x: x - w / 2, y: z - d / 2, width: w, height: d, ...attrs }, parent);
 function fitView() {
   const { width, height } = svg.getBoundingClientRect();
-  view.scale = Math.max(.5, Math.min(width / 168, height / 146)); view.cx = -1; view.cz = 0; applyView();
+  const B = townBounds();
+  view.scale = Math.max(.5, Math.min(width / (B.maxX - B.minX + 14), height / (B.maxZ - B.minZ + 14))); view.cx = (B.minX + B.maxX) / 2; view.cz = (B.minZ + B.maxZ) / 2; applyView();
 }
 function applyView() {
   const { width, height } = svg.getBoundingClientRect();
@@ -465,13 +555,15 @@ function draw() {
   for (const p of problems) for (const id of p.units) (p.level === 'error' ? errorUnits : warnUnits).add(id);
   for (const p of problems) for (const id of p.roads || []) warnRoads.add(id);
   // Ground, town edge, the fixed river and bridges.
-  rect([-1, 0, 200, 170], { fill: token('--edge') }, svg);
-  const B = TOWN_BOUNDS;
+  const B = townBounds(), G = groundOf(B);
+  rect([(G.minX + G.maxX) / 2, (G.minZ + G.maxZ) / 2, G.maxX - G.minX + 20, G.maxZ - G.minZ + 20], { fill: token('--edge') }, svg);
   rect([(B.minX + B.maxX) / 2, (B.minZ + B.maxZ) / 2, B.maxX - B.minX, B.maxZ - B.minZ], { fill: token('--lawn') }, svg);
   const grid = el('g', { stroke: token('--ink'), 'stroke-opacity': .07, 'stroke-width': px }, svg);
-  for (let x = Math.ceil(B.minX / 10) * 10; x <= B.maxX; x += 10) el('line', { x1: x, x2: x, y1: B.minZ, y2: B.maxZ }, grid);
-  for (let z = Math.ceil(B.minZ / 10) * 10; z <= B.maxZ; z += 10) el('line', { y1: z, y2: z, x1: B.minX, x2: B.maxX }, grid);
-  rect([RIVER.x, 0, RIVER.w - 2.5, B.maxZ - B.minZ + 8], { fill: token('--river') }, svg);
+  if (showGrid) {
+    for (let x = Math.ceil(B.minX / gridStep) * gridStep; x <= B.maxX; x += gridStep) el('line', { x1: x, x2: x, y1: B.minZ, y2: B.maxZ, 'stroke-opacity': x % 50 ? .07 : .17 }, grid);
+    for (let z = Math.ceil(B.minZ / gridStep) * gridStep; z <= B.maxZ; z += gridStep) el('line', { y1: z, y2: z, x1: B.minX, x2: B.maxX, 'stroke-opacity': z % 50 ? .07 : .17 }, grid);
+  }
+  rect([RIVER.x, (B.minZ + B.maxZ) / 2, RIVER.w - 2.5, B.maxZ - B.minZ + 8], { fill: token('--river') }, svg);
   for (const b of town.bridges) rect([b.x, b.z, b.w, b.d], { fill: token('--dirt'), stroke: token('--ink'), 'stroke-opacity': .3, 'stroke-width': px }, svg);
   // Raised floors and plazas under everything else.
   for (const u of town.units) for (const f of u.floors) if (f[2] * f[3] > 30) rect(f, { fill: token('--floor'), opacity: .85 }, svg);
@@ -539,14 +631,20 @@ function renderPanel() {
   const box = $('selection'); box.textContent = '';
   const add = html => box.insertAdjacentHTML('beforeend', html);
   if (!selected) {
-    add(`<p class="eyebrow">Move the town</p><h2>Tap a building, car or road</h2><p>Drag to move it. Turn buildings with ↺ ↻ or the R key. Arrow keys nudge by half a metre (Shift: 5 m). The river and town edge stay fixed; a road that crosses the river from bank to bank gets its own bridge.</p>`);
+    add(`<p class="eyebrow">Move the town</p><h2>Tap a building, car or road</h2><p>Drag to move it. Turn buildings with ↺ ↻ or the R key. Arrow keys nudge by the snap step (Shift: 5 m). Add buildings from <b>+ Bangunan</b> and grow the town under <b>Saiz peta</b>. The river stays fixed; a road that crosses it from bank to bank gets its own bridge.</p>`);
   } else if (selected.type === 'unit') {
-    const u = unitById(selected.id), gap = gapTo(u);
-    add(`<p class="eyebrow">${KINDS[u.kind].label}</p><h2></h2>`); box.querySelector('h2').textContent = nameOf(u);
-    if (u.places.length > 1) { const p = document.createElement('p'); p.textContent = u.places.map(id => `${id} ${PLACES[id][0]}`).join(' · '); box.append(p); }
+    const u = unitById(selected.id), gap = gapTo(u), def = kindDef(u), numbered = placeIds(u).length > 0;
+    add(`<p class="eyebrow"></p><h2></h2>`); box.querySelector('.eyebrow').textContent = u.kind === 'custom' ? 'Bangunan sendiri · ' + CUSTOM_STYLES[customLook(u).style].label : def.label + (numbered ? '' : ' · extra');
+    box.querySelector('h2').textContent = nameOf(u);
+    if ((u.places || []).length > 1) { const p = document.createElement('p'); p.textContent = u.places.map(id => `${id} ${PLACES[id][0]}`).join(' · '); box.append(p); }
     add(`<dl class="rows"><dt>Position</dt><dd>x ${u.x.toFixed(1)} m · z ${u.z.toFixed(1)} m</dd><dt>Front faces</dt><dd>${FACING[u.rot || 0]}</dd><dt>Nearest building</dt><dd id="gap"></dd></dl>`);
     $('gap').textContent = gap ? `${gap.gap.toFixed(1)} m · ${nameOf(gap.unit)}` : '—';
     add(`<div class="tools"><button data-act="left">↺ Turn left</button><button data-act="right">↻ Turn right</button><button data-act="centre">Centre on map</button></div>`);
+    if (!numbered && u.kind !== 'passerby') { add(`<label class="field">Nama pada papan tanda<input id="u-name" class="wide" maxlength="40"></label>`); $('u-name').value = u.name || ''; $('u-name').placeholder = u.kind === 'custom' ? 'Contoh: Kedai Kopi Ah Seng' : def.label; $('u-name').onchange = () => { const v = $('u-name').value.trim(); if (v) u.name = v; else delete u.name; commit(); }; }
+    if (u.kind === 'custom') customFields(u, add);
+    if (u.kind === 'sedan') { add(`<label class="field">Warna kereta<input id="u-color" type="color"></label>`); $('u-color').value = /^#[0-9a-f]{6}$/i.test(u.color || '') ? u.color : '#d4322c'; $('u-color').onchange = () => { u.color = $('u-color').value; commit(); }; }
+    add(`<div class="tools">${canCopy(u) ? '<button data-act="copy" title="Ctrl+D">⧉ Duplicate</button>' : ''}${u.kind === 'custom' ? '<button data-act="template">★ Save as template</button>' : ''}${canDelete(u) ? '<button data-act="delete-unit" title="Delete">Delete</button>' : ''}</div>`);
+    if (numbered) add(`<p class="note">A numbered place in the story: move or turn it freely, but it cannot be deleted.${def.unique ? ' There is only one of these.' : ' Duplicate adds an extra, unnumbered copy.'}</p>`);
   } else {
     const r = roadById(selected.id);
     add(`<p class="eyebrow">${r.kind === 'asphalt' ? 'Asphalt road' : 'Dirt path'}</p><h2></h2>`); box.querySelector('h2').textContent = roadName(r);
@@ -562,12 +660,17 @@ function renderPanel() {
     if (act === 'left') turnSelected(-1); else if (act === 'right') turnSelected(1);
     else if (act === 'centre') { const u = unitById(selected.id); view.cx = u.x; view.cz = u.z; applyView(); }
     else if (act === 'delete') { plan.roads = plan.roads.filter(r => r.id !== selected.id); selected = null; commit(); }
+    else if (act === 'delete-unit') deleteSelected();
+    else if (act === 'copy') duplicateSelected();
+    else if (act === 'template') saveTemplate(unitById(selected.id));
     else if (act === 'add-road') { let n = 1; while (roadById('new-path-' + n)) n++; plan.roads.push({ id: 'new-path-' + n, kind: 'dirt', x: snap(view.cx), z: snap(view.cz), w: 20, d: 3 }); selected = { type: 'road', id: 'new-path-' + n }; commit(); }
   });
   // Checks and header status.
   const list = $('checks'); list.textContent = '';
   const errors = problems.filter(p => p.level === 'error').length, warnings = problems.length - errors;
   if (!problems.length) { const li = document.createElement('li'); li.innerHTML = '<p>All 38 places are on the map, nothing overlaps, and no building sits on an asphalt road.</p>'; list.append(li); }
+  const extras = plan.units.filter(u => !placeIds(u).length && !KINDS[u.kind]?.vehicle).length;
+  if (extras) { const li = document.createElement('li'); li.innerHTML = `<p class="note">${extras} extra building${extras > 1 ? 's' : ''} added in the editor.</p>`; list.append(li); }
   for (const p of problems) {
     const li = document.createElement('li'); li.className = p.level; const b = document.createElement('button');
     b.innerHTML = '<span class="dot" aria-hidden="true"></span><span></span>'; b.lastChild.textContent = p.text;
@@ -592,7 +695,141 @@ function renderPanel() {
 function refresh() {
   try { town = derive(plan); problems = planProblems(plan); } catch (error) { problems = [{ level: 'error', units: [], text: 'This layout could not be read: ' + error.message }]; }
   draw(); renderPanel();
+  if (tab === 'library') renderLibrary(); else if (tab === 'town') renderTown();
 }
+
+// ---------------------------------------------------------------- custom buildings
+function customFields(u, add) {
+  const c = customLook(u), block = c.style === 'block';
+  add(`<div class="tools">
+    <label class="field">Bentuk<select id="c-style" style="width:auto">${Object.entries(CUSTOM_STYLES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></label>
+    <label class="field">Lebar (m)<input id="c-w" type="number" min="2" max="80" step="0.5"></label>
+    <label class="field">Dalam (m)<input id="c-d" type="number" min="2" max="80" step="0.5"></label>
+    ${block ? '<label class="field">Tingkat<input id="c-storeys" type="number" min="1" max="4" step="1"></label><label class="field">Bumbung<select id="c-roof"><option value="pitched">Condong</option><option value="flat">Rata</option></select></label>' : ''}
+    <label class="field">${c.style === 'plaza' ? 'Warna lantai' : 'Warna dinding'}<input id="c-wall" type="color"></label>
+    ${block ? '<label class="field">Warna bumbung<input id="c-roofColor" type="color"></label>' : ''}
+    <label class="field">Kategori<select id="c-cat" style="width:auto">${CATEGORIES.map(k => `<option value="${k.id}">${k.name}</option>`).join('')}</select></label>
+  </div>`);
+  for (const key of ['style', 'w', 'd', 'storeys', 'roof', 'wall', 'roofColor', 'cat']) {
+    const input = $('c-' + key); if (!input) continue;
+    input.value = c[key];
+    input.onchange = () => { u[key] = input.type === 'number' ? Math.round(+input.value * 2) / 2 : input.value; Object.assign(u, pickLook(customLook(u))); commit(); };
+  }
+}
+const pickLook = c => Object.fromEntries(LOOK.map(k => [k, c[k]]));
+function saveTemplate(u) {
+  const look = pickLook(customLook(u)), list = plan.templates || [];
+  let n = list.length + 1; while (list.some(t => t.id === 'template-' + n)) n++;
+  plan.templates = [...list, { id: 'template-' + n, ...look, name: look.name || `Bangunan ${n}` }];
+  commit(); showTab('library');
+}
+
+// ---------------------------------------------------------------- adding and removing
+// New buildings land on the nearest free ground to the middle of the view.
+function freeSpot(u) {
+  const B = townBounds(), others = town.units;
+  const fits = (x, z) => {
+    const t = derive({ units: [{ ...u, x, z }], roads: [] }).units[0];
+    return t.solids.every(([sx, sz, sw, sd]) => sx - sw / 2 >= B.minX && sx + sw / 2 <= B.maxX && sz - sd / 2 >= B.minZ && sz + sd / 2 <= B.maxZ && Math.abs(sx - RIVER.x) >= (sw + RIVER.w) / 2)
+      && !others.some(o => o.solids.some(p => t.solids.some(q => overlap(p, q, .5))))
+      && (t.def.open || t.def.vehicle || !plan.roads.some(r => t.solids.some(q => overlap(q, [r.x, r.z, r.w, r.d], .3))));
+  };
+  const cx = snap(view.cx), cz = snap(view.cz);
+  for (let r = 0; r <= 80; r += 2) { const n = Math.max(1, Math.round(r * 1.6)); for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, x = snap(cx + Math.cos(a) * r), z = snap(cz + Math.sin(a) * r); if (fits(x, z)) return [x, z]; } }
+  return [cx, cz];
+}
+function addUnit(u) {
+  [u.x, u.z] = freeSpot(u);
+  plan.units.push(u); selected = { type: 'unit', id: u.id };
+  showTab('edit'); commit();
+}
+const addKind = kind => addUnit({ id: nextId(kind), kind, x: 0, z: 0, rot: 0, ...(kind === 'sedan' ? { color: '#d4322c' } : {}) });
+const addCustom = look => addUnit({ id: nextId('custom'), kind: 'custom', x: 0, z: 0, rot: 0, ...pickLook(customLook(look)) });
+function duplicateSelected() {
+  const u = selected?.type === 'unit' && unitById(selected.id); if (!u || !canCopy(u)) return;
+  const copy = JSON.parse(JSON.stringify(u)); delete copy.places; copy.id = nextId(u.kind);
+  const back = [view.cx, view.cz]; view.cx = u.x; view.cz = u.z; addUnit(copy); [view.cx, view.cz] = back;
+}
+function deleteSelected() {
+  const u = selected?.type === 'unit' && unitById(selected.id); if (!u || !canDelete(u)) return;
+  plan.units = plan.units.filter(x => x !== u); selected = null; commit();
+}
+
+// ---------------------------------------------------------------- library
+function thumb(def, color) {
+  const rects = [...def.solids, ...(def.places || [])], [x, z, w, d] = bounds(rects), pad = Math.max(w, d) * .08 + .5;
+  const r = ([a, b, c, e], o) => `<rect x="${a - c / 2}" y="${b - e / 2}" width="${c}" height="${e}" fill="${color}" fill-opacity="${o}"/>`;
+  return `<svg viewBox="${x - w / 2 - pad} ${z - d / 2 - pad} ${w + pad * 2} ${d + pad * 2}" aria-hidden="true">${def.solids.map(q => r(q, .3)).join('')}${(def.places || []).map(q => r(q, .85)).join('')}</svg>`;
+}
+function renderLibrary() {
+  const box = $('library'), q = $('lib-search').value.trim().toLowerCase(); box.textContent = '';
+  const count = kind => plan.units.filter(u => u.kind === kind).length;
+  const size = def => { const [, , w, d] = bounds(def.places?.length ? def.places : def.solids); return `${+w.toFixed(1)} × ${+d.toFixed(1)} m`; };
+  const entries = [
+    { custom: true, cat: 'baru', name: 'Bangunan baru', def: kindDef({ kind: 'custom' }), note: 'Pilih bentuk, saiz, warna' },
+    ...Object.entries(KINDS).map(([kind, def]) => ({ kind, def, cat: def.cat, name: def.label, n: count(kind) })),
+    ...(plan.templates || []).map(t => ({ template: t, def: kindDef({ kind: 'custom', ...t }), cat: CATEGORIES.some(c => c.id === t.cat) ? t.cat : 'kedai', name: t.name }))
+  ];
+  const cats = [{ id: 'baru', name: 'Bina sendiri' }, ...CATEGORIES];
+  for (const cat of cats) {
+    const list = entries.filter(e => e.cat === cat.id && (!q || `${e.name} ${cat.name}`.toLowerCase().includes(q)));
+    if (!list.length) continue;
+    const section = document.createElement('section'); section.className = 'cat';
+    section.innerHTML = `<h3><i style="background:${catColor[cat.id] || 'var(--gold)'}"></i><span></span><small>${list.length}</small></h3><div class="cards"></div>`;
+    section.querySelector('h3 span').textContent = cat.name;
+    for (const e of list) {
+      const card = document.createElement('div'), taken = e.def.unique && e.n > 0, color = e.template ? customLook(e.template).wall : e.custom ? 'var(--gold)' : catColor[cat.id];
+      card.className = 'card';
+      const note = e.custom ? e.note : e.template ? `Template · ${size(e.def)}` : taken ? 'Sudah ada · tekan untuk cari' : `${size(e.def)} · ${e.n} di peta`;
+      card.innerHTML = `<button>${thumb(e.def, color)}<b></b><small></small></button>${e.template ? '<button class="x" aria-label="Delete template" title="Delete template">✕</button>' : ''}`;
+      card.querySelector('b').textContent = e.name; card.querySelector('small').textContent = note;
+      card.firstChild.onclick = () => {
+        if (e.custom) addCustom(CUSTOM_DEFAULTS);
+        else if (e.template) addCustom(e.template);
+        else if (taken) { const u = plan.units.find(x => x.kind === e.kind); selected = { type: 'unit', id: u.id }; view.cx = u.x; view.cz = u.z; showTab('edit'); applyView(); refresh(); }
+        else addKind(e.kind);
+      };
+      if (e.template) card.lastChild.onclick = () => { plan.templates = plan.templates.filter(t => t !== e.template); if (!plan.templates.length) delete plan.templates; commit(); };
+      section.querySelector('.cards').append(card);
+    }
+    box.append(section);
+  }
+  if (!box.children.length) box.innerHTML = '<p class="note">Tiada bangunan sepadan.</p>';
+  box.insertAdjacentHTML('beforeend', '<p class="note">New buildings appear on free ground near the middle of the view. Built-in kinds come from the game code; a developer adds a new one in <code>town-layout.js</code> with a category and it shows up here.</p>');
+}
+
+// ---------------------------------------------------------------- town size
+const SIDES = [['minZ', 'Utara (atas)'], ['maxZ', 'Selatan (bawah)'], ['minX', 'Barat (kiri)'], ['maxX', 'Timur (kanan)']];
+function renderTown() {
+  const B = townBounds(), box = $('town-size'), w = B.maxX - B.minX, d = B.maxZ - B.minZ, D = DEFAULT_BOUNDS;
+  const big = w * d > 2 * (D.maxX - D.minX) * (D.maxZ - D.minZ);
+  box.innerHTML = `<section><p class="eyebrow">Saiz peta</p><h2>${w} × ${d} m</h2><p>Add or remove 10 m of grid on any side. Buildings stay where they are; new ground is empty land to build on.</p></section>
+    <section class="sides">${SIDES.map(([key, label]) => { const at = Math.abs(B[key]); return `<span>${label}</span><button data-side="${key}" data-dir="-1" ${at <= 20 ? 'disabled' : ''} aria-label="Shrink ${label} by 10 m">− 10 m</button><button data-side="${key}" data-dir="1" ${at >= BOUNDS_LIMIT ? 'disabled' : ''} aria-label="Grow ${label} by 10 m">+ 10 m</button>`; }).join('')}</section>
+    ${big ? '<p class="note">A big town plants more trees and lays longer routes, so it may run slower on older phones.</p>' : ''}
+    <section><p class="eyebrow">Grid & snap</p><div class="tools">
+      <label class="field">Grid lines<select id="grid-step"><option value="5">5 m</option><option value="10">10 m</option><option value="20">20 m</option></select></label>
+      <label class="field">Snap<select id="snap-step"><option value="0.5">0.5 m</option><option value="1">1 m</option><option value="2">2 m</option><option value="5">5 m</option></select></label>
+      <label class="field">Show grid<select id="grid-show"><option value="1">On</option><option value="0">Off</option></select></label>
+    </div></section>
+    <section><button id="bounds-reset" ${plan.bounds ? '' : 'disabled'}>Back to the original size</button></section>`;
+  box.querySelectorAll('[data-side]').forEach(b => b.onclick = () => {
+    const key = b.dataset.side, out = key.startsWith('min') ? -1 : 1, next = { ...B, [key]: B[key] + out * 10 * +b.dataset.dir };
+    plan.bounds = boundsOf({ bounds: next }); commit(); fitView();
+  });
+  $('grid-step').value = gridStep; $('snap-step').value = SNAP; $('grid-show').value = showGrid ? '1' : '0';
+  $('grid-step').onchange = () => { gridStep = +$('grid-step').value; saveView(); draw(); };
+  $('snap-step').onchange = () => { SNAP = +$('snap-step').value; saveView(); };
+  $('grid-show').onchange = () => { showGrid = $('grid-show').value === '1'; saveView(); draw(); };
+  $('bounds-reset').onclick = () => { delete plan.bounds; commit(); fitView(); };
+}
+function showTab(name) {
+  tab = name;
+  document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== name);
+  if (name === 'library') renderLibrary(); else if (name === 'town') renderTown();
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+$('lib-search').oninput = renderLibrary;
 
 // ---------------------------------------------------------------- input
 function toWorldPoint(event) {
@@ -654,12 +891,14 @@ window.addEventListener('keydown', event => {
   if (mod && k.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? redo() : undo(); return; }
   if (mod && k.toLowerCase() === 'y') { event.preventDefault(); redo(); return; }
   if (!selected) return;
+  if (mod && k.toLowerCase() === 'd') { event.preventDefault(); duplicateSelected(); return; }
   const stepSize = event.shiftKey ? 5 : SNAP;
   if (k === 'ArrowLeft') { event.preventDefault(); nudge(-stepSize, 0); } else if (k === 'ArrowRight') { event.preventDefault(); nudge(stepSize, 0); }
   else if (k === 'ArrowUp') { event.preventDefault(); nudge(0, -stepSize); } else if (k === 'ArrowDown') { event.preventDefault(); nudge(0, stepSize); }
   else if (k.toLowerCase() === 'r') turnSelected(event.shiftKey ? -1 : 1);
   else if (k === 'Escape') { selected = null; refresh(); }
   else if ((k === 'Delete' || k === 'Backspace') && selected.type === 'road') { plan.roads = plan.roads.filter(r => r.id !== selected.id); selected = null; commit(); }
+  else if (k === 'Delete' || k === 'Backspace') deleteSelected();
 });
 $('undo').onclick = undo; $('redo').onclick = redo;
 $('turn-left').onclick = () => turnSelected(-1); $('turn-right').onclick = () => turnSelected(1);
@@ -694,7 +933,7 @@ function resetPrompt() {
   $('reset-yes').onclick = () => { plan = JSON.parse(BASE); selected = null; commit(); back(); };
 }
 $('reset').onclick = resetPrompt;
-$('legend').innerHTML = DISTRICT_INFO.map(d => `<span><i style="background:${d.color}"></i>${d.name}</span>`).join('') + `<span><i style="background:${kindColor.bus}"></i>Vehicles</span><span><i style="background:${kindColor.square}"></i>Town square</span>`;
+$('legend').innerHTML = DISTRICT_INFO.map(d => `<span><i style="background:${d.color}"></i>${d.name}</span>`).join('') + `<span><i style="background:${kindColor.bus}"></i>Vehicles</span><span><i style="background:${kindColor.square}"></i>Town square</span><span><i style="background:#888;opacity:.6"></i>Extra buildings: their category colour</span>`;
 
 // ---------------------------------------------------------------- start
 const local = readLocal();

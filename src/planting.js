@@ -1,5 +1,5 @@
-import { TOWN_BOUNDS, RIVER, PROPS } from './town-layout.js?v=2.15.0';
-import { npcPosts } from './cast.js?v=2.15.0';
+import { TOWN_BOUNDS, GROUND, RIVER, PROPS } from './town-layout.js?v=2.16.0';
+import { npcPosts } from './cast.js?v=2.16.0';
 
 // Where every tree goes, worked out from the town plan alone so the tests can
 // check it and the planting follows the editor when buildings move.
@@ -27,7 +27,7 @@ const MIX = {
 const DUSUN = [['kelapa', 30], ['rambutan', 15], ['durian', 14], ['pisang', 14], ['nangka', 10], ['pinang', 10], ['mangga', 7]];
 const BANK = [['buluh', 40], ['pisang', 30], ['kelapa', 30]];
 // The lawn runs about 12 m past the walkable edge before the painted horizon.
-export const GROUND = { minX: -89, maxX: 89, minZ: -79, maxZ: 79 };
+export { GROUND };
 
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 function hash(text) { let h = 2166136261; for (const c of String(text)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; }
@@ -75,7 +75,7 @@ export function plantTown(town) {
   // Roads that meet the edge carry on out of town through a gap in the trees.
   const corridors = roads.filter(r => r.kind === 'asphalt').map(r => {
     const alongX = r.w >= r.d, a = alongX ? r.x - r.w / 2 : r.z - r.d / 2, b = alongX ? r.x + r.w / 2 : r.z + r.d / 2, lo = alongX ? B.minX : B.minZ, hi = alongX ? B.maxX : B.maxZ;
-    const from = a <= lo + 1 ? -200 : a, to = b >= hi - 1 ? 200 : b;
+    const from = a <= lo + 1 ? lo - 120 : a, to = b >= hi - 1 ? hi + 120 : b;
     return alongX ? { x: (from + to) / 2, z: r.z, w: to - from, d: r.d } : { x: r.x, z: (from + to) / 2, w: r.w, d: to - from };
   });
   const inCorridor = (x, z, pad) => corridors.some(c => Math.abs(x - c.x) < c.w / 2 + pad && Math.abs(z - c.z) < c.d / 2 + pad);
