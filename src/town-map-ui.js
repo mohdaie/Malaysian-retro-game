@@ -1,6 +1,6 @@
-import { mapView, project, unproject, clampView, zoomView, routeLength } from './map-navigation.js?v=2.15.0';
+import { mapView, project, unproject, clampView, zoomView, routeLength, MAP_BOUNDS } from './map-navigation.js?v=2.16.0';
 
-export function createTownMap({ buildings, districts, roads, bridges, getEntries, getPlayer, getQuest, getJobs, getNavigation, planRoute, onNavigate, onClose }) {
+export function createTownMap({ buildings, extras = [], districts, roads, bridges, getEntries, getPlayer, getQuest, getJobs, getNavigation, planRoute, onNavigate, onClose }) {
   const $ = id => document.getElementById(id), canvas = $('town-map'), ctx = canvas.getContext('2d');
   let view = mapView(600, 400), entries = [], selected = null, preview = null, open = false, hits = [];
   const pointers = new Map(); let multi = false, frame = 0;
@@ -50,9 +50,10 @@ export function createTownMap({ buildings, districts, roads, bridges, getEntries
       if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.strokeRect(a.x, a.y, rw * view.scale, rh * view.scale); }
     };
     for (const b of buildings) rect(b.x, b.z, b.w + 4, b.d + 4, colors.get(b.zone) + '16');
-    rect(-65, 0, 10.5, 140, '#96c5cb');
+    rect(-65, (MAP_BOUNDS.minZ + MAP_BOUNDS.maxZ) / 2, 10.5, MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ, '#96c5cb');
     for (const r of roads) rect(r.x, r.z, r.w, r.d, r.kind === 'asphalt' ? '#bbc1b4' : '#d5c5a5');
     for (const b of bridges) rect(b.x, b.z, b.w, b.d, '#ead8b4', '#8b795a');
+    for (const [x, z, ew, ed] of extras) rect(x, z, ew, ed, '#b9b5a2', '#8a8676');
     for (const b of buildings) { ctx.globalAlpha = show.has(b.id) ? 1 : .3; rect(b.x, b.z, b.w, b.d, colors.get(b.zone) + 'a8', '#485747'); } ctx.globalAlpha = 1;
     const route = preview || getNavigation()?.route;
     if (route?.length) {
