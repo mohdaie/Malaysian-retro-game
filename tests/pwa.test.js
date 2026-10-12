@@ -104,6 +104,7 @@ test('the admin page and its health checks always reach the network', async () =
   const w = await worker();
   assert.equal(await w.request('admin.html', { mode: 'navigate' }), undefined);
   assert.equal(await w.request('admin.html#access_token=x', { mode: 'navigate' }), undefined);
+  assert.equal(await w.request('tools/map-editor.html', { mode: 'navigate' }), undefined);
   assert.equal(await w.request('src/main.js?v=2.8.1&health=1'), undefined);
   assert.equal(await (await w.request('./', { mode: 'navigate' })).text(), 'offline town');
 });

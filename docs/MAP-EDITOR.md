@@ -4,7 +4,7 @@ The town is built from one plan, `src/town-plan.js`. Every building, vehicle, pa
 
 ## Editing the layout
 
-Open the map editor (the Claude artifact "Seri Kenangan Map Editor", or `tools/map-editor.html` on the published site).
+Open the map editor at **https://retromalaysia.space/tools/map-editor.html** (or the Claude artifact "Seri Kenangan Map Editor", or `npm run dev` then `/tools/map-editor.html`).
 
 - Tap or click a building, car, passer-by or road to select it. Drag to move it, in half-metre steps.
 - Turn the selected building with ↺ ↻ in the floating bar, or the R key (Shift+R turns the other way). The small arrow on each building shows which way its front faces.

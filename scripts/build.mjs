@@ -7,5 +7,7 @@ for (const name of ['three.module.js', 'three.core.js']) await cp(`node_modules/
 // The glTF loader and its two helpers, for the motion-captured characters.
 for (const name of ['loaders/GLTFLoader.js', 'utils/SkeletonUtils.js', 'utils/BufferGeometryUtils.js']) await cp(`node_modules/three/examples/jsm/${name}`, `dist/vendor/addons/${name}`);
 await cp('node_modules/three/LICENSE', 'dist/vendor/THREE-LICENSE.txt');
+// The map editor is one self-contained page (npm run editor builds it).
+await cp('tools/map-editor.html', 'dist/tools/map-editor.html');
 await buildPwa();
 console.log('Built dist/ — self-contained, no runtime CDN; only the optional anonymous health reports reach an API.');
