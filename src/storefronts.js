@@ -1,6 +1,6 @@
 import * as T from 'three';
-import { isShopOpen, shopHours, SHOPS } from './shop-hours.js?v=2.16.0';
-import { timeLabel } from './clock.js?v=2.16.0';
+import { isShopOpen, shopHours, SHOPS } from './shop-hours.js?v=2.17.0';
+import { timeLabel } from './clock.js?v=2.17.0';
 
 // Independent dynamic meshes: the town's static batcher must not merge them.
 export async function createStorefronts(renderer) {

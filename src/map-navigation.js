@@ -1,5 +1,5 @@
 // Uniform map coordinates: north is -z; the same transform handles drawing and taps.
-import { TOWN_BOUNDS as B } from './town-layout.js?v=2.16.0';
+import { TOWN_BOUNDS as B } from './town-layout.js?v=2.17.0';
 export const MAP_BOUNDS = { minX: B.minX - 4, maxX: B.maxX + 6, minZ: B.minZ - 4, maxZ: B.maxZ + 4 };
 const M = MAP_BOUNDS, MW = M.maxX - M.minX, MD = M.maxZ - M.minZ, MX = (M.minX + M.maxX) / 2, MZ = (M.minZ + M.maxZ) / 2;
 export function mapView(width, height, zoom = 1, x = MX, z = MZ) {
