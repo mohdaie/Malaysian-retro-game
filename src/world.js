@@ -1,26 +1,27 @@
 import * as T from 'three';
-import { createCharacter } from './characters.js?v=2.16.0';
-import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.16.0';
-import { toon, comicEdges, inkViewport } from './illustration.js?v=2.16.0';
-import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, GROUND, UNITS, customLook, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.16.0';
-import { createProps } from './props.js?v=2.16.0';
-import { ROUTINES, createRoutine } from './routines.js?v=2.16.0';
-import { ACTIONS } from './actions.js?v=2.16.0';
-import { createWalkability } from './collision.js?v=2.16.0';
-import { createStorefronts } from './storefronts.js?v=2.16.0';
-import { createLandmarks } from './landmarks.js?v=2.16.0';
-import { loadTownCars } from './town-cars.js?v=2.16.0';
-import { loadTownBus } from './town-bus.js?v=2.16.0';
-import { loadPetrolPump } from './petrol-pump.js?v=2.16.0';
-import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.16.0';
-import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.16.0';
-import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.16.0';
-import { findWalkRoute } from './map-navigation.js?v=2.16.0';
-import { createTrees } from './trees.js?v=2.16.0';
-import { plantTown, placeProps, TRUNK } from './planting.js?v=2.16.0';
-import { createRiver } from './river.js?v=2.16.0';
-import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.16.0';
-import { roadSurfaces } from './road-surfaces.js?v=2.16.0';
+import { createCharacter } from './characters.js?v=2.17.0';
+import { loadRig, loadModel, createActor, MODELS } from './actor.js?v=2.17.0';
+import { toon, comicEdges, inkViewport } from './illustration.js?v=2.17.0';
+import { BUILDINGS, DISTRICTS, ROADS, BRIDGES, RIVER, TOWN_BOUNDS, GROUND, UNITS, customLook, FLOORS, SPOTS, PASSERSBY, STREET_PROPS, PROPS, toWorld } from './town-layout.js?v=2.17.0';
+import { createProps } from './props.js?v=2.17.0';
+import { ROUTINES, createRoutine } from './routines.js?v=2.17.0';
+import { ACTIONS } from './actions.js?v=2.17.0';
+import { createWalkability } from './collision.js?v=2.17.0';
+import { createStorefronts } from './storefronts.js?v=2.17.0';
+import { createLandmarks } from './landmarks.js?v=2.17.0';
+import { loadTownCars } from './town-cars.js?v=2.17.0';
+import { loadTownBus } from './town-bus.js?v=2.17.0';
+import { loadPetrolPump } from './petrol-pump.js?v=2.17.0';
+import { NPCS, NPC_KEYS, npcPosts, RESIDENT_KEYS, residentPosts, residentPlace, KEEPERS, KEEPER_KEYS } from './cast.js?v=2.17.0';
+import { ERRANDS, ERRAND_KEYS, createErrand } from './errands.js?v=2.17.0';
+import { CROWD, CROWD_KEYS, LOOPS } from './crowds.js?v=2.17.0';
+import { findWalkRoute } from './map-navigation.js?v=2.17.0';
+import { createTrees } from './trees.js?v=2.17.0';
+import { createGrass, grassMask } from './grass.js?v=2.17.0';
+import { plantTown, placeProps, TRUNK } from './planting.js?v=2.17.0';
+import { createRiver } from './river.js?v=2.17.0';
+import { riverBounds, riverTerrainHeight, bridgeSurfaceHeight, BRIDGE_RAMP, BRIDGE_DECK_Y } from './river-profile.js?v=2.17.0';
+import { roadSurfaces } from './road-surfaces.js?v=2.17.0';
 export const places = BUILDINGS;
 export async function makeWorld(canvas) {
   // The kids' motion-capture skeleton loads alongside the town; without it
@@ -625,18 +626,12 @@ export async function makeWorld(canvas) {
     }
   }
   for(let i=0;i<9;i++){const hill=mesh(new T.IcosahedronGeometry(15+(i%3)*4,1),i%2?0x839d75:0x9bb087,-120+i*30,-3,-135-Math.sin(i)*8);hill.scale.y=.7;}
-  // Verges, grass tufts and painted ground cover soften the open lawn.
-  for(let i=0;i<450;i++) {
-    const x=-78+rand()*155,z=-65+rand()*130;
-    if(inRiver(x,2)||roadNear(x,z,2,.2)||unitNear(x,z,1)||solidNear(x,z,2))continue;
-    for(let a=0;a<3;a++){const blade=mesh(new T.ConeGeometry(.09,.35+rand()*.25,3),i%2?0x7f9959:0xa8ae67,x+a*.12,.25,z);blade.rotation.z=(a-1)*.25;}
-  }
   // Transparent painted ground-cover patches layer over the lawn. They sit
   // below paths/roads, whose depth naturally masks foliage at their edges.
   const grassPatch=await loader.loadAsync(new URL('../assets/textures/illustrated-grass-patch.webp',import.meta.url).href);
   grassPatch.colorSpace=T.SRGBColorSpace;grassPatch.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  for(let i=0;i<270;i++){
-    const x=-78+rand()*154,z=-66+rand()*132;
+  for(let i=0;i<Math.round(270*(TOWN_BOUNDS.maxX-TOWN_BOUNDS.minX)*(TOWN_BOUNDS.maxZ-TOWN_BOUNDS.minZ)/20328);i++){
+    const x=TOWN_BOUNDS.minX+rand()*(TOWN_BOUNDS.maxX-TOWN_BOUNDS.minX),z=TOWN_BOUNDS.minZ+rand()*(TOWN_BOUNDS.maxZ-TOWN_BOUNDS.minZ);
     if(inRiver(x)||roadNear(x,z,0,-9)||solidNear(x,z,0))continue;
     patchPositions.push([x,z,4+rand()*5]);
   }
@@ -644,6 +639,9 @@ export async function makeWorld(canvas) {
   const patchTransform=new T.Object3D();
   for(let i=0;i<patchPositions.length;i++){const [x,z,size]=patchPositions[i];patchTransform.position.set(x,-.038,z);patchTransform.rotation.set(-Math.PI/2,0,rand()*Math.PI*2);patchTransform.scale.set(size,size*(.8+rand()*.3),1);patchTransform.updateMatrix();patches.setMatrixAt(i,patchTransform.matrix);}
   patches.instanceMatrix.needsUpdate=true;patches.computeBoundingSphere();scene.add(patches);
+  // Living grass near the player (grass.js); phones draw a smaller, sparser field.
+  const phone=matchMedia('(pointer: coarse)').matches;
+  const lawn=createGrass({scene,toon,mask:grassMask(TOWN,TOWN_BOUNDS,GROUND,RIVER),radius:phone?17:22,count:phone?6500:14000});
   // Batch geometry by material and 24-metre cells, so off-screen streets
   // can be culled without submitting the entire town on every frame.
   scene.updateMatrixWorld(true);
@@ -833,5 +831,5 @@ export async function makeWorld(canvas) {
     sodium.emissive.setHex(0xffa040);sodium.emissiveIntensity=lampsOn*1.3;tube.emissive.setHex(0xe4f2ff);tube.emissiveIntensity=lampsOn*1.2;
     pools.material.opacity=lampsOn*.6;pools.visible=lampsOn>.01;
   }
-  return {updateRiver:river.update,riverSnapshot:river.snapshot,busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,crowd,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
+  return {updateGrass:lawn.update,updateRiver:river.update,riverSnapshot:river.snapshot,busStates:()=>buses.map(b=>({...b})),carStates:()=>cars.map(c=>({...c})),setShopTime:storefronts.setTime,shopStates:storefronts.snapshot,buildings:BUILDINGS,districts:DISTRICTS,spawn:SPOTS.spawn,spawns,wind:trees.wind,setJobMarkers,jobMarkers,setStoryMarker,storyMarker,choosePlayer,get player(){return player;},renderer,scene,camera,characters,npcs,residents,crowd,colliders,groundHeight,updateOcclusion,cameraClearance,occlusionCount:()=>blocked.size,canWalk,resize,animated,sun,sign,setSky,lamps,updateLampLight,updateSun: (x,z) => { sun.position.set(x+sunOffset[0],sunOffset[1],z+sunOffset[2]); sun.target.position.set(x,0,z); sun.target.updateMatrixWorld(); },renameHomes: (name,friend) => homeSigns.forEach(s => s.update(s.friend ? friend : name))};
 }

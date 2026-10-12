@@ -1,6 +1,6 @@
 # Retro Malaysia — a kampung story
 
-Playable browser game, **v2.16.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
+Playable browser game, **v2.17.0**. A fictional Malaysian town, Pekan Seri Kenangan, around **2001**, mixing kampung lanes and budget terrace homes. Play as **Amir** or **Nur** (either can be renamed), earn Duit Poket running deliveries for 14 townsfolk, and save for the toys of the time.
 
 The river now sits below faceted earth banks, with slow animated current, shallow edges, sparse rocks and bamboo, and supported bridges with gentle approaches. See [river screenshots and validation](docs/RIVER.md).
 
@@ -11,6 +11,10 @@ Road junctions now use a single surface, removing coplanar overlaps between dirt
 Open the [playable game](https://mohdaie.github.io/Malaysian-retro-game/) in Chrome, then choose **Install app** from the browser menu or **Install Retro Malaysia** when the game offers it. The app has its own RM icon and opens fullscreen in landscape. iPhone users can use Safari → Share → Add to Home Screen.
 
 The first online visit downloads the complete game for offline play (about 16 MB). Let that finish before going offline. Saves remain on the same origin and are shared with browser play. Each build precaches a complete release under the game’s own Pages scope; a new version takes over after every game window is closed. The pause menu announces a waiting update. Installing the app does not reset progress.
+
+## Living grass (v2.17)
+
+The lawns now grow real blades. They sway in the afternoon breeze and lean away from Amir's or Nur's feet. Yards are kept short, while the field past the town edge and the river banks grow long, with sun-dried patches here and there. Grass stays off roads, verandahs, bridges and the river, creeps a little over the dirt lanes, and follows any layout from the map editor. To stay smooth on phones, only the grass around the player is drawn, and phones draw a smaller field.
 
 ## Advanced map editor (v2.16)
 
@@ -416,6 +420,7 @@ Save data is stored in the browser on this device and origin; it does not sync a
 ## Code layout
 
 - `src/world.js`: authored procedural town, spatial batches, obstacle geometry and camera occlusion.
+- `src/grass.js`: living grass, one instanced field that follows the player, kept to the lawn by a mask painted from the town plan.
 - `src/landmarks.js`: low-poly shophouse terrace, mosque and sedan built from the concept sheets.
 - `src/routines.js`, `src/actions.js`: each NPC's editable loop and the idle action poses.
 - `src/props.js`: the 2001 street props, utility poles and wires, and the painted atlas of their signs.

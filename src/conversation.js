@@ -1,5 +1,5 @@
-import { normalizeLine } from './dialogue-portraits.js?v=2.16.0';
-import { clearSegment } from './map-navigation.js?v=2.16.0';
+import { normalizeLine } from './dialogue-portraits.js?v=2.17.0';
+import { clearSegment } from './map-navigation.js?v=2.17.0';
 
 // Read the whole scene before it starts, including its host when only the
 // player speaks. Mentions inside the text do not summon another person.

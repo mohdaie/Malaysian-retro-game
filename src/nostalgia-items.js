@@ -1,4 +1,4 @@
-import { REWARD_STORIES } from './chapter-data.js?v=2.16.0';
+import { REWARD_STORIES } from './chapter-data.js?v=2.17.0';
 // Researched era references; personal stories are fictional game quests.
 // Reward-only items are never ordinary shop stock.
 export const NOSTALGIA_ITEMS = {
